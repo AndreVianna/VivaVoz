@@ -31,6 +31,7 @@ Dito fills that gap. Built with .NET 10 + Blazor Hybrid for portability. MVP in 
 | 0.4 | 2026-02-17 | Andre Vianna / Lola Lovelace | Tech stack changed: Blazor Hybrid → Avalonia UI (MIT, prettier, cross-platform). |
 | 0.5 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added storage strategy: file system layout, principles, expanded data model with InstalledModel entity. |
 | 0.6 | 2026-02-17 | Andre Vianna / Lola Lovelace | Detailed hardware requirements per Whisper model size (disk, RAM, CPU, speed). Three tiers: minimum, recommended, power user. |
+| 0.7 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added support strategy: in-app FAQ, website, GitHub Issues, email. User support flow defined. |
 
 ---
 
@@ -42,11 +43,12 @@ Dito fills that gap. Built with .NET 10 + Blazor Hybrid for portability. MVP in 
 4. [MVP Scope (v1.0)](#4-mvp-scope-v10)
 5. [User Interface](#5-user-interface)
 6. [Tech Stack](#6-tech-stack)
-7. [Data Model](#7-data-model-draft)
-8. [Future Versions](#8-future-versions-out-of-mvp-scope)
-9. [Success Metrics](#9-success-metrics)
-10. [Decisions Made](#10-decisions-made)
-11. [Open Questions](#11-open-questions)
+7. [Data Model & Storage Strategy](#7-data-model--storage-strategy)
+8. [Support Strategy](#8-support-strategy)
+9. [Future Versions](#9-future-versions-out-of-mvp-scope)
+10. [Success Metrics](#10-success-metrics)
+11. [Decisions Made](#11-decisions-made)
+12. [Open Questions](#12-open-questions)
 
 ---
 
@@ -265,9 +267,31 @@ InstalledModel
 └── IsDefault (bool)
 ```
 
-## 8. Future Versions (Out of MVP Scope)
+## 8. Support Strategy
 
-### v2: AI Cleanup
+### MVP (v1)
+
+| Channel | Implementation | Purpose |
+|---------|---------------|---------|
+| **In-app Help** | Built-in Getting Started + FAQ page | First stop — reduces support volume |
+| **Product Website** | dito-app.com — landing page, FAQ, download links | Public face, purchase, documentation |
+| **GitHub Issues** | Public repo with issue templates (bug report, feature request) | Transparent, community-driven, power users |
+| **Contact Email** | support@casuloailabs.com | Non-technical users, private issues |
+
+**User support flow:**
+1. Problem → **In-app FAQ** (immediate, no internet needed)
+2. Still stuck → **dito-app.com/faq** (more detailed, searchable)
+3. Bug or feature request → **GitHub Issues** (templates guide the report)
+4. Private or non-technical → **Email**
+
+### Future (v2+)
+- Discord community (when user base justifies it)
+- Knowledge base / docs site
+- In-app feedback widget
+
+## 9. Future Versions (Out of MVP Scope)
+
+### v2: AI Cleanup + Community
 - BYOK (Bring Your Own Key) — OpenAI, Anthropic, Gemini
 - Mode system — custom AI cleanup prompts per task
 - Clipboard auto-paste into active window
@@ -282,13 +306,13 @@ InstalledModel
 - Mac support (via MAUI)
 - Team/enterprise features
 
-## 9. Success Metrics
+## 10. Success Metrics
 
 - **Build:** Working MVP in 4 weeks
 - **Validate:** 100 beta users in first month
 - **Revenue:** First paid download within 6 weeks of launch ($5 one-time, impulse price point)
 
-## 10. Decisions Made
+## 11. Decisions Made
 
 1. **Whisper model distribution** — Bundle smallest model (tiny). Larger models download on demand via in-app model manager.
 2. **Audio format** — Default export: MP3. Configurable dropdown: MP3, WAV, OGG.
@@ -296,7 +320,7 @@ InstalledModel
 4. **Distribution** — Both Microsoft Store and direct download (dito-app.com).
 5. **Domain** — dito-app.com (available, to be registered).
 
-## 11. Open Questions
+## 12. Open Questions
 
 1. **Name trademark** — Need to check "Dito" availability
 
