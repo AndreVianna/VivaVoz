@@ -37,6 +37,7 @@ Dito fills that gap. Built with .NET 10 + Avalonia UI for a polished, cross-plat
 | 0.10 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added error handling strategy: 3 severity levels, 5 principles, known scenarios table. Strategy-first, not list-first. |
 | 0.11 | 2026-02-17 | Lola Lovelace | Added legal & licensing: all deps MIT, privacy policy/EULA requirements for Store submission. |
 | 0.12 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added update strategy: Store auto, direct download opt-in auto-update (off by default). |
+| 0.13 | 2026-02-17 | Andre Vianna | Decision: No analytics/telemetry in MVP. 100% local is the brand promise. Revisit in v2 (always opt-in, always disableable). |
 
 ---
 
