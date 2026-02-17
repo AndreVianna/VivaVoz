@@ -29,6 +29,7 @@ Dito fills that gap. Built with .NET 10 + Blazor Hybrid for portability. MVP in 
 | 0.2 | 2026-02-17 | Andre Vianna / Lola Lovelace | Resolved open questions: pricing ($5), format (MP3 default), distribution (Store + direct), Whisper bundling (tiny + on-demand) |
 | 0.3 | 2026-02-17 | Lola Lovelace | Added executive summary, change log, index. Casulo document standard. |
 | 0.4 | 2026-02-17 | Andre Vianna / Lola Lovelace | Tech stack changed: Blazor Hybrid → Avalonia UI (MIT, prettier, cross-platform). |
+| 0.5 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added storage strategy: file system layout, principles, expanded data model with InstalledModel entity. |
 
 ---
 
@@ -168,28 +169,69 @@ Mac users have multiple polished tools for this. **Windows users have nothing go
 | **Audio Playback** | NAudio |
 | **Installer** | MSIX or WiX |
 
-## 7. Data Model (Draft)
+## 7. Data Model & Storage Strategy
+
+### 7.1 File System Layout
+
+Dito uses `%LOCALAPPDATA%/Dito/` as its root. SQLite holds structured data; the file system holds binary assets.
+
+```
+%LOCALAPPDATA%/Dito/
+├── data/
+│   └── dito.db              ← SQLite: recordings, settings, tags
+├── audio/
+│   └── {yyyy-MM}/
+│       ├── {guid}.wav       ← raw recording (original, never modified)
+│       └── {guid}.mp3       ← converted export (generated on demand)
+├── models/
+│   ├── whisper-tiny.bin      ← bundled with installer
+│   ├── whisper-base.bin      ← downloaded on demand
+│   └── whisper-large.bin     ← downloaded on demand
+└── exports/
+    └── (user-exported files land here by default, configurable)
+```
+
+**Principles:**
+- **Audio is immutable** — raw `.wav` is the source of truth, never overwritten
+- **Monthly subfolders** — prevents flat directories with thousands of files
+- **GUID filenames** — no collisions, no special character issues
+- **Models are separate** — large binaries isolated, easy to manage/delete
+- **Exports are separate** — user-facing output distinct from internal storage
+- **Delete = DB row + audio file** — cascading cleanup, no orphans
+- **Configurable root** — user can move the entire Dito folder (e.g. to a larger drive)
+
+### 7.2 Entities
 
 ```
 Recording
 ├── Id (GUID)
-├── Title (auto-generated or user-set)
-├── AudioFilePath (local path)
+├── Title (auto-generated from first words, or user-set)
+├── AudioFileName (relative path: {yyyy-MM}/{guid}.wav)
 ├── Transcript (text)
-├── Language (detected or set)
+├── Language (detected or manually set)
 ├── Duration (TimeSpan)
-├── CreatedAt (DateTime)
-├── UpdatedAt (DateTime)
-├── WhisperModel (which model was used)
+├── CreatedAt (DateTime UTC)
+├── UpdatedAt (DateTime UTC)
+├── WhisperModel (which model was used for transcription)
+├── FileSize (bytes — for storage management)
 └── Tags (optional, for organization)
 
 Settings
-├── HotkeyConfig
-├── WhisperModelSize
-├── AudioInputDevice
-├── StoragePath
-├── Theme
-└── ExportDefaults
+├── HotkeyConfig (key combo + mode: push-to-talk or toggle)
+├── WhisperModelSize (tiny/base/small/medium/large)
+├── AudioInputDevice (system default or specific device)
+├── StoragePath (root folder, default: %LOCALAPPDATA%/Dito)
+├── ExportFormat (default: MP3, options: WAV, OGG)
+├── ExportPath (default: {StoragePath}/exports)
+├── Theme (light/dark/system)
+└── Language (default: auto-detect, or fixed language)
+
+InstalledModel
+├── ModelName (tiny/base/small/medium/large)
+├── FilePath (relative to models/)
+├── FileSize (bytes)
+├── DownloadedAt (DateTime UTC)
+└── IsDefault (bool)
 ```
 
 ## 8. Future Versions (Out of MVP Scope)
