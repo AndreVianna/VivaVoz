@@ -174,15 +174,19 @@ Settings
 
 - **Build:** Working MVP in 4 weeks
 - **Validate:** 100 beta users in first month
-- **Revenue:** First paid download within 6 weeks of launch
+- **Revenue:** First paid download within 6 weeks of launch ($5-10 one-time, impulse price point)
 
-## 10. Open Questions
+## 10. Decisions Made
 
-1. **Whisper model distribution** — Bundle smallest model, download others on demand?
-2. **Audio format** — WAV for quality, MP3 for size, or user choice?
-3. **Pricing** — $19 or $29 one-time? Or freemium (free local, paid AI modes in v2)?
-4. **Distribution** — Microsoft Store, GitHub Releases, website, or all three?
-5. **Name trademark** — Need to check "Dito" availability
+1. **Whisper model distribution** — Bundle smallest model (tiny). Larger models download on demand via in-app model manager.
+2. **Audio format** — Default export: MP3. Configurable dropdown: MP3, WAV, OGG.
+3. **Pricing** — $5 one-time. Gain clients first.
+4. **Distribution** — Both Microsoft Store and direct download (dito-app.com).
+5. **Domain** — dito-app.com (available, to be registered).
+
+## 11. Open Questions
+
+1. **Name trademark** — Need to check "Dito" availability
 
 ---
 
