@@ -30,6 +30,7 @@ Dito fills that gap. Built with .NET 10 + Blazor Hybrid for portability. MVP in 
 | 0.3 | 2026-02-17 | Lola Lovelace | Added executive summary, change log, index. Casulo document standard. |
 | 0.4 | 2026-02-17 | Andre Vianna / Lola Lovelace | Tech stack changed: Blazor Hybrid → Avalonia UI (MIT, prettier, cross-platform). |
 | 0.5 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added storage strategy: file system layout, principles, expanded data model with InstalledModel entity. |
+| 0.6 | 2026-02-17 | Andre Vianna / Lola Lovelace | Detailed hardware requirements per Whisper model size (disk, RAM, CPU, speed). Three tiers: minimum, recommended, power user. |
 
 ---
 
@@ -121,11 +122,41 @@ Mac users have multiple polished tools for this. **Windows users have nothing go
 - No cloud calls in v1
 - Audio files stored in user-controlled local directory
 
-#### Compatibility
-- Windows 10 21H2+ and Windows 11
-- x64 architecture (ARM64 stretch goal)
-- Minimum: 4GB RAM, 4-core CPU
-- Recommended: 8GB RAM, 8-core CPU (for larger Whisper models)
+#### Hardware Requirements by Whisper Model
+
+| Model | Disk Size | RAM Usage | Min Hardware | Transcription Speed | Best For |
+|-------|-----------|-----------|-------------|---------------------|----------|
+| **Tiny** | 75 MB | ~128 MB | 4 GB RAM, 2-core CPU | ~10x real-time | Quick notes, low-end PCs |
+| **Base** | 142 MB | ~256 MB | 4 GB RAM, 2-core CPU | ~7x real-time | Daily use, good balance |
+| **Small** | 466 MB | ~512 MB | 8 GB RAM, 4-core CPU | ~4x real-time | Better accuracy, most users |
+| **Medium** | 1.5 GB | ~1.5 GB | 8 GB RAM, 4-core CPU | ~2x real-time | High accuracy |
+| **Large** | 2.9 GB | ~3 GB | 16 GB RAM, 6-core CPU | ~1x real-time | Maximum accuracy |
+
+*Speeds are approximate for CPU-only inference via whisper.cpp. GPU acceleration (if available) significantly improves performance.*
+
+#### System Requirements
+
+**Minimum (Tiny/Base models):**
+- Windows 10 21H2+ or Windows 11
+- x64 architecture
+- 4 GB RAM
+- 2-core CPU
+- 500 MB free disk space (app + tiny model)
+
+**Recommended (Small/Medium models):**
+- Windows 10/11
+- x64 architecture
+- 8 GB RAM
+- 4-core CPU
+- 3 GB free disk space (app + multiple models)
+
+**Power User (Large model):**
+- 16 GB RAM
+- 6+ core CPU
+- 5 GB free disk space
+- GPU with 4+ GB VRAM (optional, for acceleration)
+
+ARM64 support: stretch goal for v1, likely v2.
 
 #### Accessibility
 - Keyboard-navigable UI
