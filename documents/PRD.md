@@ -34,6 +34,7 @@ Dito fills that gap. Built with .NET 10 + Avalonia UI for a polished, cross-plat
 | 0.7 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added support strategy: in-app FAQ, website, GitHub Issues, email. User support flow defined. |
 | 0.8 | 2026-02-17 | Lola Lovelace | Fixed stale Blazor refs → Avalonia. Trimmed MVP: cut tags, batch export, manual language override, multi-sort, high contrast theme, exports folder. |
 | 0.9 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added first-run onboarding flow (4-step wizard). Subject to user testing refinement. |
+| 0.10 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added error handling strategy: 3 severity levels, 5 principles, known scenarios table. Strategy-first, not list-first. |
 
 ---
 
@@ -43,15 +44,16 @@ Dito fills that gap. Built with .NET 10 + Avalonia UI for a polished, cross-plat
 2. [Problem Statement](#2-problem-statement)
 3. [Target Users](#3-target-users)
 4. [MVP Scope (v1.0)](#4-mvp-scope-v10)
-5. [First-Run Experience](#5-first-run-experience)
-6. [User Interface](#6-user-interface)
-7. [Tech Stack](#7-tech-stack)
-8. [Data Model & Storage Strategy](#8-data-model--storage-strategy)
-9. [Support Strategy](#9-support-strategy)
-10. [Future Versions](#10-future-versions-out-of-mvp-scope)
-11. [Success Metrics](#11-success-metrics)
-12. [Decisions Made](#12-decisions-made)
-13. [Open Questions](#13-open-questions)
+5. [Error Handling Strategy](#5-error-handling-strategy)
+6. [First-Run Experience](#6-first-run-experience)
+7. [User Interface](#7-user-interface)
+8. [Tech Stack](#8-tech-stack)
+9. [Data Model & Storage Strategy](#9-data-model--storage-strategy)
+10. [Support Strategy](#10-support-strategy)
+11. [Future Versions](#11-future-versions-out-of-mvp-scope)
+12. [Success Metrics](#12-success-metrics)
+13. [Decisions Made](#13-decisions-made)
+14. [Open Questions](#14-open-questions)
 
 ---
 
@@ -165,7 +167,40 @@ ARM64 support: stretch goal for v1, likely v2.
 - Keyboard-navigable UI
 - Screen reader compatible
 
-## 5. First-Run Experience
+## 5. Error Handling Strategy
+
+### Severity Levels
+
+| Level | Definition | User Experience | System Action |
+|-------|-----------|----------------|---------------|
+| **⚠️ Warning** | Unexpected but non-blocking. App continues. | Toast notification (auto-dismiss 5s) | Log to `dito.log`. Continue. |
+| **🔶 Recoverable** | Operation failed but app is stable. User can retry. | Modal dialog with message + action buttons (Retry / Skip / Help) | Log. Preserve partial work. Offer recovery path. |
+| **🔴 Catastrophic** | Cannot continue. Data loss risk. | Full-screen error: what happened + what was saved + how to report | Log. Save what's salvageable. Offer crash report (opt-in). |
+
+### Principles
+
+1. **Never lose audio.** If recording started, raw audio buffer saves to temp no matter what. Recover on next launch.
+2. **Always log.** Every error → `%LOCALAPPDATA%/Dito/logs/dito.log` with timestamp, severity, context. Rotated weekly.
+3. **Always offer a way forward.** Every error has an action: retry, skip, open settings, or contact support. Never a dead end.
+4. **User message ≠ developer message.** User sees plain language. Log file gets the stack trace.
+5. **Graceful degradation.** Preferred model fails → fall back to tiny. Export fails → offer clipboard. Always a Plan B.
+
+### Known Scenarios
+
+| Scenario | Level | User Sees | System Does |
+|----------|-------|-----------|-------------|
+| Microphone busy | 🔶 Recoverable | "Microphone in use. Close other apps and try again." [Retry] [Settings] | Log. Wait for retry. |
+| No microphone detected | 🔶 Recoverable | "No microphone found." [Open Sound Settings] [Help] | Log. Link to Windows settings. |
+| Disk full mid-recording | 🔶 Recoverable | "Storage full. Recording saved (partial)." | Save partial audio to temp. Log. |
+| Model download fails | 🔶 Recoverable | "Download failed." [Retry] [Use Tiny] | Log. Fall back to bundled model. |
+| Transcription inaccurate | ⚠️ Warning | "Transcription may be inaccurate." [Re-transcribe] [Edit] | Log. Keep original audio. |
+| Hotkey conflict | ⚠️ Warning | "Shortcut conflicts with [App]." [Change Shortcut] | Log. Suggest alternative. |
+| Crash during recording | 🔴 Catastrophic | On next launch: "Dito recovered a recording." [Keep] [Discard] | Auto-save temp buffer. Recovery on startup. |
+| SQLite corruption | 🔴 Catastrophic | "Database error. Your audio files are safe." | Backup corrupt DB. Create fresh. Audio untouched. |
+
+*This table is a starting point. New scenarios are classified using the same three levels and principles above.*
+
+## 6. First-Run Experience
 
 On first launch, Dito guides the user through a 4-step onboarding wizard:
 
@@ -178,7 +213,7 @@ After the wizard, user lands on the main screen with their test recording visibl
 
 *Note: This flow is a starting point. Will be refined based on real user testing.*
 
-## 6. User Interface
+## 7. User Interface
 
 ### 5.1 System Tray
 - Dito lives in the system tray when not actively in use
@@ -203,7 +238,7 @@ After the wizard, user lands on the main screen with their test recording visibl
 - Export defaults (format, output directory)
 - Theme (light/dark/system)
 
-## 7. Tech Stack
+## 8. Tech Stack
 
 | Component | Technology |
 |-----------|-----------|
@@ -215,7 +250,7 @@ After the wizard, user lands on the main screen with their test recording visibl
 | **Audio Playback** | NAudio |
 | **Installer** | MSIX or WiX |
 
-## 8. Data Model & Storage Strategy
+## 9. Data Model & Storage Strategy
 
 ### 7.1 File System Layout
 
@@ -276,7 +311,7 @@ InstalledModel
 └── IsDefault (bool)
 ```
 
-## 9. Support Strategy
+## 10. Support Strategy
 
 ### MVP (v1)
 
@@ -298,7 +333,7 @@ InstalledModel
 - Knowledge base / docs site
 - In-app feedback widget
 
-## 10. Future Versions (Out of MVP Scope)
+## 11. Future Versions (Out of MVP Scope)
 
 ### v2: AI Cleanup + Community
 - BYOK (Bring Your Own Key) — OpenAI, Anthropic, Gemini
@@ -315,13 +350,13 @@ InstalledModel
 - Mac support (via MAUI)
 - Team/enterprise features
 
-## 11. Success Metrics
+## 12. Success Metrics
 
 - **Build:** Working MVP in 4 weeks
 - **Validate:** 100 beta users in first month
 - **Revenue:** First paid download within 6 weeks of launch ($5 one-time, impulse price point)
 
-## 12. Decisions Made
+## 13. Decisions Made
 
 1. **Whisper model distribution** — Bundle smallest model (tiny). Larger models download on demand via in-app model manager.
 2. **Audio format** — Default export: MP3. Configurable dropdown: MP3, WAV, OGG.
@@ -329,7 +364,7 @@ InstalledModel
 4. **Distribution** — Both Microsoft Store and direct download (dito-app.com).
 5. **Domain** — dito-app.com (available, to be registered).
 
-## 13. Open Questions
+## 14. Open Questions
 
 1. **Name trademark** — Need to check "Dito" availability
 
