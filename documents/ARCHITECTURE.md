@@ -27,9 +27,9 @@ Everything else is built concrete for MVP.
 
 ## Change Log
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 0.1 | 2026-02-18 | Lola Lovelace | Initial draft — seams, pipeline, contracts, fixed components |
+| Version | Date       | Author        | Changes                                                      |
+|---------|------------|---------------|--------------------------------------------------------------|
+| 0.1     | 2026-02-18 | Lola Lovelace | Initial draft — seams, pipeline, contracts, fixed components |
 
 ---
 
@@ -50,7 +50,7 @@ Everything else is built concrete for MVP.
 
 VivaVoz's runtime flow is a linear pipeline:
 
-```
+```plaintext
 User Action (hotkey) 
   → Audio Capture 
     → [Transcription Engine]     ← SEAM 1
@@ -161,13 +161,13 @@ public record OutputResult(
 
 ### MVP Implementations
 
-| Target | Class | Description |
-|--------|-------|-------------|
-| **File (TXT)** | `TextFileOutputTarget` | Save transcript as .txt via Save dialog |
-| **File (MD)** | `MarkdownFileOutputTarget` | Save transcript as .md via Save dialog |
-| **File (SRT)** | `SrtFileOutputTarget` | Save transcript as .srt (subtitles) via Save dialog |
-| **Audio File** | `AudioFileOutputTarget` | Export audio as MP3/WAV/OGG via Save dialog |
-| **Clipboard** | `ClipboardOutputTarget` | Copy transcript text to system clipboard |
+| Target         | Class                      | Description                                         |
+|----------------|----------------------------|-----------------------------------------------------|
+| **File (TXT)** | `TextFileOutputTarget`     | Save transcript as .txt via Save dialog             |
+| **File (MD)**  | `MarkdownFileOutputTarget` | Save transcript as .md via Save dialog              |
+| **File (SRT)** | `SrtFileOutputTarget`      | Save transcript as .srt (subtitles) via Save dialog |
+| **Audio File** | `AudioFileOutputTarget`    | Export audio as MP3/WAV/OGG via Save dialog         |
+| **Clipboard**  | `ClipboardOutputTarget`    | Copy transcript text to system clipboard            |
 
 ### What This Enables (v2+)
 
@@ -195,7 +195,7 @@ services.AddOutputTarget<ClipboardOutputTarget>();
 
 The PRD defines v2 features including AI-powered text cleanup, mode-based prompts, and BYOK API keys. These all sit in the pipeline between transcription and output:
 
-```
+```plaintext
 Raw Text → [Transform] → Processed Text → Output Target
 ```
 
@@ -231,7 +231,7 @@ public interface ITextTransformer
 - BYOK: user provides their own API key for OpenAI/Anthropic/Gemini
 
 **Integration approach:** When v2 adds this, the pipeline becomes:
-```
+```plaintext
 TranscriptionResult.Text 
   → ITextTransformer.TransformAsync() 
     → OutputPayload.Text
@@ -297,7 +297,7 @@ These components are built concrete. No interfaces, no abstraction layers. They 
 
 ## 6. Dependency Direction
 
-```
+```plaintext
 ┌─────────────────────────────────────┐
 │              UI Layer               │
 │   (Avalonia Views + ViewModels)     │

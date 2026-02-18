@@ -23,24 +23,24 @@ VivaVoz fills that gap. Built with .NET 10 + Avalonia UI for a polished, cross-p
 
 ## Change Log
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 0.1 | 2026-02-17 | Lola Lovelace | Initial PRD — MVP scope, tech stack, data model |
-| 0.2 | 2026-02-17 | Andre Vianna / Lola Lovelace | Resolved open questions: pricing ($5), format (MP3 default), distribution (Store + direct), Whisper bundling (tiny + on-demand) |
-| 0.3 | 2026-02-17 | Lola Lovelace | Added executive summary, change log, index. Casulo document standard. |
-| 0.4 | 2026-02-17 | Andre Vianna / Lola Lovelace | Tech stack changed: Blazor Hybrid → Avalonia UI (MIT, prettier, cross-platform). |
-| 0.5 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added storage strategy: file system layout, principles, expanded data model with InstalledModel entity. |
-| 0.6 | 2026-02-17 | Andre Vianna / Lola Lovelace | Detailed hardware requirements per Whisper model size (disk, RAM, CPU, speed). Three tiers: minimum, recommended, power user. |
-| 0.7 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added support strategy: in-app FAQ, website, GitHub Issues, email. User support flow defined. |
-| 0.8 | 2026-02-17 | Lola Lovelace | Fixed stale Blazor refs → Avalonia. Trimmed MVP: cut tags, batch export, manual language override, multi-sort, high contrast theme, exports folder. |
-| 0.9 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added first-run onboarding flow (4-step wizard). Subject to user testing refinement. |
-| 0.10 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added error handling strategy: 3 severity levels, 5 principles, known scenarios table. Strategy-first, not list-first. |
-| 0.11 | 2026-02-17 | Lola Lovelace | Added legal & licensing: all deps MIT, privacy policy/EULA requirements for Store submission. |
-| 0.12 | 2026-02-17 | Andre Vianna / Lola Lovelace | Added update strategy: Store auto, direct download opt-in auto-update (off by default). |
-| 0.13 | 2026-02-17 | Andre Vianna | Decision: No analytics/telemetry in MVP. 100% local is the brand promise. Revisit in v2 (always opt-in, always disableable). |
-| 0.14 | 2026-02-17 | Lola Lovelace | Fixed section numbering. Added Recording Status field. No concurrent recordings. Clarified hotkey conflict UX. Removed stale open question. |
-| 0.15 | 2026-02-17 | Andre Vianna / Lola Lovelace | Renamed Dito → VivaVoz. Trademark conflict with existing Windows voice-to-text product at getdito.com. New name from Portuguese "viva" (alive) + "voz" (voice). Domain: vivavoz.app. Accessibility deferred to v2. |
-| 0.16 | 2026-02-17 | Lola Lovelace | Fixed domain refs (vivavoz-app.com → vivavoz.app). Accessibility explicitly marked as v2 in NFR section. Final review grade: A. |
+| Version | Date       | Author                       | Changes                                                                                                                                                                                                            |
+|---------|------------|------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1     | 2026-02-17 | Lola Lovelace                | Initial PRD — MVP scope, tech stack, data model                                                                                                                                                                    |
+| 0.2     | 2026-02-17 | Andre Vianna / Lola Lovelace | Resolved open questions: pricing ($5), format (MP3 default), distribution (Store + direct), Whisper bundling (tiny + on-demand)                                                                                    |
+| 0.3     | 2026-02-17 | Lola Lovelace                | Added executive summary, change log, index. Casulo document standard.                                                                                                                                              |
+| 0.4     | 2026-02-17 | Andre Vianna / Lola Lovelace | Tech stack changed: Blazor Hybrid → Avalonia UI (MIT, prettier, cross-platform).                                                                                                                                   |
+| 0.5     | 2026-02-17 | Andre Vianna / Lola Lovelace | Added storage strategy: file system layout, principles, expanded data model with InstalledModel entity.                                                                                                            |
+| 0.6     | 2026-02-17 | Andre Vianna / Lola Lovelace | Detailed hardware requirements per Whisper model size (disk, RAM, CPU, speed). Three tiers: minimum, recommended, power user.                                                                                      |
+| 0.7     | 2026-02-17 | Andre Vianna / Lola Lovelace | Added support strategy: in-app FAQ, website, GitHub Issues, email. User support flow defined.                                                                                                                      |
+| 0.8     | 2026-02-17 | Lola Lovelace                | Fixed stale Blazor refs → Avalonia. Trimmed MVP: cut tags, batch export, manual language override, multi-sort, high contrast theme, exports folder.                                                                |
+| 0.9     | 2026-02-17 | Andre Vianna / Lola Lovelace | Added first-run onboarding flow (4-step wizard). Subject to user testing refinement.                                                                                                                               |
+| 0.10    | 2026-02-17 | Andre Vianna / Lola Lovelace | Added error handling strategy: 3 severity levels, 5 principles, known scenarios table. Strategy-first, not list-first.                                                                                             |
+| 0.11    | 2026-02-17 | Lola Lovelace                | Added legal & licensing: all deps MIT, privacy policy/EULA requirements for Store submission.                                                                                                                      |
+| 0.12    | 2026-02-17 | Andre Vianna / Lola Lovelace | Added update strategy: Store auto, direct download opt-in auto-update (off by default).                                                                                                                            |
+| 0.13    | 2026-02-17 | Andre Vianna                 | Decision: No analytics/telemetry in MVP. 100% local is the brand promise. Revisit in v2 (always opt-in, always disableable).                                                                                       |
+| 0.14    | 2026-02-17 | Lola Lovelace                | Fixed section numbering. Added Recording Status field. No concurrent recordings. Clarified hotkey conflict UX. Removed stale open question.                                                                        |
+| 0.15    | 2026-02-17 | Andre Vianna / Lola Lovelace | Renamed Dito → VivaVoz. Trademark conflict with existing Windows voice-to-text product at getdito.com. New name from Portuguese "viva" (alive) + "voz" (voice). Domain: vivavoz.app. Accessibility deferred to v2. |
+| 0.16    | 2026-02-17 | Lola Lovelace                | Fixed domain refs (vivavoz-app.com → vivavoz.app). Accessibility explicitly marked as v2 in NFR section. Final review grade: A.                                                                                    |
 
 ---
 
@@ -139,13 +139,13 @@ Mac users have multiple polished tools for this. **Windows users have nothing go
 
 #### Hardware Requirements by Whisper Model
 
-| Model | Disk Size | RAM Usage | Min Hardware | Transcription Speed | Best For |
-|-------|-----------|-----------|-------------|---------------------|----------|
-| **Tiny** | 75 MB | ~128 MB | 4 GB RAM, 2-core CPU | ~10x real-time | Quick notes, low-end PCs |
-| **Base** | 142 MB | ~256 MB | 4 GB RAM, 2-core CPU | ~7x real-time | Daily use, good balance |
-| **Small** | 466 MB | ~512 MB | 8 GB RAM, 4-core CPU | ~4x real-time | Better accuracy, most users |
-| **Medium** | 1.5 GB | ~1.5 GB | 8 GB RAM, 4-core CPU | ~2x real-time | High accuracy |
-| **Large** | 2.9 GB | ~3 GB | 16 GB RAM, 6-core CPU | ~1x real-time | Maximum accuracy |
+| Model      | Disk Size | RAM Usage | Min Hardware          | Transcription Speed | Best For                    |
+|------------|-----------|-----------|-----------------------|---------------------|-----------------------------|
+| **Tiny**   | 75 MB     | ~128 MB   | 4 GB RAM, 2-core CPU  | ~10x real-time      | Quick notes, low-end PCs    |
+| **Base**   | 142 MB    | ~256 MB   | 4 GB RAM, 2-core CPU  | ~7x real-time       | Daily use, good balance     |
+| **Small**  | 466 MB    | ~512 MB   | 8 GB RAM, 4-core CPU  | ~4x real-time       | Better accuracy, most users |
+| **Medium** | 1.5 GB    | ~1.5 GB   | 8 GB RAM, 4-core CPU  | ~2x real-time       | High accuracy               |
+| **Large**  | 2.9 GB    | ~3 GB     | 16 GB RAM, 6-core CPU | ~1x real-time       | Maximum accuracy            |
 
 *Speeds are approximate for CPU-only inference via whisper.cpp. GPU acceleration (if available) significantly improves performance.*
 
@@ -182,11 +182,11 @@ ARM64 support: stretch goal for v1, likely v2.
 
 ### Severity Levels
 
-| Level | Definition | User Experience | System Action |
-|-------|-----------|----------------|---------------|
-| **⚠️ Warning** | Unexpected but non-blocking. App continues. | Toast notification (auto-dismiss 5s) | Log to `vivavoz.log`. Continue. |
-| **🔶 Recoverable** | Operation failed but app is stable. User can retry. | Modal dialog with message + action buttons (Retry / Skip / Help) | Log. Preserve partial work. Offer recovery path. |
-| **🔴 Catastrophic** | Cannot continue. Data loss risk. | Full-screen error: what happened + what was saved + how to report | Log. Save what's salvageable. Offer crash report (opt-in). |
+| Level               | Definition                                          | User Experience                                                   | System Action                                              |
+|---------------------|-----------------------------------------------------|-------------------------------------------------------------------|------------------------------------------------------------|
+| **⚠️ Warning**      | Unexpected but non-blocking. App continues.         | Toast notification (auto-dismiss 5s)                              | Log to `vivavoz.log`. Continue.                            |
+| **🔶 Recoverable**  | Operation failed but app is stable. User can retry. | Modal dialog with message + action buttons (Retry / Skip / Help)  | Log. Preserve partial work. Offer recovery path.           |
+| **🔴 Catastrophic** | Cannot continue. Data loss risk.                    | Full-screen error: what happened + what was saved + how to report | Log. Save what's salvageable. Offer crash report (opt-in). |
 
 ### Principles
 
@@ -198,16 +198,16 @@ ARM64 support: stretch goal for v1, likely v2.
 
 ### Known Scenarios
 
-| Scenario | Level | User Sees | System Does |
-|----------|-------|-----------|-------------|
-| Microphone busy | 🔶 Recoverable | "Microphone in use. Close other apps and try again." [Retry] [Settings] | Log. Wait for retry. |
-| No microphone detected | 🔶 Recoverable | "No microphone found." [Open Sound Settings] [Help] | Log. Link to Windows settings. |
-| Disk full mid-recording | 🔶 Recoverable | "Storage full. Recording saved (partial)." | Save partial audio to temp. Log. |
-| Model download fails | 🔶 Recoverable | "Download failed." [Retry] [Use Tiny] | Log. Fall back to bundled model. |
-| Transcription inaccurate | ⚠️ Warning | "Transcription may be inaccurate." [Re-transcribe] [Edit] | Log. Keep original audio. |
-| Hotkey conflict | ⚠️ Warning | "Shortcut conflicts with [App]." [Change Shortcut] | Log. Suggest alternative. |
-| Crash during recording | 🔴 Catastrophic | On next launch: "VivaVoz recovered a recording." [Keep] [Discard] | Auto-save temp buffer. Recovery on startup. |
-| SQLite corruption | 🔴 Catastrophic | "Database error. Your audio files are safe." | Backup corrupt DB. Create fresh. Audio untouched. |
+| Scenario                 | Level           | User Sees                                                               | System Does                                       |
+|--------------------------|-----------------|-------------------------------------------------------------------------|---------------------------------------------------|
+| Microphone busy          | 🔶 Recoverable  | "Microphone in use. Close other apps and try again." [Retry] [Settings] | Log. Wait for retry.                              |
+| No microphone detected   | 🔶 Recoverable  | "No microphone found." [Open Sound Settings] [Help]                     | Log. Link to Windows settings.                    |
+| Disk full mid-recording  | 🔶 Recoverable  | "Storage full. Recording saved (partial)."                              | Save partial audio to temp. Log.                  |
+| Model download fails     | 🔶 Recoverable  | "Download failed." [Retry] [Use Tiny]                                   | Log. Fall back to bundled model.                  |
+| Transcription inaccurate | ⚠️ Warning      | "Transcription may be inaccurate." [Re-transcribe] [Edit]               | Log. Keep original audio.                         |
+| Hotkey conflict          | ⚠️ Warning      | "Shortcut conflicts with [App]." [Change Shortcut]                      | Log. Suggest alternative.                         |
+| Crash during recording   | 🔴 Catastrophic | On next launch: "VivaVoz recovered a recording." [Keep] [Discard]       | Auto-save temp buffer. Recovery on startup.       |
+| SQLite corruption        | 🔴 Catastrophic | "Database error. Your audio files are safe."                            | Backup corrupt DB. Create fresh. Audio untouched. |
 
 *This table is a starting point. New scenarios are classified using the same three levels and principles above.*
 
@@ -251,15 +251,15 @@ After the wizard, user lands on the main screen with their test recording visibl
 
 ## 8. Tech Stack
 
-| Component | Technology |
-|-----------|-----------|
-| **Framework** | .NET 10 + Avalonia UI (MIT, cross-platform) |
-| **UI** | Avalonia MVVM + Fluent theme |
-| **Transcription** | whisper.cpp via Whisper.net (P/Invoke) |
-| **Audio Capture** | NAudio or platform APIs |
-| **Storage** | SQLite (via EF Core) |
-| **Audio Playback** | NAudio |
-| **Installer** | MSIX or WiX |
+| Component          | Technology                                  |
+|--------------------|---------------------------------------------|
+| **Framework**      | .NET 10 + Avalonia UI (MIT, cross-platform) |
+| **UI**             | Avalonia MVVM + Fluent theme                |
+| **Transcription**  | whisper.cpp via Whisper.net (P/Invoke)      |
+| **Audio Capture**  | NAudio or platform APIs                     |
+| **Storage**        | SQLite (via EF Core)                        |
+| **Audio Playback** | NAudio                                      |
+| **Installer**      | MSIX or WiX                                 |
 
 ## 9. Data Model & Storage Strategy
 
@@ -267,7 +267,7 @@ After the wizard, user lands on the main screen with their test recording visibl
 
 VivaVoz uses `%LOCALAPPDATA%/VivaVoz/` as its root. SQLite holds structured data; the file system holds binary assets.
 
-```
+```plaintext
 %LOCALAPPDATA%/VivaVoz/
 ├── data/
 │   └── vivavoz.db              ← SQLite: recordings, settings, tags
@@ -292,7 +292,7 @@ VivaVoz uses `%LOCALAPPDATA%/VivaVoz/` as its root. SQLite holds structured data
 
 ### 9.2 Entities
 
-```
+```plaintext
 Recording
 ├── Id (GUID)
 ├── Title (auto-generated from first words, or user-set)
@@ -329,21 +329,21 @@ InstalledModel
 
 All dependencies are MIT licensed — free for commercial use, no restrictions.
 
-| Dependency | License | Purpose |
-|-----------|---------|---------|
-| whisper.cpp | MIT | Whisper inference engine |
-| Whisper.net | MIT | .NET bindings for whisper.cpp |
-| NAudio | MIT | Audio capture and playback |
-| Avalonia UI | MIT | UI framework |
-| EF Core | MIT | SQLite ORM |
-| SQLite | Public Domain | Database |
+| Dependency  | License       | Purpose                       |
+|-------------|---------------|-------------------------------|
+| whisper.cpp | MIT           | Whisper inference engine      |
+| Whisper.net | MIT           | .NET bindings for whisper.cpp |
+| NAudio      | MIT           | Audio capture and playback    |
+| Avalonia UI | MIT           | UI framework                  |
+| EF Core     | MIT           | SQLite ORM                    |
+| SQLite      | Public Domain | Database                      |
 
 ### Required Documents
 
-| Document | Where | When |
-|----------|-------|------|
-| **Privacy Policy** | vivavoz.app/privacy | Required for Microsoft Store submission. Before launch. |
-| **Terms of Use / EULA** | Embedded in installer + vivavoz.app/terms | Before launch. |
+| Document                | Where                                     | When                                                    |
+|-------------------------|-------------------------------------------|---------------------------------------------------------|
+| **Privacy Policy**      | vivavoz.app/privacy                       | Required for Microsoft Store submission. Before launch. |
+| **Terms of Use / EULA** | Embedded in installer + vivavoz.app/terms | Before launch.                                          |
 
 ### Privacy Policy Summary
 
@@ -357,10 +357,10 @@ Standard $5 one-time purchase. No warranty. No liability. Non-transferable licen
 
 ### Distribution Channels
 
-| Channel | Update Mechanism | User Action |
-|---------|-----------------|-------------|
-| **Microsoft Store** | Handled by Store automatically | None — seamless |
-| **Direct download** | In-app update check on launch | User opts in via Settings |
+| Channel             | Update Mechanism               | User Action               |
+|---------------------|--------------------------------|---------------------------|
+| **Microsoft Store** | Handled by Store automatically | None — seamless           |
+| **Direct download** | In-app update check on launch  | User opts in via Settings |
 
 ### Direct Download Update Flow
 
@@ -379,7 +379,7 @@ Standard $5 one-time purchase. No warranty. No liability. Non-transferable licen
 
 ### Settings Entity Addition
 
-```
+```plaintext
 Settings
 └── AutoUpdate (bool, default: false)
 ```
@@ -388,12 +388,12 @@ Settings
 
 ### MVP (v1)
 
-| Channel | Implementation | Purpose |
-|---------|---------------|---------|
-| **In-app Help** | Built-in Getting Started + FAQ page | First stop — reduces support volume |
-| **Product Website** | vivavoz.app — landing page, FAQ, download links | Public face, purchase, documentation |
-| **GitHub Issues** | Public repo with issue templates (bug report, feature request) | Transparent, community-driven, power users |
-| **Contact Email** | support@casuloailabs.com | Non-technical users, private issues |
+| Channel             | Implementation                                                 | Purpose                                    |
+|---------------------|----------------------------------------------------------------|--------------------------------------------|
+| **In-app Help**     | Built-in Getting Started + FAQ page                            | First stop — reduces support volume        |
+| **Product Website** | vivavoz.app — landing page, FAQ, download links                | Public face, purchase, documentation       |
+| **GitHub Issues**   | Public repo with issue templates (bug report, feature request) | Transparent, community-driven, power users |
+| **Contact Email**   | <support@casuloailabs.com>                                     | Non-technical users, private issues        |
 
 **User support flow:**
 1. Problem → **In-app FAQ** (immediate, no internet needed)
