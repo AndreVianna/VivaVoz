@@ -1,6 +1,85 @@
+## .NET
 bin/
 obj/
+out/
+publish/
+
+## User-specific
 *.user
 *.suo
+*.userosscache
+*.sln.docstates
+
+## Visual Studio
 .vs/
+*.rsuser
+launchSettings.json
+
+## Rider
+.idea/
+*.sln.iml
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## NuGet
+*.nupkg
+*.snupkg
+.nuget/
+nuget.exe
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+## Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+## NCrunch
+_NCrunch_*
+.*crunch*.local.xml
+nCrunchTemp_*
+
+## Misc
+*.pidb
+*.svclog
+*.scc
+*.tmp
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+
+## Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+## SQLite databases (local dev)
 *.db
+*.db-shm
+*.db-wal
