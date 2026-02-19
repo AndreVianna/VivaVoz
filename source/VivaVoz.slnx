@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="VivaVoz.Tests/VivaVoz.Tests.csproj" />
+  <Project Path="VivaVoz/VivaVoz.csproj" />
+</Solution>
