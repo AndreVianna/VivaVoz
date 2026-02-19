@@ -37,3 +37,8 @@ This task builds the skeleton of the application. It creates the primary window 
 - [ ] **Theme Application**
   - Observe the UI elements (buttons, window chrome).
   - Verify Fluent design language is applied (rounded corners, standard Avalonia Fluent controls).
+
+### Unit Tests Required
+Produce unit tests in `VivaVoz.Tests` covering:
+- **MainViewModel:** Verify `MainViewModel` can be instantiated without throwing. Verify initial state properties (e.g., `SelectedRecording` is null, `IsRecording` is false).
+- **Minimum:** 2 tests. UI layout verification is manual (Avalonia headless testing is optional for MVP).

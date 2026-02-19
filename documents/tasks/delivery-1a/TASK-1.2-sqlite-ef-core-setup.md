@@ -62,3 +62,10 @@ VivaVoz requires a local database to manage recording metadata and user preferen
 - Run the application.
 - Verify that the `InitialCreate` migration is applied successfully.
 - Confirm that no exceptions regarding missing tables are thrown.
+
+### Unit Tests Required
+Produce unit tests in `VivaVoz.Tests` covering:
+- **Recording model:** Verify default values (Status = Recording, Language = "auto", CreatedAt = UTC now). Verify all required properties are settable.
+- **Settings model:** Verify default values (WhisperModelSize = "tiny", ExportFormat = "MP3", Theme = "System", AutoUpdate = false). Verify StoragePath defaults to `%LOCALAPPDATA%/VivaVoz`.
+- **DatabaseInitializer:** Verify `Initialize()` calls `EnsureCreated()` on the context (use in-memory SQLite or mock). Verify a default Settings row is seeded if none exists.
+- **Minimum:** 6 tests, all with specific value assertions (no `Assert.True(true)`).

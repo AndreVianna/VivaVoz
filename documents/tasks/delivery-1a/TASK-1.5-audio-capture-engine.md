@@ -32,3 +32,12 @@ This is the heart of VivaVoz. We need a reliable audio capture service that inte
 - [ ] **Stop Recording and Save**: Verify that calling `StopRecording()` changes the state to `Stopped` and saves a valid WAV file to `%LOCALAPPDATA%/VivaVoz/audio/{current-month}/{guid}.wav` with duration matching the recording time.
 - [ ] **Audio Format Verification**: Verify that the saved recording file has a sample rate of 16000 Hz, 1 channel (Mono), and 16-bit depth.
 - [ ] **No Microphone Handling**: Verify that attempting to `StartRecording()` when no microphone is connected throws a specific exception (e.g., `MicrophoneNotFoundException`) without crashing the application.
+
+### Unit Tests Required
+Produce unit tests in `VivaVoz.Tests` covering:
+- **AudioRecorderService state management:** Verify `IsRecording` is false initially. Verify `IsRecording` is true after `StartRecording()`. Verify `IsRecording` is false after `StopRecording()`. Verify calling `StopRecording()` when not recording throws or is a no-op (document which).
+- **AudioRecorderService file output:** Verify that after a start/stop cycle, a `.wav` file is created in the expected directory pattern (`audio/{yyyy-MM}/{guid}.wav`).
+- **AudioRecorderService format:** Verify the WaveFormat is 16kHz, mono, 16-bit PCM.
+- **MicrophoneNotFoundException:** Verify the custom exception can be instantiated with a message.
+- **AudioRecordingStoppedEventArgs:** Verify `FilePath` and `Duration` properties are set correctly.
+- **Minimum:** 7 tests. Use mocking for NAudio's `WaveInEvent` if direct hardware access is unavailable in CI.

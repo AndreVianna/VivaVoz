@@ -46,3 +46,5 @@ This is the genesis of the project. We need a clean, compilable solution that se
 - Run `dotnet test` for the `VivaVoz.Tests` project.
 - Verify that the test runner executes successfully.
 - Confirm that it reports 0 failed tests (even if 0 tests run).
+
+> **Note:** This is the only task where a placeholder test is acceptable. All subsequent tasks must produce meaningful unit tests for any service or model classes they create.

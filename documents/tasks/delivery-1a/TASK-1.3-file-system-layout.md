@@ -37,3 +37,9 @@ VivaVoz relies on a specific file system structure to store its database, audio 
 - Launch the application again.
 - Verify that the missing subdirectories are created.
 - Confirm that existing directories remain untouched.
+
+### Unit Tests Required
+Produce unit tests in `VivaVoz.Tests` covering:
+- **FilePaths constants:** Verify `BaseDirectory` resolves to `{LocalAppData}/VivaVoz`. Verify `AudioDirectory`, `DataDirectory`, `ModelsDirectory`, `LogsDirectory` are subdirectories of `BaseDirectory`. Verify `DatabasePath` points to `data/vivavoz.db`.
+- **FileSystemService.EnsureDirectoriesExist():** Verify all 4 directories are created when none exist (use a temp directory, not real AppData). Verify method is idempotent (calling twice doesn't throw). Verify missing subdirectories are created when parent exists.
+- **Minimum:** 5 tests, all with specific path/existence assertions.

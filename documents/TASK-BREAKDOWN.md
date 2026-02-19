@@ -11,6 +11,10 @@
 
 - **Branching:** dev branch → PR to main per completed task. Releases tagged.
 - **Testing:** Incremental unit tests alongside code. Not TDD, not afterthought. Grow code and tests together, locking previous steps.
+  - **Coverage target:** 80% line coverage on service and model classes
+  - **Quality bar:** Every public method gets at least one happy path + one failure/edge case test
+  - **Assertion quality:** Assertions must verify specific values/behavior. No `Assert.True(true)`, no `Assert.NotNull(result)` without checking the actual content. Test names describe the behavior being verified (e.g., `StopRecording_WhenNotRecording_ShouldThrow`).
+  - **Per-task requirement:** Every task that produces a service, model, or business logic class must include corresponding unit tests in `VivaVoz.Tests`. Tests are deliverables, not afterthoughts. A task is not complete until its tests exist and pass.
 - **Deliveries:** No formal sprints. Four deliveries, each demo-able and shippable to testers.
 - **Deployment:** Direct download first (local testing + beta). Microsoft Store when stable.
 - **Tooling:** Visual Studio 2026 Enterprise + Cursor

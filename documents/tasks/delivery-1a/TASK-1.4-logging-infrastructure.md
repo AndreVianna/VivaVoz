@@ -43,3 +43,10 @@ Since VivaVoz runs locally, diagnosing issues requires detailed logs. This task 
   - Open the log file.
   - Verify a new entry exists with level `[ERR]` or `[FAT]`.
   - Verify the stack trace is included in the log entry.
+
+### Unit Tests Required
+Produce unit tests in `VivaVoz.Tests` covering:
+- **LoggingService.ConfigureLogging():** Verify calling `ConfigureLogging()` does not throw. Verify `Log.Logger` is configured (not the default silent logger) after calling `ConfigureLogging()`.
+- **LoggingService.CloseAndFlush():** Verify calling `CloseAndFlush()` does not throw.
+- **Log output format:** Verify that logging an Information message produces output containing the expected severity tag and message text (use a `StringWriter` or in-memory sink).
+- **Minimum:** 3 tests with specific assertions.

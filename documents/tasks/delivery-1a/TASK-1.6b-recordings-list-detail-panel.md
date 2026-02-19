@@ -44,3 +44,9 @@ With the shell in place, we need to populate it. The primary interaction flow is
 - [ ] **No Selection State**
   - Launch the application (no item pre-selected).
   - Verify the detail panel displays a message like "Select a recording to view details".
+
+### Unit Tests Required
+Produce unit tests in `VivaVoz.Tests` covering:
+- **RecordingsListViewModel (or MainViewModel recordings):** Verify recordings collection is initialized (not null). Verify `SelectedRecording` is null by default. Verify setting `SelectedRecording` raises `PropertyChanged`. Verify recordings are sorted by `CreatedAt` descending (newest first) when loaded.
+- **Mock data:** Verify mock/seed data produces exactly 3 recordings with distinct dates.
+- **Minimum:** 4 tests with specific value assertions.

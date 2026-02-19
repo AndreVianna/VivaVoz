@@ -53,3 +53,11 @@ This task connects the dots. The "Record" button triggers the audio engine (Task
   - Click the "Record" button.
   - Verify an error message (dialog or notification) is displayed (e.g., "No microphone found").
   - Verify the application remains responsive (does not crash).
+
+### Unit Tests Required
+Produce unit tests in `VivaVoz.Tests` covering:
+- **StartRecordingCommand:** Verify command calls `IAudioRecorder.StartRecording()`. Verify UI state updates (`IsRecording = true`). Verify command is disabled while already recording.
+- **StopRecordingCommand:** Verify command calls `IAudioRecorder.StopRecording()`. Verify a new `Recording` entity is created with correct metadata (Duration, AudioFileName, Status, CreatedAt). Verify the new recording is added to the list at position 0 (top).
+- **Persistence:** Verify `Recording` entity is saved to the database (use in-memory SQLite).
+- **Error handling:** Verify `MicrophoneNotFoundException` is caught and surfaced as an error state (not a crash).
+- **Minimum:** 7 tests. Use mocked `IAudioRecorder` for command tests.
