@@ -19,6 +19,7 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly AppDbContext _dbContext;
     private readonly IAudioRecorder _recorder;
+    public AudioPlayerViewModel AudioPlayer { get; }
 
     [ObservableProperty]
     private ObservableCollection<Recording> recordings = new();
@@ -35,10 +36,11 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool isRecording;
 
-    public MainViewModel(IAudioRecorder recorder, AppDbContext dbContext)
+    public MainViewModel(IAudioRecorder recorder, IAudioPlayer audioPlayer, AppDbContext dbContext)
     {
         _recorder = recorder ?? throw new ArgumentNullException(nameof(recorder));
         _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        AudioPlayer = new AudioPlayerViewModel(audioPlayer ?? throw new ArgumentNullException(nameof(audioPlayer)));
 
         Recordings = new ObservableCollection<Recording>(
             _dbContext.Recordings.OrderByDescending(recording => recording.CreatedAt).ToList());
@@ -93,6 +95,7 @@ public partial class MainViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(HasSelection));
         OnPropertyChanged(nameof(NoSelection));
+        AudioPlayer.LoadRecording(value);
 
         if (value is null)
         {

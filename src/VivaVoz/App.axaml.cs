@@ -22,12 +22,13 @@ public partial class App : Application
         InitializeFileSystem();
         var dbContext = InitializeDatabase();
         var recorderService = new AudioRecorderService();
+        var audioPlayerService = new AudioPlayerService();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainViewModel(recorderService, dbContext)
+                DataContext = new MainViewModel(recorderService, audioPlayerService, dbContext)
             };
         }
 
