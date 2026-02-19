@@ -41,8 +41,8 @@ VivaVoz requires a local database to manage recording metadata and user preferen
     - `AutoUpdate` (bool, default false)
 
 ### File Path Conventions
-- Context: `/home/andre/projects/VivaVoz/src/VivaVoz/Data/AppDbContext.cs`
-- Models: `/home/andre/projects/VivaVoz/src/VivaVoz/Models/Recording.cs`, `/home/andre/projects/VivaVoz/src/VivaVoz/Models/Settings.cs`
+- Context: `/home/andre/projects/VivaVoz/source/VivaVoz/Data/AppDbContext.cs`
+- Models: `/home/andre/projects/VivaVoz/source/VivaVoz/Models/Recording.cs`, `/home/andre/projects/VivaVoz/source/VivaVoz/Models/Settings.cs`
 
 ## Acceptance Criteria (Verification Steps)
 

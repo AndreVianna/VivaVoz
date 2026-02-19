@@ -23,8 +23,8 @@ This is the heart of VivaVoz. We need a reliable audio capture service that inte
 - **Service:** `AudioRecorderService`.
 
 ### File Path Conventions
-- Interface: `/home/andre/projects/VivaVoz/src/VivaVoz/Services/Audio/IAudioRecorder.cs`
-- Implementation: `/home/andre/projects/VivaVoz/src/VivaVoz/Services/Audio/AudioRecorderService.cs`
+- Interface: `/home/andre/projects/VivaVoz/source/VivaVoz/Services/Audio/IAudioRecorder.cs`
+- Implementation: `/home/andre/projects/VivaVoz/source/VivaVoz/Services/Audio/AudioRecorderService.cs`
 
 ## Acceptance Criteria (Verification Steps)
 

@@ -27,7 +27,7 @@ This task connects the dots. The "Record" button triggers the audio engine (Task
 - **Validation:** Handle microphone unavailability gracefully (show error dialog).
 
 ### File Path Conventions
-- ViewModel: `/home/andre/projects/VivaVoz/src/VivaVoz/ViewModels/RecorderViewModel.cs`
+- ViewModel: `/home/andre/projects/VivaVoz/source/VivaVoz/ViewModels/RecorderViewModel.cs`
 
 ## Acceptance Criteria (Verification Steps)
 

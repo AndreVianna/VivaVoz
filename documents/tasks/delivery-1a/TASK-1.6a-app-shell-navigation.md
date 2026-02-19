@@ -23,8 +23,8 @@ This task builds the skeleton of the application. It creates the primary window 
 - **Theme:** `FluentTheme` applied in `App.axaml`.
 
 ### File Path Conventions
-- Main Window: `/home/andre/projects/VivaVoz/src/VivaVoz/Views/MainWindow.axaml`
-- Main ViewModel: `/home/andre/projects/VivaVoz/src/VivaVoz/ViewModels/MainViewModel.cs`
+- Main Window: `/home/andre/projects/VivaVoz/source/VivaVoz/Views/MainWindow.axaml`
+- Main ViewModel: `/home/andre/projects/VivaVoz/source/VivaVoz/ViewModels/MainViewModel.cs`
 
 ## Acceptance Criteria (Verification Steps)
 

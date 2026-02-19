@@ -26,7 +26,7 @@ Since VivaVoz runs locally, diagnosing issues requires detailed logs. This task 
 - **Retention:** `retainedFileCountLimit: 31` (keep ~1 month).
 
 ### File Path Conventions
-- Logger Setup: `/home/andre/projects/VivaVoz/src/VivaVoz/Services/LoggingService.cs` (or directly in `Program.cs`)
+- Logger Setup: `/home/andre/projects/VivaVoz/source/VivaVoz/Services/LoggingService.cs` (or directly in `Program.cs`)
 
 ## Acceptance Criteria (Verification Steps)
 

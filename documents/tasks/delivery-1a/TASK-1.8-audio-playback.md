@@ -28,8 +28,8 @@ A voice recorder is useless if you can't hear what you captured. This task adds 
 - **Event Handling:** Subscribe to `PlaybackStopped` to update UI state when audio ends naturally.
 
 ### File Path Conventions
-- Service: `/home/andre/projects/VivaVoz/src/VivaVoz/Services/Audio/AudioPlayerService.cs`
-- ViewModel: `/home/andre/projects/VivaVoz/src/VivaVoz/ViewModels/AudioPlayerViewModel.cs` (or part of DetailViewModel)
+- Service: `/home/andre/projects/VivaVoz/source/VivaVoz/Services/Audio/AudioPlayerService.cs`
+- ViewModel: `/home/andre/projects/VivaVoz/source/VivaVoz/ViewModels/AudioPlayerViewModel.cs` (or part of DetailViewModel)
 
 ## Acceptance Criteria (Verification Steps)
 

@@ -21,8 +21,8 @@ VivaVoz relies on a specific file system structure to store its database, audio 
 - **Error Handling:** Log any `UnauthorizedAccessException` or `IOException` during directory creation (though rare in AppData).
 
 ### File Path Conventions
-- Service: `/home/andre/projects/VivaVoz/src/VivaVoz/Services/FileSystemService.cs`
-- Constants: `/home/andre/projects/VivaVoz/src/VivaVoz/Constants/FilePaths.cs`
+- Service: `/home/andre/projects/VivaVoz/source/VivaVoz/Services/FileSystemService.cs`
+- Constants: `/home/andre/projects/VivaVoz/source/VivaVoz/Constants/FilePaths.cs`
 
 ## Acceptance Criteria (Verification Steps)
 

@@ -26,9 +26,9 @@ This is the genesis of the project. We need a clean, compilable solution that se
   - `VivaVoz.Tests` (xUnit)
 
 ### File Path Conventions
-- Solution root: `/home/andre/projects/VivaVoz/src/`
-- Main project: `/home/andre/projects/VivaVoz/src/VivaVoz/`
-- Tests: `/home/andre/projects/VivaVoz/src/VivaVoz.Tests/`
+- Solution root: `/home/andre/projects/VivaVoz/source/`
+- Main project: `/home/andre/projects/VivaVoz/source/VivaVoz/`
+- Tests: `/home/andre/projects/VivaVoz/source/VivaVoz.Tests/`
 
 ## Acceptance Criteria (Verification Steps)
 
