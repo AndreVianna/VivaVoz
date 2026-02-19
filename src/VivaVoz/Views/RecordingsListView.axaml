@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="VivaVoz.Views.RecordingsListView">
+  <Grid RowDefinitions="Auto,*" RowSpacing="12">
+    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+      <TextBlock Text="Recordings" FontSize="20" FontWeight="SemiBold" />
+      <Button Grid.Column="1"
+              Content="Record"
+              Command="{Binding StartRecordingCommand}"
+              IsVisible="{Binding IsNotRecording}" />
+      <Button Grid.Column="2"
+              Content="Stop"
+              Command="{Binding StopRecordingCommand}"
+              IsVisible="{Binding IsRecording}" />
+    </Grid>
+
+    <ListBox Grid.Row="1"
+             ItemsSource="{Binding Recordings}"
+             SelectedItem="{Binding SelectedRecording}">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <Border Padding="10"
+                  Margin="0,0,0,8"
+                  BorderThickness="1"
+                  BorderBrush="#1FFFFFFF"
+                  CornerRadius="6">
+            <StackPanel Spacing="6">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:MMM dd, yyyy HH:mm}'}" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding Duration, StringFormat='{}{0:hh\\:mm\\:ss}'}"
+                           Opacity="0.7" />
+              </Grid>
+              <TextBlock Text="{Binding Transcript, TargetNullValue='(No transcript yet)'}"
+                         TextWrapping="Wrap"
+                         MaxLines="2"
+                         TextTrimming="CharacterEllipsis"
+                         Opacity="0.8" />
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </Grid>
+</UserControl>

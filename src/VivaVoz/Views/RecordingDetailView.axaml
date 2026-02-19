@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="VivaVoz.Views.RecordingDetailView">
+  <Grid>
+    <TextBlock Text="Select a recording to view details."
+               TextAlignment="Center"
+               VerticalAlignment="Center"
+               HorizontalAlignment="Center"
+               Opacity="0.7"
+               IsVisible="{Binding NoSelection}" />
+
+    <ScrollViewer IsVisible="{Binding HasSelection}">
+      <StackPanel Spacing="16">
+        <TextBlock Text="{Binding SelectedRecording.Title, TargetNullValue='Untitled recording'}"
+                   FontSize="20"
+                   FontWeight="SemiBold" />
+
+        <StackPanel Orientation="Horizontal" Spacing="24">
+          <StackPanel>
+            <TextBlock Text="Date" FontSize="12" Opacity="0.7" />
+            <TextBlock Text="{Binding SelectedRecording.CreatedAt, StringFormat='{}{0:MMM dd, yyyy HH:mm}'}" />
+          </StackPanel>
+          <StackPanel>
+            <TextBlock Text="Duration" FontSize="12" Opacity="0.7" />
+            <TextBlock Text="{Binding SelectedRecording.Duration, StringFormat='{}{0:hh\\:mm\\:ss}'}" />
+          </StackPanel>
+          <StackPanel>
+            <TextBlock Text="Status" FontSize="12" Opacity="0.7" />
+            <TextBlock Text="{Binding SelectedRecording.Status}" />
+          </StackPanel>
+        </StackPanel>
+
+        <Border Padding="12"
+                BorderThickness="1"
+                BorderBrush="#1FFFFFFF"
+                CornerRadius="6">
+          <TextBlock Text="Audio player placeholder"
+                     Opacity="0.7" />
+        </Border>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="Transcript" FontSize="12" Opacity="0.7" />
+          <Border Padding="12"
+                  BorderThickness="1"
+                  BorderBrush="#1FFFFFFF"
+                  CornerRadius="6">
+            <TextBlock Text="{Binding SelectedRecording.Transcript, TargetNullValue='No transcript available yet.'}"
+                       TextWrapping="Wrap" />
+          </Border>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

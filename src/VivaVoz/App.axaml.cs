@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
 using VivaVoz.Data;
 using VivaVoz.Services;
+using VivaVoz.Services.Audio;
 using VivaVoz.ViewModels;
 using VivaVoz.Views;
 
@@ -19,13 +20,14 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         InitializeFileSystem();
-        InitializeDatabase();
+        var dbContext = InitializeDatabase();
+        var recorderService = new AudioRecorderService();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainViewModel()
+                DataContext = new MainViewModel(recorderService, dbContext)
             };
         }
 
@@ -38,9 +40,10 @@ public partial class App : Application
         fileSystemService.EnsureAppDirectories();
     }
 
-    private static void InitializeDatabase()
+    private static AppDbContext InitializeDatabase()
     {
-        using var dbContext = new AppDbContext();
+        var dbContext = new AppDbContext();
         dbContext.Database.Migrate();
+        return dbContext;
     }
 }
