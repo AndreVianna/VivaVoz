@@ -46,6 +46,15 @@ With the shell in place, we need to populate it. The primary interaction flow is
   - Verify the detail panel displays a message like "Select a recording to view details".
 
 ### Unit Tests Required
+
+**Testing Standards (apply to ALL tests in this task):**
+- **Framework:** xUnit
+- **Mocking:** NSubstitute (already in test project — do NOT use Moq or any other framework)
+- **Assertions:** AwesomeAssertions (add NuGet package if not present — use fluent assertion syntax)
+- **Naming:** GUTs (Good Unit Tests) — `MethodName_Scenario_ExpectedBehavior`
+- **Structure:** Arrange-Act-Assert (AAA) pattern, clearly separated
+- **Principles:** FIRST — Fast, Isolated, Repeatable, Self-validating, Timely
+- **One logical assertion per test** — each test verifies a single behavior
 Produce unit tests in `VivaVoz.Tests` covering:
 - **RecordingsListViewModel (or MainViewModel recordings):** Verify recordings collection is initialized (not null). Verify `SelectedRecording` is null by default. Verify setting `SelectedRecording` raises `PropertyChanged`. Verify recordings are sorted by `CreatedAt` descending (newest first) when loaded.
 - **Mock data:** Verify mock/seed data produces exactly 3 recordings with distinct dates.

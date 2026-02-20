@@ -45,6 +45,15 @@ Since VivaVoz runs locally, diagnosing issues requires detailed logs. This task 
   - Verify the stack trace is included in the log entry.
 
 ### Unit Tests Required
+
+**Testing Standards (apply to ALL tests in this task):**
+- **Framework:** xUnit
+- **Mocking:** NSubstitute (already in test project — do NOT use Moq or any other framework)
+- **Assertions:** AwesomeAssertions (add NuGet package if not present — use fluent assertion syntax)
+- **Naming:** GUTs (Good Unit Tests) — `MethodName_Scenario_ExpectedBehavior`
+- **Structure:** Arrange-Act-Assert (AAA) pattern, clearly separated
+- **Principles:** FIRST — Fast, Isolated, Repeatable, Self-validating, Timely
+- **One logical assertion per test** — each test verifies a single behavior
 Produce unit tests in `VivaVoz.Tests` covering:
 - **LoggingService.ConfigureLogging():** Verify calling `ConfigureLogging()` does not throw. Verify `Log.Logger` is configured (not the default silent logger) after calling `ConfigureLogging()`.
 - **LoggingService.CloseAndFlush():** Verify calling `CloseAndFlush()` does not throw.

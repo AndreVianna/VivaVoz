@@ -39,6 +39,15 @@ VivaVoz relies on a specific file system structure to store its database, audio 
 - Confirm that existing directories remain untouched.
 
 ### Unit Tests Required
+
+**Testing Standards (apply to ALL tests in this task):**
+- **Framework:** xUnit
+- **Mocking:** NSubstitute (already in test project — do NOT use Moq or any other framework)
+- **Assertions:** AwesomeAssertions (add NuGet package if not present — use fluent assertion syntax)
+- **Naming:** GUTs (Good Unit Tests) — `MethodName_Scenario_ExpectedBehavior`
+- **Structure:** Arrange-Act-Assert (AAA) pattern, clearly separated
+- **Principles:** FIRST — Fast, Isolated, Repeatable, Self-validating, Timely
+- **One logical assertion per test** — each test verifies a single behavior
 Produce unit tests in `VivaVoz.Tests` covering:
 - **FilePaths constants:** Verify `BaseDirectory` resolves to `{LocalAppData}/VivaVoz`. Verify `AudioDirectory`, `DataDirectory`, `ModelsDirectory`, `LogsDirectory` are subdirectories of `BaseDirectory`. Verify `DatabasePath` points to `data/vivavoz.db`.
 - **FileSystemService.EnsureDirectoriesExist():** Verify all 4 directories are created when none exist (use a temp directory, not real AppData). Verify method is idempotent (calling twice doesn't throw). Verify missing subdirectories are created when parent exists.

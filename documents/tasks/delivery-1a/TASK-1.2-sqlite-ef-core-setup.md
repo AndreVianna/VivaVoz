@@ -64,6 +64,15 @@ VivaVoz requires a local database to manage recording metadata and user preferen
 - Confirm that no exceptions regarding missing tables are thrown.
 
 ### Unit Tests Required
+
+**Testing Standards (apply to ALL tests in this task):**
+- **Framework:** xUnit
+- **Mocking:** NSubstitute (already in test project — do NOT use Moq or any other framework)
+- **Assertions:** AwesomeAssertions (add NuGet package if not present — use fluent assertion syntax)
+- **Naming:** GUTs (Good Unit Tests) — `MethodName_Scenario_ExpectedBehavior`
+- **Structure:** Arrange-Act-Assert (AAA) pattern, clearly separated
+- **Principles:** FIRST — Fast, Isolated, Repeatable, Self-validating, Timely
+- **One logical assertion per test** — each test verifies a single behavior
 Produce unit tests in `VivaVoz.Tests` covering:
 - **Recording model:** Verify default values (Status = Recording, Language = "auto", CreatedAt = UTC now). Verify all required properties are settable.
 - **Settings model:** Verify default values (WhisperModelSize = "tiny", ExportFormat = "MP3", Theme = "System", AutoUpdate = false). Verify StoragePath defaults to `%LOCALAPPDATA%/VivaVoz`.

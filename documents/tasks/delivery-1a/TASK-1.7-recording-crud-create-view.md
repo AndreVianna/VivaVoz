@@ -55,6 +55,15 @@ This task connects the dots. The "Record" button triggers the audio engine (Task
   - Verify the application remains responsive (does not crash).
 
 ### Unit Tests Required
+
+**Testing Standards (apply to ALL tests in this task):**
+- **Framework:** xUnit
+- **Mocking:** NSubstitute (already in test project — do NOT use Moq or any other framework)
+- **Assertions:** AwesomeAssertions (add NuGet package if not present — use fluent assertion syntax)
+- **Naming:** GUTs (Good Unit Tests) — `MethodName_Scenario_ExpectedBehavior`
+- **Structure:** Arrange-Act-Assert (AAA) pattern, clearly separated
+- **Principles:** FIRST — Fast, Isolated, Repeatable, Self-validating, Timely
+- **One logical assertion per test** — each test verifies a single behavior
 Produce unit tests in `VivaVoz.Tests` covering:
 - **StartRecordingCommand:** Verify command calls `IAudioRecorder.StartRecording()`. Verify UI state updates (`IsRecording = true`). Verify command is disabled while already recording.
 - **StopRecordingCommand:** Verify command calls `IAudioRecorder.StopRecording()`. Verify a new `Recording` entity is created with correct metadata (Duration, AudioFileName, Status, CreatedAt). Verify the new recording is added to the list at position 0 (top).

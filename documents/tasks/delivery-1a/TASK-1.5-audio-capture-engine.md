@@ -34,6 +34,15 @@ This is the heart of VivaVoz. We need a reliable audio capture service that inte
 - [ ] **No Microphone Handling**: Verify that attempting to `StartRecording()` when no microphone is connected throws a specific exception (e.g., `MicrophoneNotFoundException`) without crashing the application.
 
 ### Unit Tests Required
+
+**Testing Standards (apply to ALL tests in this task):**
+- **Framework:** xUnit
+- **Mocking:** NSubstitute (already in test project — do NOT use Moq or any other framework)
+- **Assertions:** AwesomeAssertions (add NuGet package if not present — use fluent assertion syntax)
+- **Naming:** GUTs (Good Unit Tests) — `MethodName_Scenario_ExpectedBehavior`
+- **Structure:** Arrange-Act-Assert (AAA) pattern, clearly separated
+- **Principles:** FIRST — Fast, Isolated, Repeatable, Self-validating, Timely
+- **One logical assertion per test** — each test verifies a single behavior
 Produce unit tests in `VivaVoz.Tests` covering:
 - **AudioRecorderService state management:** Verify `IsRecording` is false initially. Verify `IsRecording` is true after `StartRecording()`. Verify `IsRecording` is false after `StopRecording()`. Verify calling `StopRecording()` when not recording throws or is a no-op (document which).
 - **AudioRecorderService file output:** Verify that after a start/stop cycle, a `.wav` file is created in the expected directory pattern (`audio/{yyyy-MM}/{guid}.wav`).
