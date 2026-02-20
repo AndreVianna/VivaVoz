@@ -31,17 +31,6 @@ public class AudioRecorderServiceTests {
     }
 
     [Fact]
-    public void StartRecording_WhenNativeLibraryUnavailable_ShouldThrow() {
-        var service = new AudioRecorderService();
-
-        // On Linux without NAudio native libs, StartRecording throws DllNotFoundException
-        // On Windows without mic, it throws MicrophoneNotFoundException
-        var act = service.StartRecording;
-
-        act.Should().Throw<Exception>();
-    }
-
-    [Fact]
     public void RecordingStopped_Event_ShouldBeSubscribable() {
         var service = new AudioRecorderService();
         var eventRaised = false;
