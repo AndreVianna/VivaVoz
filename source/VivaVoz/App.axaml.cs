@@ -1,3 +1,17 @@
+using System.Diagnostics.CodeAnalysis;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
+using VivaVoz.Data;
+using VivaVoz.Models;
+using VivaVoz.Services;
+using VivaVoz.Services.Audio;
+using VivaVoz.Services.Transcription;
+using VivaVoz.ViewModels;
+using VivaVoz.Views;
+
 namespace VivaVoz;
 
 [ExcludeFromCodeCoverage]
@@ -18,9 +32,21 @@ public partial class App : Application {
         var clipboardService = new ClipboardService();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
-            desktop.MainWindow = new MainWindow {
+            var mainWindow = new MainWindow(settingsService) {
                 DataContext = new MainViewModel(recorderService, audioPlayerService, dbContext, transcriptionManager, clipboardService, settingsService)
             };
+
+            var trayService = new TrayService(desktop, recorderService, transcriptionManager);
+            trayService.Initialize();
+
+            desktop.MainWindow = mainWindow;
+
+            if (settingsService.Current?.StartMinimized == true) {
+                mainWindow.ShowInTaskbar = false;
+                // Window stays hidden; tray icon is visible. Show() called on first tray click.
+            }
+
+            desktop.ShutdownRequested += (_, _) => trayService.Dispose();
         }
 
         base.OnFrameworkInitializationCompleted();
