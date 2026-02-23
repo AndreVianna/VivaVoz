@@ -155,6 +155,44 @@ public class TranscriptionManagerTests : IDisposable {
     }
 
     [Fact]
+    public async Task EnqueueTranscription_WhenSuccessful_ShouldPersistLanguageCode() {
+        var recordingId = SeedRecording();
+        const string audioPath = "/tmp/test-audio.wav";
+
+        _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
+            .Returns(new TranscriptionResult("Bonjour", "fr", TimeSpan.FromSeconds(1), "base"));
+
+        var tcs = new TaskCompletionSource<TranscriptionCompletedEventArgs>();
+        _manager.TranscriptionCompleted += (_, e) => tcs.TrySetResult(e);
+
+        _manager.EnqueueTranscription(recordingId, audioPath);
+        await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        await using var verifyContext = CreateContext();
+        var recording = await verifyContext.Recordings.FindAsync(recordingId);
+        recording!.LanguageCode.Should().Be("fr");
+    }
+
+    [Fact]
+    public async Task EnqueueTranscription_WhenDetectedLanguageIsUnknown_ShouldPersistUnknownLanguageCode() {
+        var recordingId = SeedRecording();
+        const string audioPath = "/tmp/test-audio.wav";
+
+        _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
+            .Returns(new TranscriptionResult("", "unknown", TimeSpan.FromSeconds(1), "tiny"));
+
+        var tcs = new TaskCompletionSource<TranscriptionCompletedEventArgs>();
+        _manager.TranscriptionCompleted += (_, e) => tcs.TrySetResult(e);
+
+        _manager.EnqueueTranscription(recordingId, audioPath);
+        await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        await using var verifyContext = CreateContext();
+        var recording = await verifyContext.Recordings.FindAsync(recordingId);
+        recording!.LanguageCode.Should().Be("unknown");
+    }
+
+    [Fact]
     public async Task EnqueueTranscription_WhenSuccessful_ShouldUpdateUpdatedAtTimestamp() {
         var recordingId = SeedRecording();
         const string audioPath = "/tmp/test-audio.wav";

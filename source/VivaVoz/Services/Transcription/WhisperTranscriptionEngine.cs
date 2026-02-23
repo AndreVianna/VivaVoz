@@ -67,10 +67,13 @@ public sealed class WhisperTranscriptionEngine : ITranscriptionEngine, IDisposab
         await using var fileStream = File.OpenRead(audioFilePath);
 
         var textBuilder = new StringBuilder();
-        var detectedLanguage = language;
+        var detectedLanguage = "unknown";
 
         await foreach (var segment in processor.ProcessAsync(fileStream, cancellationToken).ConfigureAwait(false)) {
             textBuilder.Append(segment.Text);
+            if (detectedLanguage == "unknown" && !string.IsNullOrWhiteSpace(segment.Language)) {
+                detectedLanguage = segment.Language;
+            }
         }
 
         stopwatch.Stop();

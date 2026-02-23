@@ -43,6 +43,9 @@ public sealed class AppDbContext : DbContext {
         recording.Property(r => r.Status)
             .IsRequired()
             .HasConversion<string>();
+        recording.Property(r => r.LanguageCode)
+            .IsRequired()
+            .HasDefaultValue("unknown");
         recording.Property(r => r.Language)
             .IsRequired()
             .HasDefaultValue("auto");

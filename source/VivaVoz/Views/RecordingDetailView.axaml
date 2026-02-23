@@ -28,6 +28,10 @@
             <TextBlock Text="Status" FontSize="12" Opacity="0.7" />
             <TextBlock Text="{Binding SelectedRecording.Status}" />
           </StackPanel>
+          <StackPanel>
+            <TextBlock Text="Language" FontSize="12" Opacity="0.7" />
+            <TextBlock Text="{Binding SelectedRecording.LanguageCode}" />
+          </StackPanel>
         </StackPanel>
 
         <Border Padding="12"

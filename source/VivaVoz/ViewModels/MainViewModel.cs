@@ -243,6 +243,7 @@ public partial class MainViewModel : ObservableObject {
                 recording.Transcript = e.Transcript;
                 recording.Status = RecordingStatus.Complete;
                 recording.Language = e.DetectedLanguage ?? recording.Language;
+                recording.LanguageCode = e.DetectedLanguage ?? "unknown";
                 recording.WhisperModel = e.ModelUsed ?? recording.WhisperModel;
             }
             else {

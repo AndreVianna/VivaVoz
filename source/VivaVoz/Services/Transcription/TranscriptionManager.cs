@@ -93,6 +93,7 @@ public sealed class TranscriptionManager : ITranscriptionManager, IDisposable {
         recording.Transcript = result.Text;
         recording.Status = RecordingStatus.Complete;
         recording.Language = result.DetectedLanguage;
+        recording.LanguageCode = result.DetectedLanguage;
         recording.WhisperModel = result.ModelUsed;
         recording.UpdatedAt = DateTime.UtcNow;
 

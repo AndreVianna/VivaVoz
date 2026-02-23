@@ -19,6 +19,9 @@ public partial class Recording : ObservableObject {
     [ObservableProperty]
     public partial RecordingStatus Status { get; set; }
 
+    [ObservableProperty]
+    public partial string LanguageCode { get; set; } = "unknown";
+
     public string Language { get; set; } = "auto";
     public TimeSpan Duration { get; set; }
     public DateTime CreatedAt { get; set; }
