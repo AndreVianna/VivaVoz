@@ -1,5 +1,7 @@
 using AwesomeAssertions;
+
 using VivaVoz.Services.Transcription;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Services.Transcription;
@@ -15,14 +17,16 @@ public class WhisperModelManagerTests : IDisposable {
     }
 
     public void Dispose() {
-        try { Directory.Delete(_tempDir, recursive: true); }
+        try {
+            Directory.Delete(_tempDir, recursive: true);
+        }
         catch { /* best effort cleanup */ }
+
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
-    public void ModelsDirectory_ShouldReturnConfiguredPath() {
-        _manager.ModelsDirectory.Should().Be(_tempDir);
-    }
+    public void ModelsDirectory_ShouldReturnConfiguredPath() => _manager.ModelsDirectory.Should().Be(_tempDir);
 
     [Fact]
     public void DefaultConstructor_ShouldUseAppModelsDirectory() {
@@ -56,9 +60,7 @@ public class WhisperModelManagerTests : IDisposable {
     }
 
     [Fact]
-    public void IsModelDownloaded_WhenModelNotPresent_ShouldReturnFalse() {
-        _manager.IsModelDownloaded("tiny").Should().BeFalse();
-    }
+    public void IsModelDownloaded_WhenModelNotPresent_ShouldReturnFalse() => _manager.IsModelDownloaded("tiny").Should().BeFalse();
 
     [Fact]
     public void IsModelDownloaded_WhenModelFileExists_ShouldReturnTrue() {
@@ -70,7 +72,7 @@ public class WhisperModelManagerTests : IDisposable {
 
     [Fact]
     public void GetAvailableModelIds_ShouldContainExpectedModels() {
-        var ids = _manager.GetAvailableModelIds();
+        var ids = WhisperModelManager.GetAvailableModelIds();
 
         ids.Should().Contain("tiny");
         ids.Should().Contain("base");

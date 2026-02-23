@@ -1,5 +1,7 @@
 using AwesomeAssertions;
+
 using VivaVoz.Services.Transcription;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Services.Transcription;
@@ -18,8 +20,12 @@ public class WhisperTranscriptionEngineTests : IDisposable {
 
     public void Dispose() {
         _engine.Dispose();
-        try { Directory.Delete(_tempDir, recursive: true); }
+        try {
+            Directory.Delete(_tempDir, recursive: true);
+        }
         catch { /* best effort cleanup */ }
+
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -44,14 +50,10 @@ public class WhisperTranscriptionEngineTests : IDisposable {
     }
 
     [Fact]
-    public void SupportedLanguages_ShouldNotBeEmpty() {
-        _engine.SupportedLanguages.Should().NotBeEmpty();
-    }
+    public void SupportedLanguages_ShouldNotBeEmpty() => _engine.SupportedLanguages.Should().NotBeEmpty();
 
     [Fact]
-    public void IsAvailable_WhenNoModelDownloaded_ShouldBeFalse() {
-        _engine.IsAvailable.Should().BeFalse();
-    }
+    public void IsAvailable_WhenNoModelDownloaded_ShouldBeFalse() => _engine.IsAvailable.Should().BeFalse();
 
     [Fact]
     public void IsAvailable_WhenTinyModelExists_ShouldBeTrue() {

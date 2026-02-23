@@ -2,7 +2,7 @@ using Whisper.net.Ggml;
 
 namespace VivaVoz.Services.Transcription;
 
-public sealed class WhisperModelManager {
+public sealed class WhisperModelManager(string? modelsDirectory = null) {
     private static readonly Dictionary<string, GgmlType> _modelMap = new(StringComparer.OrdinalIgnoreCase) {
         ["tiny"] = GgmlType.Tiny,
         ["base"] = GgmlType.Base,
@@ -13,11 +13,7 @@ public sealed class WhisperModelManager {
 
     private const QuantizationType _defaultQuantization = QuantizationType.NoQuantization;
 
-    public string ModelsDirectory { get; }
-
-    public WhisperModelManager(string? modelsDirectory = null) {
-        ModelsDirectory = modelsDirectory ?? FilePaths.ModelsDirectory;
-    }
+    public string ModelsDirectory { get; } = modelsDirectory ?? FilePaths.ModelsDirectory;
 
     public string GetModelPath(string modelId) {
         ArgumentException.ThrowIfNullOrWhiteSpace(modelId);
@@ -48,7 +44,7 @@ public sealed class WhisperModelManager {
 
         var tempPath = modelPath + ".tmp";
         try {
-            using var modelStream = await WhisperGgmlDownloader.Default
+            await using var modelStream = await WhisperGgmlDownloader.Default
                 .GetGgmlModelAsync(ggmlType, _defaultQuantization, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -66,10 +62,12 @@ public sealed class WhisperModelManager {
         return modelPath;
     }
 
-    public IReadOnlyList<string> GetAvailableModelIds() => _modelMap.Keys.ToList().AsReadOnly();
+    public static IReadOnlyList<string> GetAvailableModelIds() => _modelMap.Keys.ToList().AsReadOnly();
 
     private static void TryDeleteFile(string path) {
-        try { File.Delete(path); }
+        try {
+            File.Delete(path);
+        }
         catch { /* best effort cleanup */ }
     }
 }

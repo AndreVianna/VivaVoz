@@ -138,7 +138,8 @@ public partial class MainViewModel : ObservableObject {
 
     [RelayCommand]
     private async Task CopyTranscriptAsync() {
-        if (!CanCopyTranscript) return;
+        if (!CanCopyTranscript)
+            return;
 
         await _clipboardService.SetTextAsync(SelectedRecording!.Transcript!);
         CopyButtonLabel = "Copied!";
@@ -224,10 +225,11 @@ public partial class MainViewModel : ObservableObject {
     });
 
     [ExcludeFromCodeCoverage]
-    private void OnTranscriptionCompleted(object? sender, TranscriptionCompletedEventArgs e) =>
-        Dispatcher.UIThread.Post(() => {
+    private void OnTranscriptionCompleted(object? sender, TranscriptionCompletedEventArgs e)
+        => Dispatcher.UIThread.Post(() => {
             var recording = Recordings.FirstOrDefault(r => r.Id == e.RecordingId);
-            if (recording is null) return;
+            if (recording is null)
+                return;
 
             if (e.Success) {
                 recording.Transcript = e.Transcript;

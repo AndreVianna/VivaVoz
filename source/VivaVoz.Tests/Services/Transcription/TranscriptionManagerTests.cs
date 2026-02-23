@@ -1,11 +1,15 @@
 using AwesomeAssertions;
+
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+
 using VivaVoz.Data;
 using VivaVoz.Models;
 using VivaVoz.Services.Transcription;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Services.Transcription;
@@ -26,6 +30,7 @@ public class TranscriptionManagerTests : IDisposable {
     public void Dispose() {
         _manager.Dispose();
         _connection.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private void InitializeDatabase() {
@@ -86,7 +91,7 @@ public class TranscriptionManagerTests : IDisposable {
     [Fact]
     public async Task EnqueueTranscription_WhenSuccessful_ShouldUpdateRecordingStatusToComplete() {
         var recordingId = SeedRecording();
-        var audioPath = "/tmp/test-audio.wav";
+        const string audioPath = "/tmp/test-audio.wav";
 
         _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
             .Returns(new TranscriptionResult("Hello world", "en", TimeSpan.FromSeconds(2), "tiny"));
@@ -99,7 +104,7 @@ public class TranscriptionManagerTests : IDisposable {
 
         result.Success.Should().BeTrue();
 
-        using var verifyContext = CreateContext();
+        await using var verifyContext = CreateContext();
         var recording = await verifyContext.Recordings.FindAsync(recordingId);
         recording!.Status.Should().Be(RecordingStatus.Complete);
     }
@@ -107,8 +112,8 @@ public class TranscriptionManagerTests : IDisposable {
     [Fact]
     public async Task EnqueueTranscription_WhenSuccessful_ShouldStoreTranscriptText() {
         var recordingId = SeedRecording();
-        var audioPath = "/tmp/test-audio.wav";
-        var expectedText = "The quick brown fox jumps over the lazy dog.";
+        const string audioPath = "/tmp/test-audio.wav";
+        const string expectedText = "The quick brown fox jumps over the lazy dog.";
 
         _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
             .Returns(new TranscriptionResult(expectedText, "en", TimeSpan.FromSeconds(3), "small"));
@@ -121,7 +126,7 @@ public class TranscriptionManagerTests : IDisposable {
 
         result.Transcript.Should().Be(expectedText);
 
-        using var verifyContext = CreateContext();
+        await using var verifyContext = CreateContext();
         var recording = await verifyContext.Recordings.FindAsync(recordingId);
         recording!.Transcript.Should().Be(expectedText);
     }
@@ -129,7 +134,7 @@ public class TranscriptionManagerTests : IDisposable {
     [Fact]
     public async Task EnqueueTranscription_WhenSuccessful_ShouldUpdateLanguageAndModel() {
         var recordingId = SeedRecording();
-        var audioPath = "/tmp/test-audio.wav";
+        const string audioPath = "/tmp/test-audio.wav";
 
         _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
             .Returns(new TranscriptionResult("Bonjour", "fr", TimeSpan.FromSeconds(1), "base"));
@@ -143,7 +148,7 @@ public class TranscriptionManagerTests : IDisposable {
         result.DetectedLanguage.Should().Be("fr");
         result.ModelUsed.Should().Be("base");
 
-        using var verifyContext = CreateContext();
+        await using var verifyContext = CreateContext();
         var recording = await verifyContext.Recordings.FindAsync(recordingId);
         recording!.Language.Should().Be("fr");
         recording.WhisperModel.Should().Be("base");
@@ -152,7 +157,7 @@ public class TranscriptionManagerTests : IDisposable {
     [Fact]
     public async Task EnqueueTranscription_WhenSuccessful_ShouldUpdateUpdatedAtTimestamp() {
         var recordingId = SeedRecording();
-        var audioPath = "/tmp/test-audio.wav";
+        const string audioPath = "/tmp/test-audio.wav";
         var beforeTranscription = DateTime.UtcNow;
 
         _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
@@ -164,7 +169,7 @@ public class TranscriptionManagerTests : IDisposable {
         _manager.EnqueueTranscription(recordingId, audioPath);
         await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-        using var verifyContext = CreateContext();
+        await using var verifyContext = CreateContext();
         var recording = await verifyContext.Recordings.FindAsync(recordingId);
         recording!.UpdatedAt.Should().BeOnOrAfter(beforeTranscription);
     }
@@ -172,7 +177,7 @@ public class TranscriptionManagerTests : IDisposable {
     [Fact]
     public async Task EnqueueTranscription_WhenSuccessful_ShouldFireCompletedEventWithCorrectData() {
         var recordingId = SeedRecording();
-        var audioPath = "/tmp/test-audio.wav";
+        const string audioPath = "/tmp/test-audio.wav";
 
         _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
             .Returns(new TranscriptionResult("Test text", "pt", TimeSpan.FromSeconds(2), "medium"));
@@ -194,7 +199,7 @@ public class TranscriptionManagerTests : IDisposable {
     [Fact]
     public async Task EnqueueTranscription_WhenTranscriptionFails_ShouldUpdateRecordingStatusToFailed() {
         var recordingId = SeedRecording();
-        var audioPath = "/tmp/test-audio.wav";
+        const string audioPath = "/tmp/test-audio.wav";
 
         _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("Whisper crash"));
@@ -207,7 +212,7 @@ public class TranscriptionManagerTests : IDisposable {
 
         result.Success.Should().BeFalse();
 
-        using var verifyContext = CreateContext();
+        await using var verifyContext = CreateContext();
         var recording = await verifyContext.Recordings.FindAsync(recordingId);
         recording!.Status.Should().Be(RecordingStatus.Failed);
     }
@@ -215,7 +220,7 @@ public class TranscriptionManagerTests : IDisposable {
     [Fact]
     public async Task EnqueueTranscription_WhenTranscriptionFails_ShouldLeaveTranscriptNull() {
         var recordingId = SeedRecording();
-        var audioPath = "/tmp/test-audio.wav";
+        const string audioPath = "/tmp/test-audio.wav";
 
         _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new FileNotFoundException("Audio file gone"));
@@ -226,7 +231,7 @@ public class TranscriptionManagerTests : IDisposable {
         _manager.EnqueueTranscription(recordingId, audioPath);
         await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-        using var verifyContext = CreateContext();
+        await using var verifyContext = CreateContext();
         var recording = await verifyContext.Recordings.FindAsync(recordingId);
         recording!.Transcript.Should().BeNull();
     }
@@ -234,7 +239,7 @@ public class TranscriptionManagerTests : IDisposable {
     [Fact]
     public async Task EnqueueTranscription_WhenTranscriptionFails_ShouldFireCompletedEventWithError() {
         var recordingId = SeedRecording();
-        var audioPath = "/tmp/test-audio.wav";
+        const string audioPath = "/tmp/test-audio.wav";
 
         _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("Model not loaded"));
@@ -256,7 +261,7 @@ public class TranscriptionManagerTests : IDisposable {
     [Fact]
     public async Task EnqueueTranscription_WhenTranscriptionFails_ShouldUpdateUpdatedAtTimestamp() {
         var recordingId = SeedRecording();
-        var audioPath = "/tmp/test-audio.wav";
+        const string audioPath = "/tmp/test-audio.wav";
         var beforeTranscription = DateTime.UtcNow;
 
         _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
@@ -268,7 +273,7 @@ public class TranscriptionManagerTests : IDisposable {
         _manager.EnqueueTranscription(recordingId, audioPath);
         await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-        using var verifyContext = CreateContext();
+        await using var verifyContext = CreateContext();
         var recording = await verifyContext.Recordings.FindAsync(recordingId);
         recording!.UpdatedAt.Should().BeOnOrAfter(beforeTranscription);
     }
@@ -276,7 +281,7 @@ public class TranscriptionManagerTests : IDisposable {
     [Fact]
     public async Task EnqueueTranscription_WithNonExistentRecording_ShouldStillFireCompletedEvent() {
         var nonExistentId = Guid.NewGuid();
-        var audioPath = "/tmp/test-audio.wav";
+        const string audioPath = "/tmp/test-audio.wav";
 
         _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
             .Returns(new TranscriptionResult("Hello", "en", TimeSpan.FromSeconds(1), "tiny"));
@@ -295,7 +300,7 @@ public class TranscriptionManagerTests : IDisposable {
     public async Task EnqueueTranscription_WhenFailureUpdateFails_ShouldStillFireCompletedEvent() {
         // Use a non-existent recording ID so the failure update is a no-op (covers the null guard)
         var recordingId = Guid.NewGuid();
-        var audioPath = "/tmp/test-audio.wav";
+        const string audioPath = "/tmp/test-audio.wav";
 
         _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new Exception("engine crash"));
@@ -313,7 +318,7 @@ public class TranscriptionManagerTests : IDisposable {
     [Fact]
     public async Task EnqueueTranscription_ShouldPassCorrectFilePathToEngine() {
         var recordingId = SeedRecording();
-        var audioPath = "/specific/path/to/audio.wav";
+        const string audioPath = "/specific/path/to/audio.wav";
 
         _engine.TranscribeAsync(Arg.Any<string>(), Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
             .Returns(new TranscriptionResult("text", "en", TimeSpan.FromSeconds(1), "tiny"));

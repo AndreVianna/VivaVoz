@@ -60,7 +60,7 @@ public sealed class WhisperTranscriptionEngine : ITranscriptionEngine, IDisposab
 
         var stopwatch = Stopwatch.StartNew();
 
-        using var processor = factory.CreateBuilder()
+        await using var processor = factory.CreateBuilder()
             .WithLanguage(language)
             .Build();
 

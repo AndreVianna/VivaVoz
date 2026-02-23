@@ -4,21 +4,17 @@ namespace VivaVoz.Services;
 /// EF Core-backed settings service. Loads settings from the database on startup,
 /// creating defaults if none exist. Provides save capability for future settings UI.
 /// </summary>
-public class SettingsService : ISettingsService {
-    private readonly Func<AppDbContext> _contextFactory;
+/// <remarks>
+/// Creates a new SettingsService with a DbContext factory.
+/// Using a factory avoids long-lived DbContext issues and allows
+/// scoped operations per load/save call.
+/// </remarks>
+/// <param name="contextFactory">Factory that creates AppDbContext instances.</param>
+public class SettingsService(Func<AppDbContext> contextFactory) : ISettingsService {
+    private readonly Func<AppDbContext> _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
 
     /// <inheritdoc />
     public Settings? Current { get; private set; }
-
-    /// <summary>
-    /// Creates a new SettingsService with a DbContext factory.
-    /// Using a factory avoids long-lived DbContext issues and allows
-    /// scoped operations per load/save call.
-    /// </summary>
-    /// <param name="contextFactory">Factory that creates AppDbContext instances.</param>
-    public SettingsService(Func<AppDbContext> contextFactory) {
-        _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
-    }
 
     /// <inheritdoc />
     public async Task<Settings> LoadSettingsAsync() {

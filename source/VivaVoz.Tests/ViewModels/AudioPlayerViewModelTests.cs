@@ -1,8 +1,11 @@
 using AwesomeAssertions;
+
 using NSubstitute;
+
 using VivaVoz.Models;
 using VivaVoz.Services.Audio;
 using VivaVoz.ViewModels;
+
 using Xunit;
 
 namespace VivaVoz.Tests.ViewModels;
@@ -63,9 +66,9 @@ public class AudioPlayerViewModelTests {
     [Fact]
     public void PlayPauseLabel_WhenPlaying_ShouldBePause() {
         var player = Substitute.For<IAudioPlayer>();
-        var viewModel = new AudioPlayerViewModel(player);
-
-        viewModel.IsPlaying = true;
+        var viewModel = new AudioPlayerViewModel(player) {
+            IsPlaying = true
+        };
 
         viewModel.PlayPauseLabel.Should().Be("Pause");
     }
@@ -186,7 +189,7 @@ public class AudioPlayerViewModelTests {
             TotalDuration = TimeSpan.FromSeconds(10)
         };
 
-        viewModel.LoadRecording((Recording?)null);
+        viewModel.LoadRecording(null);
 
         viewModel.HasAudio.Should().BeFalse();
         viewModel.TotalDuration.Should().Be(TimeSpan.Zero);
@@ -254,7 +257,7 @@ public class AudioPlayerViewModelTests {
             IsPlaying = true
         };
 
-        viewModel.LoadRecording((Recording?)null);
+        viewModel.LoadRecording(null);
 
         player.Received(1).Stop();
         viewModel.IsPlaying.Should().BeFalse();
@@ -327,9 +330,9 @@ public class AudioPlayerViewModelTests {
     [Fact]
     public void Progress_WhenChangedWithNoAudio_ShouldNotCallSeek() {
         var player = Substitute.For<IAudioPlayer>();
-        var viewModel = new AudioPlayerViewModel(player);
-
-        viewModel.Progress = 0.5;
+        var viewModel = new AudioPlayerViewModel(player) {
+            Progress = 0.5
+        };
 
         player.DidNotReceiveWithAnyArgs().Seek(default);
     }
@@ -340,10 +343,9 @@ public class AudioPlayerViewModelTests {
         player.CurrentPosition.Returns(TimeSpan.FromSeconds(15));
         var viewModel = new AudioPlayerViewModel(player) {
             HasAudio = true,
-            TotalDuration = TimeSpan.FromSeconds(30)
+            TotalDuration = TimeSpan.FromSeconds(30),
+            Progress = 0.5
         };
-
-        viewModel.Progress = 0.5;
 
         player.Received(1).Seek(Arg.Is<TimeSpan>(t => Math.Abs(t.TotalSeconds - 15) < 0.1));
     }
@@ -353,10 +355,9 @@ public class AudioPlayerViewModelTests {
         var player = Substitute.For<IAudioPlayer>();
         var viewModel = new AudioPlayerViewModel(player) {
             HasAudio = true,
-            TotalDuration = TimeSpan.Zero
+            TotalDuration = TimeSpan.Zero,
+            Progress = 0.5
         };
-
-        viewModel.Progress = 0.5;
 
         player.DidNotReceiveWithAnyArgs().Seek(default);
     }

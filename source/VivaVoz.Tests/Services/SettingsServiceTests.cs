@@ -1,9 +1,12 @@
 using AwesomeAssertions;
+
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+
 using VivaVoz.Data;
 using VivaVoz.Models;
 using VivaVoz.Services;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Services;
@@ -30,7 +33,7 @@ public class SettingsServiceTests {
 
     [Fact]
     public async Task LoadSettingsAsync_WhenNoSettingsExist_ShouldCreateDefaults() {
-        using var connection = CreateConnection();
+        await using var connection = CreateConnection();
         EnsureDatabase(connection);
 
         var service = new SettingsService(() => CreateContext(connection));
@@ -50,7 +53,7 @@ public class SettingsServiceTests {
 
     [Fact]
     public async Task LoadSettingsAsync_WhenNoSettingsExist_ShouldPersistDefaults() {
-        using var connection = CreateConnection();
+        await using var connection = CreateConnection();
         EnsureDatabase(connection);
 
         var service = new SettingsService(() => CreateContext(connection));
@@ -66,7 +69,7 @@ public class SettingsServiceTests {
 
     [Fact]
     public async Task LoadSettingsAsync_WhenNoSettingsExist_ShouldSetCurrent() {
-        using var connection = CreateConnection();
+        await using var connection = CreateConnection();
         EnsureDatabase(connection);
 
         var service = new SettingsService(() => CreateContext(connection));
@@ -78,7 +81,7 @@ public class SettingsServiceTests {
 
     [Fact]
     public async Task LoadSettingsAsync_WhenSettingsExist_ShouldLoadExistingSettings() {
-        using var connection = CreateConnection();
+        await using var connection = CreateConnection();
         EnsureDatabase(connection);
 
         // Pre-seed settings
@@ -109,7 +112,7 @@ public class SettingsServiceTests {
 
     [Fact]
     public async Task LoadSettingsAsync_WhenSettingsExist_ShouldSetCurrent() {
-        using var connection = CreateConnection();
+        await using var connection = CreateConnection();
         EnsureDatabase(connection);
 
         await using (var seedContext = CreateContext(connection)) {
@@ -126,7 +129,7 @@ public class SettingsServiceTests {
 
     [Fact]
     public async Task LoadSettingsAsync_CalledTwice_ShouldReturnSameData() {
-        using var connection = CreateConnection();
+        await using var connection = CreateConnection();
         EnsureDatabase(connection);
 
         var service = new SettingsService(() => CreateContext(connection));
@@ -143,7 +146,7 @@ public class SettingsServiceTests {
 
     [Fact]
     public async Task SaveSettingsAsync_WithNullSettings_ShouldThrowArgumentNullException() {
-        using var connection = CreateConnection();
+        await using var connection = CreateConnection();
         var service = new SettingsService(() => CreateContext(connection));
 
         var act = () => service.SaveSettingsAsync(null!);
@@ -153,7 +156,7 @@ public class SettingsServiceTests {
 
     [Fact]
     public async Task SaveSettingsAsync_WithExistingSettings_ShouldPersistChanges() {
-        using var connection = CreateConnection();
+        await using var connection = CreateConnection();
         EnsureDatabase(connection);
 
         var service = new SettingsService(() => CreateContext(connection));
@@ -175,7 +178,7 @@ public class SettingsServiceTests {
 
     [Fact]
     public async Task SaveSettingsAsync_ShouldUpdateCurrent() {
-        using var connection = CreateConnection();
+        await using var connection = CreateConnection();
         EnsureDatabase(connection);
 
         var service = new SettingsService(() => CreateContext(connection));
@@ -190,7 +193,7 @@ public class SettingsServiceTests {
 
     [Fact]
     public async Task SaveSettingsAsync_WithNewSettings_ShouldInsert() {
-        using var connection = CreateConnection();
+        await using var connection = CreateConnection();
         EnsureDatabase(connection);
 
         var service = new SettingsService(() => CreateContext(connection));
@@ -216,7 +219,7 @@ public class SettingsServiceTests {
 
     [Fact]
     public async Task SaveSettingsAsync_AfterLoad_ShouldUpdateNotDuplicate() {
-        using var connection = CreateConnection();
+        await using var connection = CreateConnection();
         EnsureDatabase(connection);
 
         var service = new SettingsService(() => CreateContext(connection));
@@ -238,7 +241,7 @@ public class SettingsServiceTests {
 
     [Fact]
     public async Task LoadSettingsAsync_DefaultStoragePath_ShouldPointToVivaVozAppData() {
-        using var connection = CreateConnection();
+        await using var connection = CreateConnection();
         EnsureDatabase(connection);
 
         var service = new SettingsService(() => CreateContext(connection));
