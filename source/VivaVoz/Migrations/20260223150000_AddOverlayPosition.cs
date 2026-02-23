@@ -10,16 +10,16 @@ namespace VivaVoz.Migrations;
 public partial class AddOverlayPosition : Migration {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder) {
-        migrationBuilder.AddColumn<double>(
+        migrationBuilder.AddColumn<int>(
             name: "OverlayX",
             table: "Settings",
-            type: "REAL",
+            type: "INTEGER",
             nullable: true);
 
-        migrationBuilder.AddColumn<double>(
+        migrationBuilder.AddColumn<int>(
             name: "OverlayY",
             table: "Settings",
-            type: "REAL",
+            type: "INTEGER",
             nullable: true);
     }
 

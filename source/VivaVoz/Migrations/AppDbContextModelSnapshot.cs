@@ -108,11 +108,11 @@ namespace VivaVoz.Migrations
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(true);
 
-                    b.Property<double?>("OverlayX")
-                        .HasColumnType("REAL");
+                    b.Property<int?>("OverlayX")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<double?>("OverlayY")
-                        .HasColumnType("REAL");
+                    b.Property<int?>("OverlayY")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("RecordingMode")
                         .IsRequired()

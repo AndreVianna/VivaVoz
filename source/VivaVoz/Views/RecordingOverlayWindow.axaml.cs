@@ -20,6 +20,7 @@ public partial class RecordingOverlayWindow : Window {
     public void ShowOverlay() => Show();
 
     protected override void OnPointerPressed(PointerPressedEventArgs e) {
+        base.OnPointerPressed(e);
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             BeginMoveDrag(e);
     }
@@ -31,7 +32,7 @@ public partial class RecordingOverlayWindow : Window {
 
         var settings = _settingsService?.Current;
         if (settings?.OverlayX is { } x && settings.OverlayY is { } y) {
-            Position = new PixelPoint((int)x, (int)y);
+            Position = new PixelPoint(x, y);
         }
         else {
             PlaceAtBottomCenter();

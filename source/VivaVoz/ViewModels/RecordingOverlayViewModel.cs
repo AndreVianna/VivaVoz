@@ -1,6 +1,6 @@
 namespace VivaVoz.ViewModels;
 
-public partial class RecordingOverlayViewModel : ObservableObject {
+public partial class RecordingOverlayViewModel : ObservableObject, IDisposable {
     private readonly IAudioRecorder _recorder;
     private DispatcherTimer? _timer;
     private DateTime _recordingStartTime;
@@ -56,5 +56,12 @@ public partial class RecordingOverlayViewModel : ObservableObject {
         var minutes = (int)duration.TotalMinutes;
         var seconds = duration.Seconds;
         return $"{minutes:D2}:{seconds:D2}";
+    }
+
+    public void Dispose() {
+        _recorder.RecordingStarted -= OnRecordingStarted;
+        _recorder.RecordingStopped -= OnRecordingStopped;
+        _timer?.Stop();
+        _timer = null;
     }
 }

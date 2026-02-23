@@ -11,6 +11,7 @@
         Width="220"
         Height="52"
         WindowStartupLocation="Manual"
+        ShowActivated="False"
         Cursor="Hand">
   <Border Background="#CC1A1A1A"
           CornerRadius="26"

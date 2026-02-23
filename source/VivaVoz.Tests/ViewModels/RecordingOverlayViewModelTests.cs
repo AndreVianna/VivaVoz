@@ -108,6 +108,33 @@ public class RecordingOverlayViewModelTests {
         result.Should().Be("01:59");
     }
 
+    // ========== Dispose ==========
+
+    [Fact]
+    public void Dispose_ShouldNotThrow() {
+        var recorder = Substitute.For<IAudioRecorder>();
+        var vm = new RecordingOverlayViewModel(recorder);
+
+        var act = vm.Dispose;
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void Dispose_ShouldUnsubscribeFromRecorderEvents() {
+        var recorder = Substitute.For<IAudioRecorder>();
+        var vm = new RecordingOverlayViewModel(recorder);
+
+        vm.Dispose();
+
+        // After dispose, unsubscribing again should not throw
+        var act = () => {
+            recorder.RecordingStarted -= null;
+            recorder.RecordingStopped -= null;
+        };
+        act.Should().NotThrow();
+    }
+
     // ========== PropertyChanged ==========
 
     [Fact]
