@@ -6,6 +6,7 @@ public partial class MainViewModel : ObservableObject {
     private readonly ITranscriptionManager _transcriptionManager;
     private readonly IClipboardService _clipboardService;
     private readonly ISettingsService _settingsService;
+    private readonly IModelManager _modelManager;
     public AudioPlayerViewModel AudioPlayer { get; }
 
     [ObservableProperty]
@@ -90,12 +91,14 @@ public partial class MainViewModel : ObservableObject {
         AppDbContext dbContext,
         ITranscriptionManager transcriptionManager,
         IClipboardService clipboardService,
-        ISettingsService? settingsService = null) {
+        ISettingsService? settingsService = null,
+        IModelManager? modelManager = null) {
         _recorder = recorder ?? throw new ArgumentNullException(nameof(recorder));
         _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         _transcriptionManager = transcriptionManager ?? throw new ArgumentNullException(nameof(transcriptionManager));
         _clipboardService = clipboardService ?? throw new ArgumentNullException(nameof(clipboardService));
         _settingsService = settingsService ?? new SettingsService(() => new AppDbContext());
+        _modelManager = modelManager ?? new WhisperModelService(new WhisperModelManager(), new System.Net.Http.HttpClient());
         AudioPlayer = new AudioPlayerViewModel(audioPlayer ?? throw new ArgumentNullException(nameof(audioPlayer)));
 
 #pragma warning disable IDE0305, IDE0028 // Simplify collection initialization
@@ -281,7 +284,7 @@ public partial class MainViewModel : ObservableObject {
     [ExcludeFromCodeCoverage]
     private void OpenSettings() {
         var settingsWindow = new SettingsWindow {
-            DataContext = new SettingsViewModel(_settingsService, _recorder)
+            DataContext = new SettingsViewModel(_settingsService, _recorder, _modelManager)
         };
 
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop

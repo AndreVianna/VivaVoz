@@ -2,6 +2,7 @@ namespace VivaVoz.ViewModels;
 
 public partial class SettingsViewModel : ObservableObject {
     private readonly ISettingsService _settingsService;
+    private readonly IModelManager _modelManager;
     private readonly Settings _settings;
     private bool _isInitializing = true;
 
@@ -12,6 +13,8 @@ public partial class SettingsViewModel : ObservableObject {
     public static IReadOnlyList<string> AvailableLanguages { get; } = ["auto", "en", "fr", "de", "es", "pt", "it", "ja", "zh"];
 
     public IReadOnlyList<string> AvailableDevices { get; }
+
+    public ObservableCollection<ModelItemViewModel> Models { get; }
 
     [ObservableProperty]
     public partial string WhisperModelSize { get; set; }
@@ -43,9 +46,10 @@ public partial class SettingsViewModel : ObservableObject {
     [ObservableProperty]
     public partial string RecordingMode { get; set; }
 
-    public SettingsViewModel(ISettingsService settingsService, IAudioRecorder recorder) {
+    public SettingsViewModel(ISettingsService settingsService, IAudioRecorder recorder, IModelManager modelManager) {
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         ArgumentNullException.ThrowIfNull(recorder);
+        _modelManager = modelManager ?? throw new ArgumentNullException(nameof(modelManager));
 
         _settings = settingsService.Current ?? new Settings();
 
@@ -61,6 +65,9 @@ public partial class SettingsViewModel : ObservableObject {
         RecordingMode = _settings.RecordingMode;
 
         AvailableDevices = recorder.GetAvailableDevices();
+
+        Models = new ObservableCollection<ModelItemViewModel>(
+            modelManager.GetAvailableModelIds().Select(id => new ModelItemViewModel(id, modelManager)));
 
         _isInitializing = false;
     }

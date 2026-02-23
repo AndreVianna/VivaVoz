@@ -28,13 +28,14 @@ public partial class App : Application {
         var recorderService = new AudioRecorderService();
         var audioPlayerService = new AudioPlayerService();
         var modelManager = new WhisperModelManager();
+        var modelService = new WhisperModelService(modelManager, new System.Net.Http.HttpClient());
         var whisperEngine = new WhisperTranscriptionEngine(modelManager);
         var transcriptionManager = new TranscriptionManager(whisperEngine, () => new AppDbContext());
         var clipboardService = new ClipboardService();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
             var mainWindow = new MainWindow(settingsService) {
-                DataContext = new MainViewModel(recorderService, audioPlayerService, dbContext, transcriptionManager, clipboardService, settingsService)
+                DataContext = new MainViewModel(recorderService, audioPlayerService, dbContext, transcriptionManager, clipboardService, settingsService, modelService)
             };
 
             var trayService = new TrayService(desktop, recorderService, transcriptionManager);
