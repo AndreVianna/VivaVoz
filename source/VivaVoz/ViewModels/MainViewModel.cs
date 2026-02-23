@@ -22,6 +22,12 @@ public partial class MainViewModel : ObservableObject {
     public partial string DetailBody { get; set; } = "Select a recording from the list to view details.";
 
     [ObservableProperty]
+    public partial ObservableCollection<Recording> FilteredRecordings { get; set; } = [];
+
+    [ObservableProperty]
+    public partial string SearchText { get; set; } = string.Empty;
+
+    [ObservableProperty]
     public partial bool IsRecording { get; set; }
 
     [ObservableProperty]
@@ -106,6 +112,7 @@ public partial class MainViewModel : ObservableObject {
             _dbContext.Recordings.OrderByDescending(recording => recording.CreatedAt).ToList());
 #pragma warning restore IDE0028, IDE0305 // Simplify collection initialization
 
+        ApplyFilter();
         IsRecording = _recorder.IsRecording;
         _recorder.RecordingStopped += OnRecordingStopped;
         _transcriptionManager.TranscriptionCompleted += OnTranscriptionCompleted;
@@ -114,9 +121,33 @@ public partial class MainViewModel : ObservableObject {
     public bool HasSelection => SelectedRecording is not null;
     public bool NoSelection => SelectedRecording is null;
     public bool IsNotRecording => !IsRecording;
+    public bool HasSearchText => !string.IsNullOrEmpty(SearchText);
+    public bool NoRecordingsFound => HasSearchText && FilteredRecordings.Count == 0;
 
     partial void OnIsRecordingChanged(bool value) {
         OnPropertyChanged(nameof(IsNotRecording));
+    }
+
+    partial void OnSearchTextChanged(string value) {
+        OnPropertyChanged(nameof(HasSearchText));
+        ApplyFilter();
+    }
+
+    partial void OnFilteredRecordingsChanged(ObservableCollection<Recording> value) {
+        OnPropertyChanged(nameof(NoRecordingsFound));
+    }
+
+    [RelayCommand]
+    private void ClearSearch() => SearchText = string.Empty;
+
+    internal void ApplyFilter() {
+        var term = SearchText.Trim();
+        var filtered = string.IsNullOrEmpty(term)
+            ? Recordings
+            : Recordings.Where(r =>
+                (r.Transcript?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                r.Title.Contains(term, StringComparison.OrdinalIgnoreCase));
+        FilteredRecordings = new ObservableCollection<Recording>(filtered);
     }
 
     [RelayCommand]
@@ -228,6 +259,7 @@ public partial class MainViewModel : ObservableObject {
         recording.Status = RecordingStatus.Transcribing;
 
         Recordings.Insert(0, recording);
+        ApplyFilter();
 
         _transcriptionManager.EnqueueTranscription(recording.Id, e.FilePath);
     });

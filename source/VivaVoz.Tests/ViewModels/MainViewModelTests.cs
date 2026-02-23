@@ -1251,6 +1251,292 @@ public class MainViewModelTests {
         }
     }
 
+    // ========== Search / Filter tests ==========
+
+    [Fact]
+    public void SearchText_WhenNewInstance_ShouldBeEmpty() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var viewModel = CreateViewModel(connection, context);
+
+        viewModel.SearchText.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void FilteredRecordings_WhenNewInstance_ShouldMatchRecordings() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+
+        var r1 = CreateRecording(DateTime.UtcNow.AddMinutes(-2));
+        var r2 = CreateRecording(DateTime.UtcNow.AddMinutes(-1));
+        context.Recordings.AddRange(r1, r2);
+        context.SaveChanges();
+
+        var viewModel = CreateViewModel(connection, context);
+
+        viewModel.FilteredRecordings.Select(r => r.Id).Should().BeEquivalentTo(viewModel.Recordings.Select(r => r.Id));
+    }
+
+    [Fact]
+    public void HasSearchText_WhenSearchTextIsEmpty_ShouldBeFalse() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var viewModel = CreateViewModel(connection, context);
+
+        viewModel.HasSearchText.Should().BeFalse();
+    }
+
+    [Fact]
+    public void HasSearchText_WhenSearchTextIsNotEmpty_ShouldBeTrue() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var viewModel = CreateViewModel(connection, context);
+
+        viewModel.SearchText = "hello";
+
+        viewModel.HasSearchText.Should().BeTrue();
+    }
+
+    [Fact]
+    public void OnSearchTextChanged_ShouldRaiseHasSearchTextPropertyChanged() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var viewModel = CreateViewModel(connection, context);
+
+        var changed = new List<string>();
+        viewModel.PropertyChanged += (_, args) => {
+            if (args.PropertyName is not null)
+                changed.Add(args.PropertyName);
+        };
+
+        viewModel.SearchText = "quick";
+
+        changed.Should().Contain(nameof(MainViewModel.HasSearchText));
+    }
+
+    [Fact]
+    public void ApplyFilter_WhenSearchMatchesTranscript_ShouldIncludeMatchingRecording() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+
+        var match = CreateRecording(DateTime.UtcNow.AddMinutes(-1));
+        match.Transcript = "The quick brown fox";
+        var noMatch = CreateRecording(DateTime.UtcNow.AddMinutes(-2));
+        noMatch.Transcript = "Something unrelated";
+        context.Recordings.AddRange(match, noMatch);
+        context.SaveChanges();
+
+        var viewModel = CreateViewModel(connection, context);
+        viewModel.SearchText = "quick";
+        viewModel.ApplyFilter();
+
+        viewModel.FilteredRecordings.Should().ContainSingle(r => r.Id == match.Id);
+        viewModel.FilteredRecordings.Should().NotContain(r => r.Id == noMatch.Id);
+    }
+
+    [Fact]
+    public void ApplyFilter_WhenSearchMatchesTitle_ShouldIncludeMatchingRecording() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+
+        var match = CreateRecording(DateTime.UtcNow.AddMinutes(-1));
+        match.Title = "Meeting notes";
+        var noMatch = CreateRecording(DateTime.UtcNow.AddMinutes(-2));
+        noMatch.Title = "Something else";
+        context.Recordings.AddRange(match, noMatch);
+        context.SaveChanges();
+
+        var viewModel = CreateViewModel(connection, context);
+        viewModel.SearchText = "meeting";
+        viewModel.ApplyFilter();
+
+        viewModel.FilteredRecordings.Should().ContainSingle(r => r.Id == match.Id);
+        viewModel.FilteredRecordings.Should().NotContain(r => r.Id == noMatch.Id);
+    }
+
+    [Fact]
+    public void ApplyFilter_ShouldBeCaseInsensitive() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+
+        var recording = CreateRecording(DateTime.UtcNow);
+        recording.Transcript = "Hello World";
+        context.Recordings.Add(recording);
+        context.SaveChanges();
+
+        var viewModel = CreateViewModel(connection, context);
+        viewModel.SearchText = "hello";
+        viewModel.ApplyFilter();
+
+        viewModel.FilteredRecordings.Should().ContainSingle(r => r.Id == recording.Id);
+    }
+
+    [Fact]
+    public void ApplyFilter_WhenNoMatch_ShouldReturnEmptyCollection() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+
+        var recording = CreateRecording(DateTime.UtcNow);
+        recording.Transcript = "Hello World";
+        context.Recordings.Add(recording);
+        context.SaveChanges();
+
+        var viewModel = CreateViewModel(connection, context);
+        viewModel.SearchText = "randomwords123";
+        viewModel.ApplyFilter();
+
+        viewModel.FilteredRecordings.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ApplyFilter_WhenSearchTextCleared_ShouldRestoreAllRecordings() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+
+        var r1 = CreateRecording(DateTime.UtcNow.AddMinutes(-2));
+        r1.Transcript = "First recording";
+        var r2 = CreateRecording(DateTime.UtcNow.AddMinutes(-1));
+        r2.Transcript = "Second recording";
+        context.Recordings.AddRange(r1, r2);
+        context.SaveChanges();
+
+        var viewModel = CreateViewModel(connection, context);
+        viewModel.SearchText = "First";
+        viewModel.ApplyFilter();
+        viewModel.FilteredRecordings.Should().HaveCount(1);
+
+        viewModel.SearchText = string.Empty;
+        viewModel.ApplyFilter();
+
+        viewModel.FilteredRecordings.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void NoRecordingsFound_WhenSearchHasNoMatch_ShouldBeTrue() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+
+        var recording = CreateRecording(DateTime.UtcNow);
+        recording.Transcript = "Hello World";
+        context.Recordings.Add(recording);
+        context.SaveChanges();
+
+        var viewModel = CreateViewModel(connection, context);
+        viewModel.SearchText = "randomwords123";
+        viewModel.ApplyFilter();
+
+        viewModel.NoRecordingsFound.Should().BeTrue();
+    }
+
+    [Fact]
+    public void NoRecordingsFound_WhenSearchHasMatch_ShouldBeFalse() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+
+        var recording = CreateRecording(DateTime.UtcNow);
+        recording.Transcript = "Hello World";
+        context.Recordings.Add(recording);
+        context.SaveChanges();
+
+        var viewModel = CreateViewModel(connection, context);
+        viewModel.SearchText = "Hello";
+        viewModel.ApplyFilter();
+
+        viewModel.NoRecordingsFound.Should().BeFalse();
+    }
+
+    [Fact]
+    public void NoRecordingsFound_WhenSearchTextEmpty_ShouldBeFalse() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var viewModel = CreateViewModel(connection, context);
+
+        viewModel.NoRecordingsFound.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ClearSearchCommand_ShouldSetSearchTextToEmpty() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var viewModel = CreateViewModel(connection, context);
+        viewModel.SearchText = "something";
+
+        viewModel.ClearSearchCommand.Execute(null);
+
+        viewModel.SearchText.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void OnSearchTextChanged_ShouldNotifyNoRecordingsFoundPropertyChanged() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var viewModel = CreateViewModel(connection, context);
+
+        var changed = new List<string>();
+        viewModel.PropertyChanged += (_, args) => {
+            if (args.PropertyName is not null)
+                changed.Add(args.PropertyName);
+        };
+
+        viewModel.SearchText = "randomwords123";
+
+        changed.Should().Contain(nameof(MainViewModel.NoRecordingsFound));
+    }
+
+    [Fact]
+    public void ApplyFilter_WithPartialMatch_ShouldIncludeRecording() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+
+        var recording = CreateRecording(DateTime.UtcNow);
+        recording.Transcript = "The quick brown fox jumps over the lazy dog";
+        context.Recordings.Add(recording);
+        context.SaveChanges();
+
+        var viewModel = CreateViewModel(connection, context);
+        viewModel.SearchText = "brow";
+        viewModel.ApplyFilter();
+
+        viewModel.FilteredRecordings.Should().ContainSingle(r => r.Id == recording.Id);
+    }
+
+    [Fact]
+    public void ApplyFilter_WhenNullTranscript_ShouldNotThrow() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+
+        var recording = CreateRecording(DateTime.UtcNow);
+        recording.Transcript = null;
+        context.Recordings.Add(recording);
+        context.SaveChanges();
+
+        var viewModel = CreateViewModel(connection, context);
+        var act = () => {
+            viewModel.SearchText = "something";
+            viewModel.ApplyFilter();
+        };
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ClearSearchCommand_ShouldRaiseNoRecordingsFoundPropertyChanged() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var viewModel = CreateViewModel(connection, context);
+        viewModel.SearchText = "randomwords123";
+
+        var changed = new List<string>();
+        viewModel.PropertyChanged += (_, args) => {
+            if (args.PropertyName is not null)
+                changed.Add(args.PropertyName);
+        };
+
+        viewModel.ClearSearchCommand.Execute(null);
+
+        changed.Should().Contain(nameof(MainViewModel.NoRecordingsFound));
+    }
+
     // ========== Helper methods ==========
 
     private static MainViewModel CreateViewModel(SqliteConnection connection, AppDbContext context) {
