@@ -5,7 +5,19 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>preview</LangVersion>
+    <ApplicationIcon>Assets\vivavoz.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\vivavoz.ico" />
+    <AvaloniaResource Include="Assets\vivavoz-16x16.png" />
+    <AvaloniaResource Include="Assets\vivavoz-32x32.png" />
+    <AvaloniaResource Include="Assets\vivavoz-48x48.png" />
+    <AvaloniaResource Include="Assets\vivavoz-256x256.png" />
+    <AvaloniaResource Include="Assets\vivavoz-1024x1024.png" />
+    <AvaloniaResource Include="Assets\vivavoz-mono-16x16.png" />
+    <AvaloniaResource Include="Assets\vivavoz-mono-32x32.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="*" />

@@ -24,6 +24,8 @@ public sealed class TranscriptionManager : ITranscriptionManager, IDisposable {
         Guid recordingId, string audioFilePath, CancellationToken cancellationToken) {
         Log.Information("[TranscriptionManager] Starting transcription for recording {RecordingId}.", recordingId);
 
+        await SetTranscribingStatusAsync(recordingId, cancellationToken).ConfigureAwait(false);
+
         try {
             var options = new TranscriptionOptions();
             var result = await _engine.TranscribeAsync(audioFilePath, options, cancellationToken)
@@ -52,6 +54,26 @@ public sealed class TranscriptionManager : ITranscriptionManager, IDisposable {
 
             TranscriptionCompleted?.Invoke(this,
                 TranscriptionCompletedEventArgs.Failed(recordingId, ex.Message));
+        }
+    }
+
+    private async Task SetTranscribingStatusAsync(Guid recordingId, CancellationToken cancellationToken) {
+        try {
+            await using var context = _contextFactory();
+            var recording = await context.Recordings
+                .FindAsync([recordingId], cancellationToken)
+                .ConfigureAwait(false);
+
+            if (recording is null) return;
+
+            recording.Status = RecordingStatus.Transcribing;
+            recording.UpdatedAt = DateTime.UtcNow;
+
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) {
+            Log.Warning(ex,
+                "[TranscriptionManager] Failed to set Transcribing status for recording {RecordingId}.", recordingId);
         }
     }
 

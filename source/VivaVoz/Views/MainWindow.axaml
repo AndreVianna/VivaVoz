@@ -4,7 +4,8 @@
         x:Class="VivaVoz.Views.MainWindow"
         Width="1000"
         Height="650"
-        Title="VivaVoz">
+        Title="VivaVoz"
+        Icon="avares://VivaVoz/Assets/vivavoz.ico">
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="300" MinWidth="300" />

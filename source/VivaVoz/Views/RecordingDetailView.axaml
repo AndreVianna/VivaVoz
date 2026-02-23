@@ -73,6 +73,13 @@
                     FontSize="12"
                     Padding="8,2"
                     VerticalAlignment="Center" />
+            <!-- (Re-)Transcribe button -->
+            <Button Command="{Binding RetranscribeCommand}"
+                    Content="{Binding RetranscribeButtonLabel}"
+                    IsVisible="{Binding CanRetranscribe}"
+                    FontSize="12"
+                    Padding="8,2"
+                    VerticalAlignment="Center" />
           </StackPanel>
           <Border Padding="12"
                   BorderThickness="1"

@@ -39,4 +39,18 @@ public class SettingsTests {
 
         settings.StoragePath.Should().Contain("VivaVoz");
     }
+
+    [Fact]
+    public void NewSettings_ShouldDefaultMinimizeToTrayToTrue() {
+        var settings = new Settings();
+
+        settings.MinimizeToTray.Should().BeTrue();
+    }
+
+    [Fact]
+    public void NewSettings_ShouldDefaultStartMinimizedToFalse() {
+        var settings = new Settings();
+
+        settings.StartMinimized.Should().BeFalse();
+    }
 }

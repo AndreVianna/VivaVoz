@@ -60,7 +60,9 @@ public class SettingsService(Func<AppDbContext> contextFactory) : ISettingsServi
         ExportFormat = "MP3",
         HotkeyConfig = string.Empty,
         AudioInputDevice = null,
-        AutoUpdate = false
+        AutoUpdate = false,
+        MinimizeToTray = true,
+        StartMinimized = false
     };
 
     private static string GetDefaultStoragePath() {

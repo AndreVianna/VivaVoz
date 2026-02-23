@@ -10,6 +10,8 @@ public class Settings {
     public string Theme { get; set; } = "System";
     public string Language { get; set; } = "auto";
     public bool AutoUpdate { get; set; }
+    public bool MinimizeToTray { get; set; } = true;
+    public bool StartMinimized { get; set; } = false;
 
     private static string GetDefaultStoragePath() {
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);

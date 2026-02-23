@@ -41,6 +41,7 @@ VivaVoz fills that gap. Built with .NET 10 + Avalonia UI for a polished, cross-p
 | 0.14    | 2026-02-17 | Lola Lovelace                | Fixed section numbering. Added Recording Status field. No concurrent recordings. Clarified hotkey conflict UX. Removed stale open question.                                                                        |
 | 0.15    | 2026-02-17 | Andre Vianna / Lola Lovelace | Renamed Dito → VivaVoz. Trademark conflict with existing Windows voice-to-text product at getdito.com. New name from Portuguese "viva" (alive) + "voz" (voice). Domain: vivavoz.app. Accessibility deferred to v2. |
 | 0.16    | 2026-02-17 | Lola Lovelace                | Fixed domain refs (vivavoz-app.com → vivavoz.app). Accessibility explicitly marked as v2 in NFR section. Final review grade: A.                                                                                    |
+| 0.17    | 2026-02-21 | Andre Vianna / Lola Lovelace | Transcription lifecycle: added PendingTranscription state, (Re-)Transcribe button, orphan recovery. Added Delivery 1c scope (lifecycle fix + app icon). Five UX interaction surfaces documented for phased delivery. |
 
 ---
 
@@ -108,6 +109,21 @@ Mac users have multiple polished tools for this. **Windows users have nothing go
 - Multiple model sizes (tiny → large) — user selects based on speed/accuracy preference
 - Language auto-detection
 - Transcription happens automatically after recording stops
+
+**Transcription Lifecycle:**
+```plaintext
+Recording Stopped → PendingTranscription → [auto-enqueue] → Transcribing → Complete
+                                                                          → Failed
+```
+
+- **PendingTranscription:** Recording exists, transcription not yet started. This is the honest state when audio is saved but the engine hasn't picked it up yet.
+- **Transcribing:** Engine is actively processing. Transitions to Complete or Failed.
+- **Complete:** Transcript available. User can re-transcribe (e.g., with a different model).
+- **Failed:** Engine error. User can retry via the same button.
+
+**On startup:** Recordings with status `Transcribing` are reset to `PendingTranscription` (the previous transcription attempt died mid-process). No auto-retry — the user decides via the (Re-)Transcribe button.
+
+**(Re-)Transcribe button:** Visible in the detail panel for any recording that is not currently `Transcribing`. For `PendingTranscription` and `Failed`, the label is "Transcribe". For `Complete`, the label is "Re-transcribe". Uses the currently selected Whisper model from Settings — allowing users to upgrade transcription quality when they download a better model.
 
 #### F3: Recording Management (CRUD)
 - List all recordings with metadata (date, duration, language, transcript preview)
@@ -208,6 +224,7 @@ ARM64 support: stretch goal for v1, likely v2.
 | Hotkey conflict          | ⚠️ Warning      | "Shortcut conflicts with [App]." [Change Shortcut]                      | Log. Suggest alternative.                         |
 | Crash during recording   | 🔴 Catastrophic | On next launch: "VivaVoz recovered a recording." [Keep] [Discard]       | Auto-save temp buffer. Recovery on startup.       |
 | SQLite corruption        | 🔴 Catastrophic | "Database error. Your audio files are safe."                            | Backup corrupt DB. Create fresh. Audio untouched. |
+| Orphaned transcription   | ⚠️ Warning      | Status shows "Pending" with [Transcribe] button                         | On startup, reset Transcribing → PendingTranscription. User retries. |
 
 *This table is a starting point. New scenarios are classified using the same three levels and principles above.*
 
@@ -248,6 +265,39 @@ After the wizard, user lands on the main screen with their test recording visibl
 - Storage location
 - Export defaults (format, output directory)
 - Theme (light/dark/system)
+
+## 7.5 Interaction Surfaces
+
+VivaVoz supports five interaction surfaces, ranging from maximum functionality to zero visual footprint. The user chooses their preferred level of intrusiveness via Settings.
+
+| Surface | Intrusiveness | Functionality | Delivery |
+|---------|---------------|---------------|----------|
+| **Main Window** | High — full app visible | Full CRUD, playback, transcription, export, settings | 1a ✅ |
+| **System Tray** | Low — icon + context menu | Quick record, open app, exit. Status indicator (idle/recording/transcribing) | 1c |
+| **Taskbar Icon** | Medium — visible in taskbar | Click to open, badge for recording state | 2a |
+| **Floating Icon** | Medium — always-on-top mini widget | One-click record/stop, drag to reposition, status indicator | 2a |
+| **Hotkeys Only** | Zero — no visible UI | Full recording control via keyboard. For power users who want VivaVoz invisible | 2a |
+
+**MVP (Delivery 1):** Main Window + System Tray. These two cover the essential use cases — full management when needed, background presence when not.
+
+**Delivery 2a:** Adds the remaining three surfaces as user preference options.
+
+**Design principle:** All five surfaces control the same recording pipeline. The surface is just the input method — the engine underneath is identical.
+
+## 7.6 App Icon
+
+VivaVoz needs a distinctive app icon for:
+- System tray presence
+- Taskbar
+- Windows Start menu
+- Microsoft Store listing
+- vivavoz.app website
+
+**Requirements:**
+- Must read well at 16x16 (tray), 32x32 (taskbar), 256x256 (Store), and 1024x1024 (marketing)
+- Should convey "voice" or "sound" without being a generic microphone
+- Must work on both light and dark backgrounds
+- Delivery: 1c (before phase 2a)
 
 ## 8. Tech Stack
 
@@ -298,7 +348,7 @@ Recording
 ├── Title (auto-generated from first words, or user-set)
 ├── AudioFileName (relative path: {yyyy-MM}/{guid}.wav)
 ├── Transcript (text)
-├── Status (enum: Recording → Transcribing → Complete | Failed)
+├── Status (enum: Recording → PendingTranscription → Transcribing → Complete | Failed)
 ├── Language (detected or manually set)
 ├── Duration (TimeSpan)
 ├── CreatedAt (DateTime UTC)
@@ -313,7 +363,9 @@ Settings
 ├── StoragePath (root folder, default: %LOCALAPPDATA%/VivaVoz)
 ├── ExportFormat (default: MP3, options: WAV, OGG)
 ├── Theme (light/dark/system)
-└── Language (default: auto-detect, or fixed language)
+├── Language (default: auto-detect, or fixed language)
+├── MinimizeToTray (bool, default: true — close button minimizes to tray)
+└── StartMinimized (bool, default: false — start in tray without main window)
 
 InstalledModel
 ├── ModelName (tiny/base/small/medium/large)

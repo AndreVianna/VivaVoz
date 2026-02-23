@@ -29,6 +29,7 @@ public partial class MainViewModel : ObservableObject {
     /// <summary>
     /// Computed transcript text for display. Reflects the current recording state:
     /// - Transcribing → "Transcribing..."
+    /// - PendingTranscription → "Waiting to transcribe..."
     /// - Failed → "Transcription failed."
     /// - Complete with empty/null transcript → "No speech detected."
     /// - Complete with transcript → the transcript text
@@ -37,6 +38,7 @@ public partial class MainViewModel : ObservableObject {
     public string TranscriptDisplay => SelectedRecording switch {
         null => string.Empty,
         { Status: RecordingStatus.Transcribing } => "Transcribing...",
+        { Status: RecordingStatus.PendingTranscription } => "Waiting to transcribe...",
         { Status: RecordingStatus.Recording } => string.Empty,
         { Status: RecordingStatus.Failed } => "Transcription failed.",
         { Status: RecordingStatus.Complete, Transcript: null or "" } => "No speech detected.",
@@ -65,6 +67,22 @@ public partial class MainViewModel : ObservableObject {
     /// True when the selected recording has a non-empty transcript that can be copied.
     /// </summary>
     public bool CanCopyTranscript => SelectedRecording is { Status: RecordingStatus.Complete, Transcript.Length: > 0 };
+
+    /// <summary>
+    /// True when the selected recording can be (re-)transcribed:
+    /// PendingTranscription, Failed, or Complete. Hidden during Recording and active Transcribing.
+    /// </summary>
+    public bool CanRetranscribe => SelectedRecording?.Status is
+        RecordingStatus.PendingTranscription or
+        RecordingStatus.Failed or
+        RecordingStatus.Complete;
+
+    /// <summary>
+    /// Button label: "Re-transcribe" for completed recordings, "Transcribe" otherwise.
+    /// </summary>
+    public string RetranscribeButtonLabel => SelectedRecording?.Status == RecordingStatus.Complete
+        ? "Re-transcribe"
+        : "Transcribe";
 
     public MainViewModel(
         IAudioRecorder recorder,
@@ -134,6 +152,20 @@ public partial class MainViewModel : ObservableObject {
     [RelayCommand]
     private void ClearSelection() => SelectedRecording = null;
 
+    [RelayCommand]
+    private void Retranscribe() {
+        if (SelectedRecording is null) return;
+        var audioPath = Path.Combine(FilePaths.AudioDirectory, SelectedRecording.AudioFileName);
+        if (!File.Exists(audioPath)) {
+            SelectedRecording.Status = RecordingStatus.Failed;
+            NotifyTranscriptProperties();
+            return;
+        }
+        SelectedRecording.Status = RecordingStatus.Transcribing;
+        NotifyTranscriptProperties();
+        _transcriptionManager.EnqueueTranscription(SelectedRecording.Id, audioPath);
+    }
+
     partial void OnSelectedRecordingChanged(Recording? value) {
         OnPropertyChanged(nameof(HasSelection));
         OnPropertyChanged(nameof(NoSelection));
@@ -157,6 +189,8 @@ public partial class MainViewModel : ObservableObject {
         OnPropertyChanged(nameof(IsTranscriptionFailed));
         OnPropertyChanged(nameof(ShowTranscriptSection));
         OnPropertyChanged(nameof(CanCopyTranscript));
+        OnPropertyChanged(nameof(CanRetranscribe));
+        OnPropertyChanged(nameof(RetranscribeButtonLabel));
         CopyButtonLabel = "Copy";
     }
 
@@ -174,7 +208,7 @@ public partial class MainViewModel : ObservableObject {
             Title = $"Recording {now:MMM dd, yyyy HH:mm}",
             AudioFileName = audioFileName,
             Transcript = null,
-            Status = RecordingStatus.Transcribing,
+            Status = RecordingStatus.PendingTranscription,
             Language = currentSettings?.Language ?? "auto",
             Duration = e.Duration,
             CreatedAt = now,
@@ -185,6 +219,11 @@ public partial class MainViewModel : ObservableObject {
 
         _dbContext.Recordings.Add(recording);
         _dbContext.SaveChanges();
+
+        // Update in-memory status to Transcribing for immediate UI responsiveness.
+        // The DB had PendingTranscription (crash-safe); TM will confirm Transcribing in DB.
+        recording.Status = RecordingStatus.Transcribing;
+
         Recordings.Insert(0, recording);
 
         _transcriptionManager.EnqueueTranscription(recording.Id, e.FilePath);
@@ -209,6 +248,8 @@ public partial class MainViewModel : ObservableObject {
 
             recording.UpdatedAt = DateTime.UtcNow;
 
+            // Recording implements INPC, so list item bindings (Transcript, Status) auto-update.
+            // Notify ViewModel computed properties if this is the currently selected recording.
             if (SelectedRecording?.Id == e.RecordingId) {
                 OnPropertyChanged(nameof(SelectedRecording));
                 NotifyTranscriptProperties();

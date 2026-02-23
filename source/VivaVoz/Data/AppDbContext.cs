@@ -80,5 +80,11 @@ public sealed class AppDbContext : DbContext {
         settings.Property(s => s.AutoUpdate)
             .IsRequired()
             .HasDefaultValue(false);
+        settings.Property(s => s.MinimizeToTray)
+            .IsRequired()
+            .HasDefaultValue(true);
+        settings.Property(s => s.StartMinimized)
+            .IsRequired()
+            .HasDefaultValue(false);
     }
 }
