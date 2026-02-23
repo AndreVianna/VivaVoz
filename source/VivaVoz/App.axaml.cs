@@ -44,8 +44,6 @@ public partial class App : Application {
 
             if (settingsService.Current?.StartMinimized == true) {
                 mainWindow.ShowInTaskbar = false;
-                mainWindow.WindowState = WindowState.Minimized;
-                mainWindow.Opened += (_, _) => mainWindow.Hide();
             }
 
             desktop.ShutdownRequested += (_, _) => trayService.Dispose();
