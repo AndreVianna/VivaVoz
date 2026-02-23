@@ -19,6 +19,8 @@ public class TrayService : ITrayService {
     private NativeMenuItem? _toggleRecordingItem;
     private TrayIconState _currentState = TrayIconState.Idle;
     private int _activeTranscriptions;
+    private WindowIcon? _idleIcon;
+    private WindowIcon? _activeIcon;
 
     private const string IdleIconUri = "avares://VivaVoz/Assets/vivavoz-16x16.png";
     private const string ActiveIconUri = "avares://VivaVoz/Assets/vivavoz-16x16.png";
@@ -33,6 +35,9 @@ public class TrayService : ITrayService {
     }
 
     public void Initialize() {
+        _idleIcon = LoadIcon(IdleIconUri);
+        _activeIcon = LoadIcon(ActiveIconUri);
+
         _toggleRecordingItem = new NativeMenuItem { Header = "Start Recording" };
         _toggleRecordingItem.Click += OnToggleRecordingClicked;
 
@@ -53,7 +58,7 @@ public class TrayService : ITrayService {
         menu.Items.Add(exitItem);
 
         _trayIcon = new TrayIcon {
-            Icon = LoadIcon(IdleIconUri),
+            Icon = _idleIcon,
             ToolTipText = "VivaVoz",
             Menu = menu,
             IsVisible = true
@@ -70,7 +75,7 @@ public class TrayService : ITrayService {
         if (_trayIcon is null) return;
         _currentState = state;
 
-        _trayIcon.Icon = LoadIcon(state == TrayIconState.Idle ? IdleIconUri : ActiveIconUri);
+        _trayIcon.Icon = state == TrayIconState.Idle ? _idleIcon : _activeIcon;
         _trayIcon.ToolTipText = GetTooltipForState(state);
 
         if (_toggleRecordingItem is not null) {
@@ -97,6 +102,8 @@ public class TrayService : ITrayService {
         _transcriptionManager.TranscriptionCompleted -= OnTranscriptionCompleted;
         _trayIcon?.Dispose();
         _trayIcon = null;
+        _idleIcon = null;
+        _activeIcon = null;
     }
 
     private void OnToggleRecordingClicked(object? sender, EventArgs e) {
