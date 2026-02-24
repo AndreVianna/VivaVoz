@@ -1,24 +1,17 @@
-using System.Net.Http;
 using System.Security.Cryptography;
 
 namespace VivaVoz.Services.Transcription;
 
-public sealed class WhisperModelService : IModelManager {
+public sealed class WhisperModelService(
+    WhisperModelManager modelManager,
+    HttpClient httpClient,
+    IReadOnlyDictionary<string, string>? expectedHashes = null) : IModelManager {
     private const string BaseUrl = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/";
     private const int BufferSize = 81920; // 80 KB chunks
 
-    private readonly WhisperModelManager _modelManager;
-    private readonly HttpClient _httpClient;
-    private readonly IReadOnlyDictionary<string, string> _expectedHashes;
-
-    public WhisperModelService(
-        WhisperModelManager modelManager,
-        HttpClient httpClient,
-        IReadOnlyDictionary<string, string>? expectedHashes = null) {
-        _modelManager = modelManager ?? throw new ArgumentNullException(nameof(modelManager));
-        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        _expectedHashes = expectedHashes ?? new Dictionary<string, string>();
-    }
+    private readonly WhisperModelManager _modelManager = modelManager ?? throw new ArgumentNullException(nameof(modelManager));
+    private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+    private readonly IReadOnlyDictionary<string, string> _expectedHashes = expectedHashes ?? new Dictionary<string, string>();
 
     public IReadOnlyList<string> GetAvailableModelIds() => WhisperModelManager.GetAvailableModelIds();
 
@@ -104,7 +97,9 @@ public sealed class WhisperModelService : IModelManager {
     }
 
     private static void TryDeleteFile(string path) {
-        try { File.Delete(path); }
+        try {
+            File.Delete(path);
+        }
         catch { /* best effort cleanup */ }
     }
 }

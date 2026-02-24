@@ -1,9 +1,12 @@
 using AwesomeAssertions;
+
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+
 using VivaVoz.Data;
 using VivaVoz.Models;
 using VivaVoz.Services;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Services;
@@ -20,8 +23,11 @@ public class RecordingServiceTests : IDisposable {
 
     public void Dispose() {
         _connection.Dispose();
-        try { Directory.Delete(_tempDir, recursive: true); }
+        try {
+            Directory.Delete(_tempDir, recursive: true);
+        }
         catch { /* best effort */ }
+
         GC.SuppressFinalize(this);
     }
 
@@ -144,8 +150,8 @@ public class RecordingServiceTests : IDisposable {
 
     // ========== Helper methods ==========
 
-    private RecordingService CreateService(SqliteConnection connection) =>
-        new RecordingService(() => CreateContext(connection), _tempDir);
+    private RecordingService CreateService(SqliteConnection connection)
+        => new(() => CreateContext(connection), _tempDir);
 
     private static SqliteConnection CreateConnection() {
         var connection = new SqliteConnection("DataSource=:memory:");

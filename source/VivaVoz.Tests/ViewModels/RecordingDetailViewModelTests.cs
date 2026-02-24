@@ -1,13 +1,17 @@
 using AwesomeAssertions;
+
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+
 using NSubstitute;
+
 using VivaVoz.Data;
 using VivaVoz.Models;
 using VivaVoz.Services;
 using VivaVoz.Services.Audio;
 using VivaVoz.Services.Transcription;
 using VivaVoz.ViewModels;
+
 using Xunit;
 
 namespace VivaVoz.Tests.ViewModels;
@@ -134,7 +138,8 @@ public class RecordingDetailViewModelTests {
         var viewModel = CreateViewModel();
         var changed = new List<string>();
         viewModel.PropertyChanged += (_, args) => {
-            if (args.PropertyName is not null) changed.Add(args.PropertyName);
+            if (args.PropertyName is not null)
+                changed.Add(args.PropertyName);
         };
 
         viewModel.LoadRecording(CreateRecording());
@@ -205,7 +210,8 @@ public class RecordingDetailViewModelTests {
         viewModel.LoadRecording(CreateRecording());
         var changed = new List<string>();
         viewModel.PropertyChanged += (_, args) => {
-            if (args.PropertyName is not null) changed.Add(args.PropertyName);
+            if (args.PropertyName is not null)
+                changed.Add(args.PropertyName);
         };
 
         viewModel.EditCommand.Execute(null);
@@ -247,7 +253,8 @@ public class RecordingDetailViewModelTests {
         viewModel.EditCommand.Execute(null);
         var changed = new List<string>();
         viewModel.PropertyChanged += (_, args) => {
-            if (args.PropertyName is not null) changed.Add(args.PropertyName);
+            if (args.PropertyName is not null)
+                changed.Add(args.PropertyName);
         };
 
         viewModel.CancelCommand.Execute(null);
@@ -478,11 +485,9 @@ public class RecordingDetailViewModelTests {
 
     private static RecordingDetailViewModel CreateViewModel(
         IRecordingService? recordingService = null,
-        IDialogService? dialogService = null) {
-        return new RecordingDetailViewModel(
+        IDialogService? dialogService = null) => new(
             recordingService ?? Substitute.For<IRecordingService>(),
             dialogService ?? Substitute.For<IDialogService>());
-    }
 
     private static Recording CreateRecording(string? transcript = "Test transcript") => new() {
         Id = Guid.NewGuid(),

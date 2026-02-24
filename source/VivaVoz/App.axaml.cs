@@ -1,18 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Markup.Xaml;
-using Microsoft.EntityFrameworkCore;
-using Serilog;
-using VivaVoz.Data;
-using VivaVoz.Models;
-using VivaVoz.Services;
-using VivaVoz.Services.Audio;
-using VivaVoz.Services.Transcription;
-using VivaVoz.ViewModels;
-using VivaVoz.Views;
-
 namespace VivaVoz;
 
 [ExcludeFromCodeCoverage]
@@ -46,7 +31,8 @@ public partial class App : Application {
             var overlayWindow = new RecordingOverlayWindow(settingsService) { DataContext = overlayViewModel };
 
             overlayViewModel.PropertyChanged += (_, e) => {
-                if (e.PropertyName != nameof(RecordingOverlayViewModel.IsRecording)) return;
+                if (e.PropertyName != nameof(RecordingOverlayViewModel.IsRecording))
+                    return;
                 if (overlayViewModel.IsRecording)
                     overlayWindow.ShowOverlay();
                 else
@@ -84,7 +70,8 @@ public partial class App : Application {
             .Where(r => r.Status == RecordingStatus.Transcribing)
             .ToListAsync();
 
-        if (orphaned.Count == 0) return;
+        if (orphaned.Count == 0)
+            return;
 
         foreach (var recording in orphaned) {
             recording.Status = RecordingStatus.PendingTranscription;

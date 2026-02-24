@@ -1,8 +1,11 @@
 using AwesomeAssertions;
+
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+
 using VivaVoz.Data;
 using VivaVoz.Models;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Data;

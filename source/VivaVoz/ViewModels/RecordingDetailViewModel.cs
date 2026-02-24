@@ -1,8 +1,8 @@
 namespace VivaVoz.ViewModels;
 
-public partial class RecordingDetailViewModel : ObservableObject {
-    private readonly IRecordingService _recordingService;
-    private readonly IDialogService _dialogService;
+public partial class RecordingDetailViewModel(IRecordingService recordingService, IDialogService dialogService) : ObservableObject {
+    private readonly IRecordingService _recordingService = recordingService ?? throw new ArgumentNullException(nameof(recordingService));
+    private readonly IDialogService _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
     private Recording? _recording;
     private string _originalTranscript = string.Empty;
 
@@ -17,11 +17,6 @@ public partial class RecordingDetailViewModel : ObservableObject {
     public bool CanDelete => _recording is not null && !IsEditing;
 
     public event EventHandler<Guid>? RecordingDeleted;
-
-    public RecordingDetailViewModel(IRecordingService recordingService, IDialogService dialogService) {
-        _recordingService = recordingService ?? throw new ArgumentNullException(nameof(recordingService));
-        _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-    }
 
     public void LoadRecording(Recording? recording) {
         _recording = recording;
@@ -48,7 +43,8 @@ public partial class RecordingDetailViewModel : ObservableObject {
 
     [RelayCommand]
     private async Task SaveAsync() {
-        if (_recording is null) return;
+        if (_recording is null)
+            return;
         _recording.Transcript = EditText;
         _recording.UpdatedAt = DateTime.UtcNow;
         await _recordingService.UpdateAsync(_recording);
@@ -63,13 +59,15 @@ public partial class RecordingDetailViewModel : ObservableObject {
 
     [RelayCommand(CanExecute = nameof(CanDelete))]
     private async Task DeleteAsync() {
-        if (_recording is null) return;
+        if (_recording is null)
+            return;
 
         var confirmed = await _dialogService.ShowConfirmAsync(
             "Delete Recording",
             "Are you sure you want to delete this recording? This cannot be undone.");
 
-        if (!confirmed) return;
+        if (!confirmed)
+            return;
 
         var id = _recording.Id;
         await _recordingService.DeleteAsync(id);

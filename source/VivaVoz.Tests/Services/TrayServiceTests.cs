@@ -1,10 +1,13 @@
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+
 using AwesomeAssertions;
+
 using NSubstitute;
+
 using VivaVoz.Services;
 using VivaVoz.Services.Audio;
 using VivaVoz.Services.Transcription;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Services;
@@ -35,7 +38,7 @@ public class TrayServiceTests {
 
     [Fact]
     public void FormatTooltipText_WithLongTranscript_ShouldTruncateTo30Chars() {
-        var transcript = "This is a very long transcript that should be truncated";
+        const string transcript = "This is a very long transcript that should be truncated";
 
         var result = TrayService.FormatTooltipText(transcript);
 
@@ -93,7 +96,7 @@ public class TrayServiceTests {
 
     [Fact]
     public void GetTooltipForState_WithInvalidEnumValue_ShouldReturnDefault() {
-        var invalidState = (TrayIconState)999;
+        const TrayIconState invalidState = (TrayIconState)999;
 
         var result = TrayService.GetTooltipForState(invalidState);
 

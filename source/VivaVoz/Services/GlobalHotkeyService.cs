@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace VivaVoz.Services;
 
@@ -9,7 +8,7 @@ namespace VivaVoz.Services;
 /// Runs a dedicated STA message-pump thread so the hotkey is independent of
 /// the Avalonia UI thread.
 /// </summary>
-public sealed class GlobalHotkeyService : IHotkeyService {
+public sealed partial class GlobalHotkeyService : IHotkeyService {
     // ── Win32 constants ────────────────────────────────────────────────────────
     private const int WmHotKey = 0x0312;
     private const int WmQuit = 0x0012;
@@ -143,8 +142,7 @@ public sealed class GlobalHotkeyService : IHotkeyService {
             if (!registered)
                 return;
 
-            NativeMethods.MSG msg;
-            while (NativeMethods.GetMessage(out msg, nint.Zero, 0, 0)) {
+            while (NativeMethods.GetMessage(out var msg, nint.Zero, 0, 0)) {
                 if (msg.message == WmHotKey && msg.wParam == HotkeyId)
                     HandleHotkeyDown();
                 else if (msg.message == WmQuit)
@@ -168,7 +166,7 @@ public sealed class GlobalHotkeyService : IHotkeyService {
 
     [ExcludeFromCodeCoverage(Justification = "Requires Windows user32.dll at runtime.")]
     private void PlatformUnregister() {
-        if (_messageThread is null || !_messageThread.IsAlive)
+        if (_messageThread?.IsAlive != true)
             return;
 
         // Post WM_QUIT to the message thread so its pump exits cleanly.
@@ -180,7 +178,7 @@ public sealed class GlobalHotkeyService : IHotkeyService {
     // ── P/Invoke declarations ──────────────────────────────────────────────────
 
     [ExcludeFromCodeCoverage(Justification = "Requires Windows user32.dll at runtime.")]
-    private static class NativeMethods {
+    private static partial class NativeMethods {
         [StructLayout(LayoutKind.Sequential)]
         public struct MSG {
             public nint hwnd;
@@ -192,19 +190,24 @@ public sealed class GlobalHotkeyService : IHotkeyService {
             public int ptY;
         }
 
-        [DllImport("user32.dll")]
-        public static extern bool RegisterHotKey(nint hWnd, int id, uint fsModifiers, uint vk);
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool RegisterHotKey(nint hWnd, int id, uint fsModifiers, uint vk);
 
-        [DllImport("user32.dll")]
-        public static extern bool UnregisterHotKey(nint hWnd, int id);
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool UnregisterHotKey(nint hWnd, int id);
 
-        [DllImport("user32.dll")]
-        public static extern bool GetMessage(out MSG lpMsg, nint hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool GetMessage(out MSG lpMsg, nint hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
 
-        [DllImport("user32.dll")]
-        public static extern bool DispatchMessage(ref MSG lpmsg);
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool DispatchMessage(ref MSG lpmsg);
 
-        [DllImport("user32.dll")]
-        public static extern bool PostThreadMessage(uint idThread, uint msg, nint wParam, nint lParam);
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool PostThreadMessage(uint idThread, uint msg, nint wParam, nint lParam);
     }
 }

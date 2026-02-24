@@ -1,8 +1,11 @@
 using AwesomeAssertions;
+
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+
 using VivaVoz.Services.Transcription;
 using VivaVoz.ViewModels;
+
 using Xunit;
 
 namespace VivaVoz.Tests.ViewModels;
@@ -318,7 +321,7 @@ public class ModelItemViewModelTests {
 
         IProgress<double>? capturedProgress = null;
         manager.DownloadModelAsync("tiny", Arg.Do<IProgress<double>?>(p => capturedProgress = p), Arg.Any<CancellationToken>())
-            .Returns(callInfo => {
+            .Returns(_ => {
                 capturedProgress?.Report(0.5);
                 capturedProgress?.Report(1.0);
                 return Task.CompletedTask;

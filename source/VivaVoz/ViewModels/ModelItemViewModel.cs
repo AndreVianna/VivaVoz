@@ -1,31 +1,31 @@
 namespace VivaVoz.ViewModels;
 
-public partial class ModelItemViewModel : ObservableObject {
+public partial class ModelItemViewModel(string modelId, IModelManager modelManager) : ObservableObject {
     private static readonly Dictionary<string, string> _displayNames = new(StringComparer.OrdinalIgnoreCase) {
-        ["tiny"]     = "Tiny",
-        ["base"]     = "Base",
-        ["small"]    = "Small",
-        ["medium"]   = "Medium",
+        ["tiny"] = "Tiny",
+        ["base"] = "Base",
+        ["small"] = "Small",
+        ["medium"] = "Medium",
         ["large-v3"] = "Large (v3)",
     };
 
     private static readonly Dictionary<string, string> _expectedSizes = new(StringComparer.OrdinalIgnoreCase) {
-        ["tiny"]     = "~75 MB",
-        ["base"]     = "~142 MB",
-        ["small"]    = "~466 MB",
-        ["medium"]   = "~1.5 GB",
+        ["tiny"] = "~75 MB",
+        ["base"] = "~142 MB",
+        ["small"] = "~466 MB",
+        ["medium"] = "~1.5 GB",
         ["large-v3"] = "~2.9 GB",
     };
 
-    private readonly IModelManager _modelManager;
+    private readonly IModelManager _modelManager = modelManager ?? throw new ArgumentNullException(nameof(modelManager));
     private CancellationTokenSource? _downloadCts;
 
-    public string ModelId { get; }
-    public string DisplayName { get; }
-    public string ExpectedSize { get; }
+    public string ModelId { get; } = modelId ?? throw new ArgumentNullException(nameof(modelId));
+    public string DisplayName { get; } = _displayNames.TryGetValue(modelId, out var name) ? name : modelId;
+    public string ExpectedSize { get; } = _expectedSizes.TryGetValue(modelId, out var size) ? size : "Unknown";
 
     [ObservableProperty]
-    public partial bool IsInstalled { get; set; }
+    public partial bool IsInstalled { get; set; } = modelManager.IsModelDownloaded(modelId);
 
     [ObservableProperty]
     public partial bool IsDownloading { get; set; }
@@ -40,15 +40,6 @@ public partial class ModelItemViewModel : ObservableObject {
     public bool CanDownload => !IsInstalled && !IsDownloading;
     public bool CanCancel => IsDownloading;
     public bool CanDelete => IsInstalled && !IsDownloading;
-
-    public ModelItemViewModel(string modelId, IModelManager modelManager) {
-        ModelId = modelId ?? throw new ArgumentNullException(nameof(modelId));
-        _modelManager = modelManager ?? throw new ArgumentNullException(nameof(modelManager));
-
-        DisplayName = _displayNames.TryGetValue(modelId, out var name) ? name : modelId;
-        ExpectedSize = _expectedSizes.TryGetValue(modelId, out var size) ? size : "Unknown";
-        IsInstalled = modelManager.IsModelDownloaded(modelId);
-    }
 
     [RelayCommand(CanExecute = nameof(CanDownload))]
     private async Task DownloadAsync() {
@@ -79,9 +70,7 @@ public partial class ModelItemViewModel : ObservableObject {
     }
 
     [RelayCommand(CanExecute = nameof(CanCancel))]
-    private void CancelDownload() {
-        _downloadCts?.Cancel();
-    }
+    private void CancelDownload() => _downloadCts?.Cancel();
 
     [RelayCommand(CanExecute = nameof(CanDelete))]
     private void Delete() {

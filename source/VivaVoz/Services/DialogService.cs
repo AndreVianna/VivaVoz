@@ -37,8 +37,14 @@ public class DialogService : IDialogService {
             }
         };
 
-        yesButton.Click += (_, _) => { tcs.TrySetResult(true); window.Close(); };
-        noButton.Click += (_, _) => { tcs.TrySetResult(false); window.Close(); };
+        yesButton.Click += (_, _) => {
+            tcs.TrySetResult(true);
+            window.Close();
+        };
+        noButton.Click += (_, _) => {
+            tcs.TrySetResult(false);
+            window.Close();
+        };
         window.Closed += (_, _) => tcs.TrySetResult(false);
 
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop

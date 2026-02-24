@@ -1,5 +1,7 @@
 using AwesomeAssertions;
+
 using VivaVoz.Services;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Services;

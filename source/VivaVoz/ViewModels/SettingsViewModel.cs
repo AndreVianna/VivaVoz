@@ -5,7 +5,7 @@ public partial class SettingsViewModel : ObservableObject {
     private readonly IModelManager _modelManager;
     private readonly IThemeService _themeService;
     private readonly Settings _settings;
-    private bool _isInitializing = true;
+    private readonly bool _isInitializing = true;
 
     public static IReadOnlyList<string> AvailableThemes { get; } = ["System", "Light", "Dark"];
     public static IReadOnlyList<string> AvailableModels { get; } = ["tiny", "base", "small", "medium", "large"];
@@ -68,8 +68,7 @@ public partial class SettingsViewModel : ObservableObject {
 
         AvailableDevices = recorder.GetAvailableDevices();
 
-        Models = new ObservableCollection<ModelItemViewModel>(
-            modelManager.GetAvailableModelIds().Select(id => new ModelItemViewModel(id, modelManager)));
+        Models = [.. modelManager.GetAvailableModelIds().Select(id => new ModelItemViewModel(id, modelManager))];
 
         _isInitializing = false;
     }
@@ -89,7 +88,8 @@ public partial class SettingsViewModel : ObservableObject {
     partial void OnRecordingModeChanged(string value) => SaveSetting(s => s.RecordingMode = value);
 
     private void SaveSetting(Action<Settings> update) {
-        if (_isInitializing) return;
+        if (_isInitializing)
+            return;
         update(_settings);
         _ = _settingsService.SaveSettingsAsync(_settings);
     }

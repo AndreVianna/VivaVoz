@@ -1,7 +1,10 @@
 using AwesomeAssertions;
+
 using NSubstitute;
+
 using VivaVoz.Services.Audio;
 using VivaVoz.ViewModels;
+
 using Xunit;
 
 namespace VivaVoz.Tests.ViewModels;

@@ -1,6 +1,9 @@
-using AwesomeAssertions;
 using Avalonia;
+
+using AwesomeAssertions;
+
 using VivaVoz.Views;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Views;
@@ -32,7 +35,7 @@ public class RecordingOverlayWindowTests {
 
         var result = RecordingOverlayWindow.ComputeDefaultPosition(workArea, 220, 52);
 
-        result.X.Should().Be(100 + (1920 - 220) / 2);
+        result.X.Should().Be(100 + ((1920 - 220) / 2));
         result.Y.Should().Be(50 + 1080 - 52 - 40);
     }
 

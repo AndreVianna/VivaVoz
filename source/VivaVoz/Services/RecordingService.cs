@@ -20,7 +20,8 @@ public class RecordingService(Func<AppDbContext> contextFactory, string? audioDi
         await using var context = _contextFactory();
 
         var existing = await context.Recordings.FindAsync(recording.Id).ConfigureAwait(false);
-        if (existing is null) return;
+        if (existing is null)
+            return;
 
         context.Entry(existing).CurrentValues.SetValues(recording);
         await context.SaveChangesAsync().ConfigureAwait(false);
@@ -32,7 +33,8 @@ public class RecordingService(Func<AppDbContext> contextFactory, string? audioDi
 
         await using (var context = _contextFactory()) {
             var recording = await context.Recordings.FindAsync(id).ConfigureAwait(false);
-            if (recording is null) return;
+            if (recording is null)
+                return;
 
             audioFileName = recording.AudioFileName;
             context.Recordings.Remove(recording);
@@ -44,7 +46,8 @@ public class RecordingService(Func<AppDbContext> contextFactory, string? audioDi
 
     private static void TryDeleteFile(string path) {
         try {
-            if (File.Exists(path)) File.Delete(path);
+            if (File.Exists(path))
+                File.Delete(path);
         }
         catch (Exception ex) {
             Log.Warning(ex, "[RecordingService] Could not delete audio file: {Path}", path);

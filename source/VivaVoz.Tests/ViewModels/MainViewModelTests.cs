@@ -1,14 +1,17 @@
 using AwesomeAssertions;
+
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
+
 using VivaVoz.Data;
 using VivaVoz.Models;
 using VivaVoz.Services;
 using VivaVoz.Services.Audio;
 using VivaVoz.Services.Transcription;
 using VivaVoz.ViewModels;
+
 using Xunit;
 
 namespace VivaVoz.Tests.ViewModels;
@@ -180,9 +183,9 @@ public class MainViewModelTests {
         using var context = CreateContext(connection);
         var recorder = Substitute.For<IAudioRecorder>();
         var player = Substitute.For<IAudioPlayer>();
-        var viewModel = new MainViewModel(recorder, player, context, Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>());
-
-        viewModel.SelectedRecording = CreateRecording(DateTime.UtcNow);
+        var viewModel = new MainViewModel(recorder, player, context, Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>()) {
+            SelectedRecording = CreateRecording(DateTime.UtcNow)
+        };
 
         viewModel.HasSelection.Should().BeTrue();
     }
@@ -205,9 +208,9 @@ public class MainViewModelTests {
         using var context = CreateContext(connection);
         var recorder = Substitute.For<IAudioRecorder>();
         var player = Substitute.For<IAudioPlayer>();
-        var viewModel = new MainViewModel(recorder, player, context, Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>());
-
-        viewModel.SelectedRecording = CreateRecording(DateTime.UtcNow);
+        var viewModel = new MainViewModel(recorder, player, context, Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>()) {
+            SelectedRecording = CreateRecording(DateTime.UtcNow)
+        };
 
         viewModel.NoSelection.Should().BeFalse();
     }
@@ -264,8 +267,9 @@ public class MainViewModelTests {
         using var context = CreateContext(connection);
         var recorder = Substitute.For<IAudioRecorder>();
         var player = Substitute.For<IAudioPlayer>();
-        var viewModel = new MainViewModel(recorder, player, context, Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>());
-        viewModel.SelectedRecording = CreateRecording(DateTime.UtcNow);
+        var viewModel = new MainViewModel(recorder, player, context, Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>()) {
+            SelectedRecording = CreateRecording(DateTime.UtcNow)
+        };
 
         viewModel.SelectRecordingCommand.Execute(null);
 
@@ -278,8 +282,9 @@ public class MainViewModelTests {
         using var context = CreateContext(connection);
         var recorder = Substitute.For<IAudioRecorder>();
         var player = Substitute.For<IAudioPlayer>();
-        var viewModel = new MainViewModel(recorder, player, context, Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>());
-        viewModel.SelectedRecording = CreateRecording(DateTime.UtcNow);
+        var viewModel = new MainViewModel(recorder, player, context, Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>()) {
+            SelectedRecording = CreateRecording(DateTime.UtcNow)
+        };
 
         viewModel.ClearSelectionCommand.Execute(null);
 
@@ -371,8 +376,9 @@ public class MainViewModelTests {
         using var context = CreateContext(connection);
         var recorder = Substitute.For<IAudioRecorder>();
         var player = Substitute.For<IAudioPlayer>();
-        var viewModel = new MainViewModel(recorder, player, context, Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>());
-        viewModel.SelectedRecording = CreateRecording(DateTime.UtcNow);
+        var viewModel = new MainViewModel(recorder, player, context, Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>()) {
+            SelectedRecording = CreateRecording(DateTime.UtcNow)
+        };
 
         viewModel.SelectedRecording = null;
 
@@ -487,7 +493,7 @@ public class MainViewModelTests {
     public void TranscriptDisplay_WhenNoSelection_ShouldBeEmpty() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         viewModel.TranscriptDisplay.Should().BeEmpty();
     }
@@ -496,7 +502,7 @@ public class MainViewModelTests {
     public void TranscriptDisplay_WhenTranscribing_ShouldShowTranscribingMessage() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Transcribing;
         recording.Transcript = null;
@@ -510,7 +516,7 @@ public class MainViewModelTests {
     public void TranscriptDisplay_WhenFailed_ShouldShowFailedMessage() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Failed;
 
@@ -523,7 +529,7 @@ public class MainViewModelTests {
     public void TranscriptDisplay_WhenCompleteWithNullTranscript_ShouldShowNoSpeechDetected() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Complete;
         recording.Transcript = null;
@@ -537,7 +543,7 @@ public class MainViewModelTests {
     public void TranscriptDisplay_WhenCompleteWithEmptyTranscript_ShouldShowNoSpeechDetected() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Complete;
         recording.Transcript = "";
@@ -551,7 +557,7 @@ public class MainViewModelTests {
     public void TranscriptDisplay_WhenCompleteWithTranscript_ShouldShowTranscriptText() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Complete;
         recording.Transcript = "The quick brown fox jumps over the lazy dog.";
@@ -565,7 +571,7 @@ public class MainViewModelTests {
     public void TranscriptDisplay_WhenRecordingStatus_ShouldBeEmpty() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Recording;
 
@@ -580,7 +586,7 @@ public class MainViewModelTests {
     public void IsTranscribing_WhenNoSelection_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         viewModel.IsTranscribing.Should().BeFalse();
     }
@@ -589,7 +595,7 @@ public class MainViewModelTests {
     public void IsTranscribing_WhenTranscribing_ShouldBeTrue() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Transcribing;
 
@@ -602,7 +608,7 @@ public class MainViewModelTests {
     public void IsTranscribing_WhenComplete_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Complete;
 
@@ -617,7 +623,7 @@ public class MainViewModelTests {
     public void IsTranscriptionFailed_WhenNoSelection_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         viewModel.IsTranscriptionFailed.Should().BeFalse();
     }
@@ -626,7 +632,7 @@ public class MainViewModelTests {
     public void IsTranscriptionFailed_WhenFailed_ShouldBeTrue() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Failed;
 
@@ -639,7 +645,7 @@ public class MainViewModelTests {
     public void IsTranscriptionFailed_WhenComplete_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Complete;
 
@@ -654,7 +660,7 @@ public class MainViewModelTests {
     public void ShowTranscriptSection_WhenNoSelection_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         viewModel.ShowTranscriptSection.Should().BeFalse();
     }
@@ -663,7 +669,7 @@ public class MainViewModelTests {
     public void ShowTranscriptSection_WhenRecordingSelected_ShouldBeTrue() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         viewModel.SelectedRecording = CreateRecording(DateTime.UtcNow);
 
@@ -676,7 +682,7 @@ public class MainViewModelTests {
     public void OnSelectedRecordingChanged_ShouldRaiseTranscriptDisplayPropertyChanged() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         var changed = new List<string>();
         viewModel.PropertyChanged += (_, args) => {
@@ -693,7 +699,7 @@ public class MainViewModelTests {
     public void OnSelectedRecordingChanged_ShouldRaiseIsTranscribingPropertyChanged() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         var changed = new List<string>();
         viewModel.PropertyChanged += (_, args) => {
@@ -710,7 +716,7 @@ public class MainViewModelTests {
     public void OnSelectedRecordingChanged_ShouldRaiseIsTranscriptionFailedPropertyChanged() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         var changed = new List<string>();
         viewModel.PropertyChanged += (_, args) => {
@@ -727,7 +733,7 @@ public class MainViewModelTests {
     public void OnSelectedRecordingChanged_ShouldRaiseShowTranscriptSectionPropertyChanged() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         var changed = new List<string>();
         viewModel.PropertyChanged += (_, args) => {
@@ -744,7 +750,7 @@ public class MainViewModelTests {
     public void TranscriptDisplay_WhenSelectionCleared_ShouldReturnToEmpty() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Transcript = "Some transcript text";
         viewModel.SelectedRecording = recording;
@@ -777,7 +783,7 @@ public class MainViewModelTests {
     public void CanCopyTranscript_WhenNoSelection_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         viewModel.CanCopyTranscript.Should().BeFalse();
     }
@@ -786,7 +792,7 @@ public class MainViewModelTests {
     public void CanCopyTranscript_WhenTranscribing_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Transcribing;
 
@@ -799,7 +805,7 @@ public class MainViewModelTests {
     public void CanCopyTranscript_WhenFailed_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Failed;
 
@@ -812,7 +818,7 @@ public class MainViewModelTests {
     public void CanCopyTranscript_WhenCompleteWithNullTranscript_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Complete;
         recording.Transcript = null;
@@ -826,7 +832,7 @@ public class MainViewModelTests {
     public void CanCopyTranscript_WhenCompleteWithEmptyTranscript_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Complete;
         recording.Transcript = "";
@@ -840,7 +846,7 @@ public class MainViewModelTests {
     public void CanCopyTranscript_WhenCompleteWithTranscript_ShouldBeTrue() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Complete;
         recording.Transcript = "Hello world";
@@ -854,7 +860,7 @@ public class MainViewModelTests {
     public void OnSelectedRecordingChanged_ShouldRaiseCanCopyTranscriptPropertyChanged() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         var changed = new List<string>();
         viewModel.PropertyChanged += (_, args) => {
@@ -871,10 +877,10 @@ public class MainViewModelTests {
 
     [Fact]
     public async Task CopyTranscriptCommand_WhenCompleteWithTranscript_ShouldCopyTextToClipboard() {
-        using var connection = CreateConnection();
-        using var context = CreateContext(connection);
+        await using var connection = CreateConnection();
+        await using var context = CreateContext(connection);
         var clipboard = Substitute.For<IClipboardService>();
-        var viewModel = CreateViewModelWithClipboard(connection, context, clipboard);
+        var viewModel = CreateViewModelWithClipboard(context, clipboard);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Complete;
         recording.Transcript = "Hello world";
@@ -887,10 +893,10 @@ public class MainViewModelTests {
 
     [Fact]
     public async Task CopyTranscriptCommand_WhenNoTranscript_ShouldNotCallClipboard() {
-        using var connection = CreateConnection();
-        using var context = CreateContext(connection);
+        await using var connection = CreateConnection();
+        await using var context = CreateContext(connection);
         var clipboard = Substitute.For<IClipboardService>();
-        var viewModel = CreateViewModelWithClipboard(connection, context, clipboard);
+        var viewModel = CreateViewModelWithClipboard(context, clipboard);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Complete;
         recording.Transcript = null;
@@ -903,10 +909,10 @@ public class MainViewModelTests {
 
     [Fact]
     public async Task CopyTranscriptCommand_WhenTranscribing_ShouldNotCallClipboard() {
-        using var connection = CreateConnection();
-        using var context = CreateContext(connection);
+        await using var connection = CreateConnection();
+        await using var context = CreateContext(connection);
         var clipboard = Substitute.For<IClipboardService>();
-        var viewModel = CreateViewModelWithClipboard(connection, context, clipboard);
+        var viewModel = CreateViewModelWithClipboard(context, clipboard);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Transcribing;
         viewModel.SelectedRecording = recording;
@@ -918,10 +924,10 @@ public class MainViewModelTests {
 
     [Fact]
     public async Task CopyTranscriptCommand_WhenNoSelection_ShouldNotCallClipboard() {
-        using var connection = CreateConnection();
-        using var context = CreateContext(connection);
+        await using var connection = CreateConnection();
+        await using var context = CreateContext(connection);
         var clipboard = Substitute.For<IClipboardService>();
-        var viewModel = CreateViewModelWithClipboard(connection, context, clipboard);
+        var viewModel = CreateViewModelWithClipboard(context, clipboard);
 
         await viewModel.CopyTranscriptCommand.ExecuteAsync(null);
 
@@ -930,12 +936,12 @@ public class MainViewModelTests {
 
     [Fact]
     public async Task CopyTranscriptCommand_WhenExecuted_ShouldChangeLabelToCopied() {
-        using var connection = CreateConnection();
-        using var context = CreateContext(connection);
+        await using var connection = CreateConnection();
+        await using var context = CreateContext(connection);
         var clipboard = Substitute.For<IClipboardService>();
         // Make SetTextAsync complete immediately
         clipboard.SetTextAsync(Arg.Any<string>()).Returns(Task.CompletedTask);
-        var viewModel = CreateViewModelWithClipboard(connection, context, clipboard);
+        var viewModel = CreateViewModelWithClipboard(context, clipboard);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Complete;
         recording.Transcript = "Hello world";
@@ -958,7 +964,7 @@ public class MainViewModelTests {
     public void CopyButtonLabel_WhenNewInstance_ShouldBeCopy() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         viewModel.CopyButtonLabel.Should().Be("Copy");
     }
@@ -967,7 +973,7 @@ public class MainViewModelTests {
     public void CopyButtonLabel_WhenSelectionChanges_ShouldResetToCopy() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         viewModel.CopyButtonLabel = "Copied!";
 
         viewModel.SelectedRecording = CreateRecording(DateTime.UtcNow);
@@ -981,7 +987,7 @@ public class MainViewModelTests {
     public void TranscriptDisplay_WhenPendingTranscription_ShouldShowWaitingMessage() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.PendingTranscription;
 
@@ -994,7 +1000,7 @@ public class MainViewModelTests {
     public void IsTranscribing_WhenPendingTranscription_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.PendingTranscription;
 
@@ -1009,7 +1015,7 @@ public class MainViewModelTests {
     public void CanRetranscribe_WhenNoSelection_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         viewModel.CanRetranscribe.Should().BeFalse();
     }
@@ -1018,7 +1024,7 @@ public class MainViewModelTests {
     public void CanRetranscribe_WhenPendingTranscription_ShouldBeTrue() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.PendingTranscription;
 
@@ -1031,7 +1037,7 @@ public class MainViewModelTests {
     public void CanRetranscribe_WhenFailed_ShouldBeTrue() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Failed;
 
@@ -1044,7 +1050,7 @@ public class MainViewModelTests {
     public void CanRetranscribe_WhenComplete_ShouldBeTrue() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Complete;
 
@@ -1057,7 +1063,7 @@ public class MainViewModelTests {
     public void CanRetranscribe_WhenTranscribing_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Transcribing;
 
@@ -1070,7 +1076,7 @@ public class MainViewModelTests {
     public void CanRetranscribe_WhenRecording_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Recording;
 
@@ -1085,7 +1091,7 @@ public class MainViewModelTests {
     public void RetranscribeButtonLabel_WhenComplete_ShouldBeReTranscribe() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Complete;
 
@@ -1098,7 +1104,7 @@ public class MainViewModelTests {
     public void RetranscribeButtonLabel_WhenFailed_ShouldBeTranscribe() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.Failed;
 
@@ -1111,7 +1117,7 @@ public class MainViewModelTests {
     public void RetranscribeButtonLabel_WhenPendingTranscription_ShouldBeTranscribe() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var recording = CreateRecording(DateTime.UtcNow);
         recording.Status = RecordingStatus.PendingTranscription;
 
@@ -1257,7 +1263,7 @@ public class MainViewModelTests {
     public void SearchText_WhenNewInstance_ShouldBeEmpty() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         viewModel.SearchText.Should().BeEmpty();
     }
@@ -1272,7 +1278,7 @@ public class MainViewModelTests {
         context.Recordings.AddRange(r1, r2);
         context.SaveChanges();
 
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         viewModel.FilteredRecordings.Select(r => r.Id).Should().BeEquivalentTo(viewModel.Recordings.Select(r => r.Id));
     }
@@ -1281,7 +1287,7 @@ public class MainViewModelTests {
     public void HasSearchText_WhenSearchTextIsEmpty_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         viewModel.HasSearchText.Should().BeFalse();
     }
@@ -1290,7 +1296,7 @@ public class MainViewModelTests {
     public void HasSearchText_WhenSearchTextIsNotEmpty_ShouldBeTrue() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         viewModel.SearchText = "hello";
 
@@ -1301,7 +1307,7 @@ public class MainViewModelTests {
     public void OnSearchTextChanged_ShouldRaiseHasSearchTextPropertyChanged() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         var changed = new List<string>();
         viewModel.PropertyChanged += (_, args) => {
@@ -1326,7 +1332,7 @@ public class MainViewModelTests {
         context.Recordings.AddRange(match, noMatch);
         context.SaveChanges();
 
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         viewModel.SearchText = "quick";
         viewModel.ApplyFilter();
 
@@ -1346,7 +1352,7 @@ public class MainViewModelTests {
         context.Recordings.AddRange(match, noMatch);
         context.SaveChanges();
 
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         viewModel.SearchText = "meeting";
         viewModel.ApplyFilter();
 
@@ -1364,7 +1370,7 @@ public class MainViewModelTests {
         context.Recordings.Add(recording);
         context.SaveChanges();
 
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         viewModel.SearchText = "hello";
         viewModel.ApplyFilter();
 
@@ -1381,7 +1387,7 @@ public class MainViewModelTests {
         context.Recordings.Add(recording);
         context.SaveChanges();
 
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         viewModel.SearchText = "randomwords123";
         viewModel.ApplyFilter();
 
@@ -1400,7 +1406,7 @@ public class MainViewModelTests {
         context.Recordings.AddRange(r1, r2);
         context.SaveChanges();
 
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         viewModel.SearchText = "First";
         viewModel.ApplyFilter();
         viewModel.FilteredRecordings.Should().HaveCount(1);
@@ -1421,7 +1427,7 @@ public class MainViewModelTests {
         context.Recordings.Add(recording);
         context.SaveChanges();
 
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         viewModel.SearchText = "randomwords123";
         viewModel.ApplyFilter();
 
@@ -1438,7 +1444,7 @@ public class MainViewModelTests {
         context.Recordings.Add(recording);
         context.SaveChanges();
 
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         viewModel.SearchText = "Hello";
         viewModel.ApplyFilter();
 
@@ -1449,7 +1455,7 @@ public class MainViewModelTests {
     public void NoRecordingsFound_WhenSearchTextEmpty_ShouldBeFalse() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         viewModel.NoRecordingsFound.Should().BeFalse();
     }
@@ -1458,7 +1464,7 @@ public class MainViewModelTests {
     public void ClearSearchCommand_ShouldSetSearchTextToEmpty() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         viewModel.SearchText = "something";
 
         viewModel.ClearSearchCommand.Execute(null);
@@ -1470,7 +1476,7 @@ public class MainViewModelTests {
     public void OnSearchTextChanged_ShouldNotifyNoRecordingsFoundPropertyChanged() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
 
         var changed = new List<string>();
         viewModel.PropertyChanged += (_, args) => {
@@ -1493,7 +1499,7 @@ public class MainViewModelTests {
         context.Recordings.Add(recording);
         context.SaveChanges();
 
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         viewModel.SearchText = "brow";
         viewModel.ApplyFilter();
 
@@ -1510,7 +1516,7 @@ public class MainViewModelTests {
         context.Recordings.Add(recording);
         context.SaveChanges();
 
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         var act = () => {
             viewModel.SearchText = "something";
             viewModel.ApplyFilter();
@@ -1523,7 +1529,7 @@ public class MainViewModelTests {
     public void ClearSearchCommand_ShouldRaiseNoRecordingsFoundPropertyChanged() {
         using var connection = CreateConnection();
         using var context = CreateContext(connection);
-        var viewModel = CreateViewModel(connection, context);
+        var viewModel = CreateViewModel(context);
         viewModel.SearchText = "randomwords123";
 
         var changed = new List<string>();
@@ -1539,13 +1545,13 @@ public class MainViewModelTests {
 
     // ========== Helper methods ==========
 
-    private static MainViewModel CreateViewModel(SqliteConnection connection, AppDbContext context) {
+    private static MainViewModel CreateViewModel(AppDbContext context) {
         var recorder = Substitute.For<IAudioRecorder>();
         var player = Substitute.For<IAudioPlayer>();
         return new MainViewModel(recorder, player, context, Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>());
     }
 
-    private static MainViewModel CreateViewModelWithClipboard(SqliteConnection connection, AppDbContext context, IClipboardService clipboard) {
+    private static MainViewModel CreateViewModelWithClipboard(AppDbContext context, IClipboardService clipboard) {
         var recorder = Substitute.For<IAudioRecorder>();
         var player = Substitute.For<IAudioPlayer>();
         return new MainViewModel(recorder, player, context, Substitute.For<ITranscriptionManager>(), clipboard);

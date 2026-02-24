@@ -1,22 +1,17 @@
-using System.Diagnostics.CodeAnalysis;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Serilog;
-using VivaVoz.Services.Audio;
-using VivaVoz.Services.Transcription;
 
 namespace VivaVoz.Services;
 
-public class TrayService : ITrayService {
-    private readonly IClassicDesktopStyleApplicationLifetime _desktop;
-    private readonly IAudioRecorder _recorder;
-    private readonly ITranscriptionManager _transcriptionManager;
+public class TrayService(
+    IClassicDesktopStyleApplicationLifetime desktop,
+    IAudioRecorder recorder,
+    ITranscriptionManager transcriptionManager) : ITrayService {
+    private readonly IClassicDesktopStyleApplicationLifetime _desktop = desktop ?? throw new ArgumentNullException(nameof(desktop));
+    private readonly IAudioRecorder _recorder = recorder ?? throw new ArgumentNullException(nameof(recorder));
+    private readonly ITranscriptionManager _transcriptionManager = transcriptionManager ?? throw new ArgumentNullException(nameof(transcriptionManager));
     private TrayIcon? _trayIcon;
     private NativeMenuItem? _toggleRecordingItem;
-    private TrayIconState _currentState = TrayIconState.Idle;
     private int _activeTranscriptions;
     private WindowIcon? _idleIcon;
     private WindowIcon? _activeIcon;
@@ -27,21 +22,12 @@ public class TrayService : ITrayService {
     /// <summary>
     /// The current tray icon state. Exposed as <c>internal</c> for unit testing.
     /// </summary>
-    internal TrayIconState CurrentState => _currentState;
+    internal TrayIconState CurrentState { get; private set; } = TrayIconState.Idle;
 
     /// <summary>
     /// The number of in-flight transcriptions. Exposed as <c>internal</c> for unit testing.
     /// </summary>
     internal int ActiveTranscriptions => _activeTranscriptions;
-
-    public TrayService(
-        IClassicDesktopStyleApplicationLifetime desktop,
-        IAudioRecorder recorder,
-        ITranscriptionManager transcriptionManager) {
-        _desktop = desktop ?? throw new ArgumentNullException(nameof(desktop));
-        _recorder = recorder ?? throw new ArgumentNullException(nameof(recorder));
-        _transcriptionManager = transcriptionManager ?? throw new ArgumentNullException(nameof(transcriptionManager));
-    }
 
     [ExcludeFromCodeCoverage(Justification = "Requires Avalonia platform and AssetLoader at runtime.")]
     public void Initialize() {
@@ -83,24 +69,25 @@ public class TrayService : ITrayService {
     }
 
     public void SetState(TrayIconState state) {
-        _currentState = state;
-        if (_trayIcon is null) return;
+        CurrentState = state;
+        if (_trayIcon is null)
+            return;
 
         _trayIcon.Icon = state == TrayIconState.Idle ? _idleIcon : _activeIcon;
         _trayIcon.ToolTipText = GetTooltipForState(state);
 
-        if (_toggleRecordingItem is not null) {
-            _toggleRecordingItem.Header = state == TrayIconState.Recording
+        _toggleRecordingItem?.Header = state == TrayIconState.Recording
                 ? "Stop Recording"
                 : "Start Recording";
-        }
 
         Log.Debug("[TrayService] State changed to {State}.", state);
     }
 
     public void ShowTranscriptionComplete(string? transcript) {
-        if (_trayIcon is null) return;
-        if (!ShouldShowTranscriptionNotification(_desktop.MainWindow)) return;
+        if (_trayIcon is null)
+            return;
+        if (!ShouldShowTranscriptionNotification(_desktop.MainWindow))
+            return;
 
         _trayIcon.ToolTipText = FormatTooltipText(transcript);
         Log.Information("[TrayService] Transcription complete notification shown.");
@@ -114,6 +101,7 @@ public class TrayService : ITrayService {
         _trayIcon = null;
         _idleIcon = null;
         _activeIcon = null;
+        GC.SuppressFinalize(this);
     }
 
     // ── Internal logic handlers (testable without Avalonia) ────────────────────
@@ -122,9 +110,7 @@ public class TrayService : ITrayService {
     /// Handles recording started: transitions state to <see cref="TrayIconState.Recording"/>.
     /// Exposed as <c>internal</c> for unit testing via <c>InternalsVisibleTo</c>.
     /// </summary>
-    internal void HandleRecordingStarted() {
-        SetState(TrayIconState.Recording);
-    }
+    internal void HandleRecordingStarted() => SetState(TrayIconState.Recording);
 
     /// <summary>
     /// Handles recording stopped: increments in-flight transcriptions and transitions
@@ -159,7 +145,7 @@ public class TrayService : ITrayService {
     /// (tooltip update) should be shown. Exposed as <c>internal</c> for unit testing.
     /// </summary>
     internal static bool ShouldShowTranscriptionNotification(Window? window)
-        => window is not null && !window.IsVisible;
+        => window?.IsVisible == false;
 
     // ── Avalonia event handlers (excluded from code coverage) ─────────────────
 
@@ -180,7 +166,7 @@ public class TrayService : ITrayService {
 
     [ExcludeFromCodeCoverage(Justification = "UI event handler; touches Avalonia recorder/controls.")]
     private void OnToggleRecordingClicked(object? sender, EventArgs e) {
-        if (_currentState == TrayIconState.Recording) {
+        if (CurrentState == TrayIconState.Recording) {
             _recorder.StopRecording();
         }
         else {
@@ -196,7 +182,8 @@ public class TrayService : ITrayService {
     [ExcludeFromCodeCoverage(Justification = "Requires live Avalonia Window.")]
     private void ShowMainWindow() {
         var window = _desktop.MainWindow;
-        if (window is null) return;
+        if (window is null)
+            return;
 
         window.Show();
         window.WindowState = WindowState.Normal;
@@ -206,7 +193,8 @@ public class TrayService : ITrayService {
     [ExcludeFromCodeCoverage(Justification = "Requires live Avalonia Window.")]
     private void ToggleMainWindowVisibility() {
         var window = _desktop.MainWindow;
-        if (window is null) return;
+        if (window is null)
+            return;
 
         if (window.IsVisible)
             window.Hide();
@@ -223,15 +211,9 @@ public class TrayService : ITrayService {
 
     // ── Testable static helpers ────────────────────────────────────────────────
 
-    public static string FormatTooltipText(string? transcript) {
-        if (string.IsNullOrWhiteSpace(transcript))
-            return "VivaVoz — No speech detected.";
-
-        if (transcript.Length <= 30)
-            return $"VivaVoz — {transcript}";
-
-        return $"VivaVoz — {transcript[..30]}...";
-    }
+    public static string FormatTooltipText(string? transcript) => string.IsNullOrWhiteSpace(transcript)
+            ? "VivaVoz — No speech detected."
+            : transcript.Length <= 30 ? $"VivaVoz — {transcript}" : $"VivaVoz — {transcript[..30]}...";
 
     public static string GetTooltipForState(TrayIconState state) => state switch {
         TrayIconState.Recording => "VivaVoz — Recording...",

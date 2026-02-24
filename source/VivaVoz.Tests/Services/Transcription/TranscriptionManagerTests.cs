@@ -388,13 +388,13 @@ public class TranscriptionManagerTests : IDisposable {
     [Fact]
     public async Task EnqueueTranscription_WhenPickedUp_ShouldSetStatusToTranscribingBeforeEngine() {
         var recordingId = SeedRecording(RecordingStatus.PendingTranscription);
-        var audioPath = "/tmp/test-audio.wav";
+        const string audioPath = "/tmp/test-audio.wav";
 
         // Capture status at the moment the engine is called
         RecordingStatus? statusAtEngineCall = null;
         _engine.TranscribeAsync(Arg.Any<string>(), Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
             .Returns(async _ => {
-                using var ctx = CreateContext();
+                await using var ctx = CreateContext();
                 var r = await ctx.Recordings.FindAsync(recordingId);
                 statusAtEngineCall = r?.Status;
                 return new TranscriptionResult("Hello", "en", TimeSpan.FromSeconds(1), "tiny");
@@ -412,7 +412,7 @@ public class TranscriptionManagerTests : IDisposable {
     [Fact]
     public async Task EnqueueTranscription_StartingFromPendingTranscription_ShouldCompleteSuccessfully() {
         var recordingId = SeedRecording(RecordingStatus.PendingTranscription);
-        var audioPath = "/tmp/test-audio.wav";
+        const string audioPath = "/tmp/test-audio.wav";
 
         _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
             .Returns(new TranscriptionResult("Hello world", "en", TimeSpan.FromSeconds(2), "tiny"));
@@ -425,7 +425,7 @@ public class TranscriptionManagerTests : IDisposable {
 
         result.Success.Should().BeTrue();
 
-        using var verifyContext = CreateContext();
+        await using var verifyContext = CreateContext();
         var recording = await verifyContext.Recordings.FindAsync(recordingId);
         recording!.Status.Should().Be(RecordingStatus.Complete);
         recording.Transcript.Should().Be("Hello world");
@@ -435,7 +435,7 @@ public class TranscriptionManagerTests : IDisposable {
     public async Task EnqueueTranscription_WhenSetTranscribingFails_ShouldStillCompleteTranscription() {
         // Use a non-existent recording ID: SetTranscribingStatus will be a no-op (null guard), engine still runs.
         var nonExistentId = Guid.NewGuid();
-        var audioPath = "/tmp/test-audio.wav";
+        const string audioPath = "/tmp/test-audio.wav";
 
         _engine.TranscribeAsync(audioPath, Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
             .Returns(new TranscriptionResult("text", "en", TimeSpan.FromSeconds(1), "tiny"));

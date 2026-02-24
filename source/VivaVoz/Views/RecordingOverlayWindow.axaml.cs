@@ -26,7 +26,8 @@ public partial class RecordingOverlayWindow : Window {
 
     protected override void OnOpened(EventArgs e) {
         base.OnOpened(e);
-        if (_positionInitialized) return;
+        if (_positionInitialized)
+            return;
         _positionInitialized = true;
 
         var settings = _settingsService?.Current;
@@ -39,8 +40,10 @@ public partial class RecordingOverlayWindow : Window {
     }
 
     private void OnPositionChanged(object? sender, PixelPointEventArgs e) {
-        if (!_positionInitialized) return;
-        if (_settingsService?.Current is not { } settings) return;
+        if (!_positionInitialized)
+            return;
+        if (_settingsService?.Current is not { } settings)
+            return;
 
         settings.OverlayX = Position.X;
         settings.OverlayY = Position.Y;
@@ -49,7 +52,8 @@ public partial class RecordingOverlayWindow : Window {
 
     private void PlaceAtBottomCenter() {
         var screen = Screens.Primary;
-        if (screen is null) return;
+        if (screen is null)
+            return;
 
         var workArea = screen.WorkingArea;
         var position = ComputeDefaultPosition(workArea, (int)Width, (int)Height);
@@ -57,7 +61,7 @@ public partial class RecordingOverlayWindow : Window {
     }
 
     internal static PixelPoint ComputeDefaultPosition(PixelRect workArea, int windowWidth, int windowHeight) {
-        var x = workArea.X + (workArea.Width - windowWidth) / 2;
+        var x = workArea.X + ((workArea.Width - windowWidth) / 2);
         var y = workArea.Y + workArea.Height - windowHeight - 40;
         return new PixelPoint(x, y);
     }

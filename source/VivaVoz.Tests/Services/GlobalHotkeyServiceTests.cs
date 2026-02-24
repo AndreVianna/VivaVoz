@@ -1,6 +1,7 @@
 using AwesomeAssertions;
-using VivaVoz.Models;
+
 using VivaVoz.Services;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Services;
@@ -282,8 +283,9 @@ public class GlobalHotkeyServiceTests {
 
     [Fact]
     public void HandleHotkeyDown_WithUnknownMode_ShouldNotThrow() {
-        var service = new GlobalHotkeyService();
-        service.Mode = "Unknown";
+        var service = new GlobalHotkeyService {
+            Mode = "Unknown"
+        };
 
         var act = service.HandleHotkeyDown;
 
@@ -293,14 +295,16 @@ public class GlobalHotkeyServiceTests {
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     private static GlobalHotkeyService CreateToggleService() {
-        var service = new GlobalHotkeyService();
-        service.Mode = "Toggle";
+        var service = new GlobalHotkeyService {
+            Mode = "Toggle"
+        };
         return service;
     }
 
     private static GlobalHotkeyService CreatePushToTalkService() {
-        var service = new GlobalHotkeyService();
-        service.Mode = "Push-to-Talk";
+        var service = new GlobalHotkeyService {
+            Mode = "Push-to-Talk"
+        };
         return service;
     }
 }

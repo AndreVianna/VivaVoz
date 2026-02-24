@@ -1,5 +1,7 @@
 using AwesomeAssertions;
+
 using VivaVoz.Models;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Models;
@@ -46,7 +48,7 @@ public class HotkeyConfigTests {
         var result = HotkeyConfig.Parse("Ctrl+Shift+R");
 
         result.Should().NotBeNull();
-        result!.VirtualKey.Should().Be((uint)'R');
+        result!.VirtualKey.Should().Be('R');
     }
 
     [Fact]
@@ -63,7 +65,7 @@ public class HotkeyConfigTests {
 
         result.Should().NotBeNull();
         result!.Modifiers.Should().Be(HotkeyConfig.ModControl | HotkeyConfig.ModShift);
-        result!.VirtualKey.Should().Be((uint)'R');
+        result!.VirtualKey.Should().Be('R');
     }
 
     [Fact]
@@ -96,7 +98,7 @@ public class HotkeyConfigTests {
 
         result.Should().NotBeNull();
         result!.Modifiers.Should().Be(0u);
-        result!.VirtualKey.Should().Be((uint)'A');
+        result!.VirtualKey.Should().Be('A');
     }
 
     [Fact]
@@ -104,7 +106,7 @@ public class HotkeyConfigTests {
         var result = HotkeyConfig.Parse("Ctrl+1");
 
         result.Should().NotBeNull();
-        result!.VirtualKey.Should().Be((uint)'1');
+        result!.VirtualKey.Should().Be('1');
     }
 
     [Fact]
@@ -127,7 +129,7 @@ public class HotkeyConfigTests {
     public void Default_ShouldHaveRAsVirtualKey() {
         var config = HotkeyConfig.Default;
 
-        config.VirtualKey.Should().Be((uint)'R');
+        config.VirtualKey.Should().Be('R');
     }
 
     [Fact]
@@ -170,22 +172,14 @@ public class HotkeyConfigTests {
     }
 
     [Fact]
-    public void ModControl_ShouldBe2() {
-        HotkeyConfig.ModControl.Should().Be(0x0002u);
-    }
+    public void ModControl_ShouldBe2() => HotkeyConfig.ModControl.Should().Be(0x0002u);
 
     [Fact]
-    public void ModAlt_ShouldBe1() {
-        HotkeyConfig.ModAlt.Should().Be(0x0001u);
-    }
+    public void ModAlt_ShouldBe1() => HotkeyConfig.ModAlt.Should().Be(0x0001u);
 
     [Fact]
-    public void ModShift_ShouldBe4() {
-        HotkeyConfig.ModShift.Should().Be(0x0004u);
-    }
+    public void ModShift_ShouldBe4() => HotkeyConfig.ModShift.Should().Be(0x0004u);
 
     [Fact]
-    public void ModWin_ShouldBe8() {
-        HotkeyConfig.ModWin.Should().Be(0x0008u);
-    }
+    public void ModWin_ShouldBe8() => HotkeyConfig.ModWin.Should().Be(0x0008u);
 }

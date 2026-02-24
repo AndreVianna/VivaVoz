@@ -1,10 +1,13 @@
 using AwesomeAssertions;
+
 using NSubstitute;
+
 using VivaVoz.Models;
 using VivaVoz.Services;
 using VivaVoz.Services.Audio;
 using VivaVoz.Services.Transcription;
 using VivaVoz.ViewModels;
+
 using Xunit;
 
 namespace VivaVoz.Tests.ViewModels;
@@ -183,7 +186,6 @@ public class SettingsViewModelTests {
         recorder.GetAvailableDevices().Returns([]);
 
         var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
-
         vm.AvailableDevices.Should().BeEmpty();
     }
 
@@ -261,101 +263,101 @@ public class SettingsViewModelTests {
     // ========== Property change triggers save ==========
 
     [Fact]
-    public void WhisperModelSize_WhenChanged_ShouldCallSaveSettingsAsync() {
+    public void WhisperModelSize_WhenChanged_ShouldCallSaveSettings() {
         var (service, recorder, modelManager, themeService) = CreateDependencies();
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
-
-        vm.WhisperModelSize = "large";
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService) {
+            WhisperModelSize = "large"
+        };
 
         service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.WhisperModelSize == "large"));
     }
 
     [Fact]
-    public void AudioInputDevice_WhenChanged_ShouldCallSaveSettingsAsync() {
+    public void AudioInputDevice_WhenChanged_ShouldCallSaveSettings() {
         var (service, recorder, modelManager, themeService) = CreateDependencies();
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
-
-        vm.AudioInputDevice = "USB Mic";
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService) {
+            AudioInputDevice = "USB Mic"
+        };
 
         service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.AudioInputDevice == "USB Mic"));
     }
 
     [Fact]
-    public void StoragePath_WhenChanged_ShouldCallSaveSettingsAsync() {
+    public void StoragePath_WhenChanged_ShouldCallSaveSettings() {
         var (service, recorder, modelManager, themeService) = CreateDependencies();
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
-
-        vm.StoragePath = "/new/path";
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService) {
+            StoragePath = "/new/path"
+        };
 
         service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.StoragePath == "/new/path"));
     }
 
     [Fact]
-    public void ExportFormat_WhenChanged_ShouldCallSaveSettingsAsync() {
+    public void ExportFormat_WhenChanged_ShouldCallSaveSettings() {
         var (service, recorder, modelManager, themeService) = CreateDependencies();
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
-
-        vm.ExportFormat = "OGG";
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService) {
+            ExportFormat = "OGG"
+        };
 
         service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.ExportFormat == "OGG"));
     }
 
     [Fact]
-    public void Theme_WhenChanged_ShouldCallSaveSettingsAsync() {
+    public void Theme_WhenChanged_ShouldCallSaveSettings() {
         var (service, recorder, modelManager, themeService) = CreateDependencies();
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
-
-        vm.Theme = "Dark";
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService) {
+            Theme = "Dark"
+        };
 
         service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.Theme == "Dark"));
     }
 
     [Fact]
-    public void Language_WhenChanged_ShouldCallSaveSettingsAsync() {
+    public void Language_WhenChanged_ShouldCallSaveSettings() {
         var (service, recorder, modelManager, themeService) = CreateDependencies();
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
-
-        vm.Language = "fr";
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService) {
+            Language = "fr"
+        };
 
         service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.Language == "fr"));
     }
 
     [Fact]
-    public void RunAtStartup_WhenChanged_ShouldCallSaveSettingsAsync() {
+    public void RunAtStartup_WhenChanged_ShouldCallSaveSettings() {
         var (service, recorder, modelManager, themeService) = CreateDependencies();
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService) {
+            RunAtStartup = true
+        };
 
-        vm.RunAtStartup = true;
-
-        service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.RunAtStartup == true));
+        service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.RunAtStartup));
     }
 
     [Fact]
-    public void MinimizeToTray_WhenChanged_ShouldCallSaveSettingsAsync() {
+    public void MinimizeToTray_WhenChanged_ShouldCallSaveSettings() {
         var (service, recorder, modelManager, themeService) = CreateDependencies();
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService) {
+            MinimizeToTray = false
+        };
 
-        vm.MinimizeToTray = false;
-
-        service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.MinimizeToTray == false));
+        service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => !s.MinimizeToTray));
     }
 
     [Fact]
-    public void HotkeyConfig_WhenChanged_ShouldCallSaveSettingsAsync() {
+    public void HotkeyConfig_WhenChanged_ShouldCallSaveSettings() {
         var (service, recorder, modelManager, themeService) = CreateDependencies();
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
-
-        vm.HotkeyConfig = "Ctrl+Shift+R";
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService) {
+            HotkeyConfig = "Ctrl+Shift+R"
+        };
 
         service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.HotkeyConfig == "Ctrl+Shift+R"));
     }
 
     [Fact]
-    public void RecordingMode_WhenChanged_ShouldCallSaveSettingsAsync() {
+    public void RecordingMode_WhenChanged_ShouldCallSaveSettings() {
         var (service, recorder, modelManager, themeService) = CreateDependencies();
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
-
-        vm.RecordingMode = "Push-to-Talk";
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService) {
+            RecordingMode = "Push-to-Talk"
+        };
 
         service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.RecordingMode == "Push-to-Talk"));
     }

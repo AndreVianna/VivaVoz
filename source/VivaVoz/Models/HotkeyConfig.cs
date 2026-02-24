@@ -26,7 +26,7 @@ public class HotkeyConfig {
     /// <summary>The default hotkey: Ctrl+Shift+R.</summary>
     public static HotkeyConfig Default => new() {
         Modifiers = ModControl | ModShift,
-        VirtualKey = (uint)'R'
+        VirtualKey = 'R'
     };
 
     /// <summary>
@@ -62,7 +62,7 @@ public class HotkeyConfig {
                     break;
                 default:
                     if (part.Length == 1 && char.IsLetterOrDigit(part[0]))
-                        virtualKey = (uint)char.ToUpperInvariant(part[0]);
+                        virtualKey = char.ToUpperInvariant(part[0]);
                     break;
             }
         }
@@ -79,10 +79,14 @@ public class HotkeyConfig {
     public override string ToString() {
         var parts = new List<string>(5);
 
-        if ((Modifiers & ModControl) != 0) parts.Add("Ctrl");
-        if ((Modifiers & ModAlt) != 0) parts.Add("Alt");
-        if ((Modifiers & ModShift) != 0) parts.Add("Shift");
-        if ((Modifiers & ModWin) != 0) parts.Add("Win");
+        if ((Modifiers & ModControl) != 0)
+            parts.Add("Ctrl");
+        if ((Modifiers & ModAlt) != 0)
+            parts.Add("Alt");
+        if ((Modifiers & ModShift) != 0)
+            parts.Add("Shift");
+        if ((Modifiers & ModWin) != 0)
+            parts.Add("Win");
 
         parts.Add(((char)VirtualKey).ToString());
 

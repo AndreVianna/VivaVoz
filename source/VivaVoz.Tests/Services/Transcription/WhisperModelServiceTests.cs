@@ -1,8 +1,10 @@
 using System.Net;
-using System.Net.Http;
 using System.Security.Cryptography;
+
 using AwesomeAssertions;
+
 using VivaVoz.Services.Transcription;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Services.Transcription;
@@ -18,8 +20,11 @@ public class WhisperModelServiceTests : IDisposable {
     }
 
     public void Dispose() {
-        try { Directory.Delete(_tempDir, recursive: true); }
+        try {
+            Directory.Delete(_tempDir, recursive: true);
+        }
         catch { /* best effort cleanup */ }
+
         GC.SuppressFinalize(this);
     }
 
@@ -173,13 +178,13 @@ public class WhisperModelServiceTests : IDisposable {
         var service = CreateService(handler);
 
         var progressValues = new List<double>();
-        var progress = new Progress<double>(p => progressValues.Add(p));
+        var progress = new Progress<double>(progressValues.Add);
 
         await service.DownloadModelAsync("tiny", progress);
         await Task.Delay(100); // let Progress<T> dispatch
 
         progressValues.Should().NotBeEmpty();
-        progressValues.Last().Should().Be(1.0);
+        progressValues[^1].Should().Be(1.0);
     }
 
     [Fact]
@@ -228,7 +233,7 @@ public class WhisperModelServiceTests : IDisposable {
     public async Task DownloadModelAsync_ShouldCreateModelsDirectoryIfMissing() {
         var deepDir = Path.Combine(_tempDir, "nested", "models");
         var deepModelManager = new WhisperModelManager(deepDir);
-        var handler = new TrackingHttpMessageHandler(new byte[] { 1, 2, 3 });
+        var handler = new TrackingHttpMessageHandler([1, 2, 3]);
         var service = new WhisperModelService(deepModelManager, new HttpClient(handler));
 
         await service.DownloadModelAsync("tiny");
@@ -255,7 +260,7 @@ public class WhisperModelServiceTests : IDisposable {
     [Fact]
     public async Task DownloadModelAsync_WithWrongHashInRegistry_ShouldThrowAndCleanUp() {
         var fakeContent = new byte[] { 1, 2, 3, 4, 5 };
-        var wrongHash = "0000000000000000000000000000000000000000000000000000000000000000";
+        const string wrongHash = "0000000000000000000000000000000000000000000000000000000000000000";
         var handler = new TrackingHttpMessageHandler(fakeContent);
         var expectedHashes = new Dictionary<string, string> { ["tiny"] = wrongHash };
         var service = new WhisperModelService(_modelManager, new HttpClient(handler), expectedHashes);
@@ -276,7 +281,7 @@ public class WhisperModelServiceTests : IDisposable {
     private WhisperModelService CreateService(HttpMessageHandler? handler = null) {
         var httpClient = handler is not null
             ? new HttpClient(handler)
-            : new HttpClient(new TrackingHttpMessageHandler(new byte[] { 1, 2, 3 }));
+            : new HttpClient(new TrackingHttpMessageHandler([1, 2, 3]));
         return new WhisperModelService(_modelManager, httpClient);
     }
 
@@ -287,11 +292,9 @@ public class WhisperModelServiceTests : IDisposable {
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
-    private sealed class TrackingHttpMessageHandler : HttpMessageHandler {
-        private readonly byte[] _content;
+    private sealed class TrackingHttpMessageHandler(byte[] content) : HttpMessageHandler {
+        private readonly byte[] _content = content;
         public int CallCount { get; private set; }
-
-        public TrackingHttpMessageHandler(byte[] content) => _content = content;
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct) {
             CallCount++;

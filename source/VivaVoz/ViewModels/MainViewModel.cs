@@ -154,7 +154,7 @@ public partial class MainViewModel : ObservableObject {
             : Recordings.Where(r =>
                 (r.Transcript?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 r.Title.Contains(term, StringComparison.OrdinalIgnoreCase));
-        FilteredRecordings = new ObservableCollection<Recording>(filtered);
+        FilteredRecordings = [.. filtered];
     }
 
     [RelayCommand]
@@ -195,13 +195,15 @@ public partial class MainViewModel : ObservableObject {
 
     [RelayCommand]
     private void Retranscribe() {
-        if (SelectedRecording is null) return;
+        if (SelectedRecording is null)
+            return;
         var audioPath = Path.Combine(FilePaths.AudioDirectory, SelectedRecording.AudioFileName);
         if (!File.Exists(audioPath)) {
             SelectedRecording.Status = RecordingStatus.Failed;
             NotifyTranscriptProperties();
             return;
         }
+
         SelectedRecording.Status = RecordingStatus.Transcribing;
         NotifyTranscriptProperties();
         _transcriptionManager.EnqueueTranscription(SelectedRecording.Id, audioPath);
@@ -227,7 +229,8 @@ public partial class MainViewModel : ObservableObject {
 
     internal void OnRecordingDeleted(object? sender, Guid id) {
         var recording = Recordings.FirstOrDefault(r => r.Id == id);
-        if (recording is null) return;
+        if (recording is null)
+            return;
         Recordings.Remove(recording);
         ApplyFilter();
         SelectedRecording = null;

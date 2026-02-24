@@ -63,5 +63,6 @@ public partial class RecordingOverlayViewModel : ObservableObject, IDisposable {
         _recorder.RecordingStopped -= OnRecordingStopped;
         _timer?.Stop();
         _timer = null;
+        GC.SuppressFinalize(this);
     }
 }
