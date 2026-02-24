@@ -1,6 +1,6 @@
 namespace VivaVoz.ViewModels;
 
-public partial class ModelItemViewModel(string modelId, IModelManager modelManager) : ObservableObject {
+public partial class ModelItemViewModel(string modelId, IModelManager modelManager, Action<string>? onSelect = null) : ObservableObject {
     private static readonly Dictionary<string, string> _displayNames = new(StringComparer.OrdinalIgnoreCase) {
         ["tiny"] = "Tiny",
         ["base"] = "Base",
@@ -28,6 +28,9 @@ public partial class ModelItemViewModel(string modelId, IModelManager modelManag
     public partial bool IsInstalled { get; set; } = modelManager.IsModelDownloaded(modelId);
 
     [ObservableProperty]
+    public partial bool IsSelected { get; set; }
+
+    [ObservableProperty]
     public partial bool IsDownloading { get; set; }
 
     [ObservableProperty]
@@ -40,6 +43,7 @@ public partial class ModelItemViewModel(string modelId, IModelManager modelManag
     public bool CanDownload => !IsInstalled && !IsDownloading;
     public bool CanCancel => IsDownloading;
     public bool CanDelete => IsInstalled && !IsDownloading;
+    public bool CanSelect => IsInstalled && !IsSelected;
 
     [RelayCommand(CanExecute = nameof(CanDownload))]
     private async Task DownloadAsync() {
@@ -72,6 +76,9 @@ public partial class ModelItemViewModel(string modelId, IModelManager modelManag
     [RelayCommand(CanExecute = nameof(CanCancel))]
     private void CancelDownload() => _downloadCts?.Cancel();
 
+    [RelayCommand(CanExecute = nameof(CanSelect))]
+    private void Select() => onSelect?.Invoke(ModelId);
+
     [RelayCommand(CanExecute = nameof(CanDelete))]
     private void Delete() {
         _modelManager.DeleteModel(ModelId);
@@ -82,8 +89,15 @@ public partial class ModelItemViewModel(string modelId, IModelManager modelManag
         OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(CanDownload));
         OnPropertyChanged(nameof(CanDelete));
+        OnPropertyChanged(nameof(CanSelect));
         DownloadCommand.NotifyCanExecuteChanged();
         DeleteCommand.NotifyCanExecuteChanged();
+        SelectCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnIsSelectedChanged(bool value) {
+        OnPropertyChanged(nameof(CanSelect));
+        SelectCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnIsDownloadingChanged(bool value) {

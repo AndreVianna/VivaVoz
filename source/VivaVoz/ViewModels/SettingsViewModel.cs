@@ -1,5 +1,9 @@
 namespace VivaVoz.ViewModels;
 
+public record LanguageOption(string Code, string DisplayName) {
+    public override string ToString() => DisplayName;
+}
+
 public partial class SettingsViewModel : ObservableObject {
     private readonly ISettingsService _settingsService;
     private readonly IModelManager _modelManager;
@@ -12,6 +16,17 @@ public partial class SettingsViewModel : ObservableObject {
     public static IReadOnlyList<string> AvailableExportFormats { get; } = ["MP3", "WAV", "OGG", "TXT", "MD"];
     public static IReadOnlyList<string> AvailableRecordingModes { get; } = ["Toggle", "Push-to-Talk"];
     public static IReadOnlyList<string> AvailableLanguages { get; } = ["auto", "en", "fr", "de", "es", "pt", "it", "ja", "zh"];
+    public static IReadOnlyList<LanguageOption> AvailableLanguageOptions { get; } = [
+        new("auto", "Auto-detect"),
+        new("en", "English"),
+        new("fr", "French"),
+        new("de", "German"),
+        new("es", "Spanish"),
+        new("pt", "Portuguese"),
+        new("it", "Italian"),
+        new("ja", "Japanese"),
+        new("zh", "Chinese"),
+    ];
 
     public IReadOnlyList<string> AvailableDevices { get; }
 
@@ -47,6 +62,18 @@ public partial class SettingsViewModel : ObservableObject {
     [ObservableProperty]
     public partial string RecordingMode { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsListeningForHotkey { get; set; }
+
+    public string HotkeyDisplayText => IsListeningForHotkey
+        ? "Press combination..."
+        : string.IsNullOrEmpty(HotkeyConfig) ? "Not Set" : HotkeyConfig.Replace("+", " + ");
+
+    public LanguageOption? SelectedLanguageOption {
+        get => AvailableLanguageOptions.FirstOrDefault(o => o.Code == Language);
+        set { if (value is not null) Language = value.Code; }
+    }
+
     public SettingsViewModel(ISettingsService settingsService, IAudioRecorder recorder, IModelManager modelManager, IThemeService themeService) {
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         ArgumentNullException.ThrowIfNull(recorder);
@@ -68,12 +95,17 @@ public partial class SettingsViewModel : ObservableObject {
 
         AvailableDevices = recorder.GetAvailableDevices();
 
-        Models = [.. modelManager.GetAvailableModelIds().Select(id => new ModelItemViewModel(id, modelManager))];
+        Models = [.. modelManager.GetAvailableModelIds().Select(id => new ModelItemViewModel(id, modelManager, SelectModel))];
+
+        UpdateModelSelection(WhisperModelSize);
 
         _isInitializing = false;
     }
 
-    partial void OnWhisperModelSizeChanged(string value) => SaveSetting(s => s.WhisperModelSize = value);
+    partial void OnWhisperModelSizeChanged(string value) {
+        SaveSetting(s => s.WhisperModelSize = value);
+        UpdateModelSelection(value);
+    }
     partial void OnAudioInputDeviceChanged(string? value) => SaveSetting(s => s.AudioInputDevice = value);
     partial void OnStoragePathChanged(string value) => SaveSetting(s => s.StoragePath = value);
     partial void OnExportFormatChanged(string value) => SaveSetting(s => s.ExportFormat = value);
@@ -81,11 +113,34 @@ public partial class SettingsViewModel : ObservableObject {
         SaveSetting(s => s.Theme = value);
         if (!_isInitializing) _themeService.ApplyTheme(value);
     }
-    partial void OnLanguageChanged(string value) => SaveSetting(s => s.Language = value);
+    partial void OnLanguageChanged(string value) {
+        SaveSetting(s => s.Language = value);
+        OnPropertyChanged(nameof(SelectedLanguageOption));
+    }
     partial void OnRunAtStartupChanged(bool value) => SaveSetting(s => s.RunAtStartup = value);
     partial void OnMinimizeToTrayChanged(bool value) => SaveSetting(s => s.MinimizeToTray = value);
-    partial void OnHotkeyConfigChanged(string value) => SaveSetting(s => s.HotkeyConfig = value);
+    partial void OnHotkeyConfigChanged(string value) {
+        SaveSetting(s => s.HotkeyConfig = value);
+        OnPropertyChanged(nameof(HotkeyDisplayText));
+    }
     partial void OnRecordingModeChanged(string value) => SaveSetting(s => s.RecordingMode = value);
+    partial void OnIsListeningForHotkeyChanged(bool value) => OnPropertyChanged(nameof(HotkeyDisplayText));
+
+    [RelayCommand]
+    private void StartSetHotkey() => IsListeningForHotkey = true;
+
+    internal void AcceptHotkeyCapture(string config) {
+        HotkeyConfig = config;
+        IsListeningForHotkey = false;
+    }
+
+    private void SelectModel(string modelId) => WhisperModelSize = modelId;
+
+    private void UpdateModelSelection(string selectedId) {
+        if (Models is null) return;
+        foreach (var m in Models)
+            m.IsSelected = m.ModelId == selectedId;
+    }
 
     private void SaveSetting(Action<Settings> update) {
         if (_isInitializing)

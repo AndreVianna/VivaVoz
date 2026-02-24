@@ -407,6 +407,142 @@ public class SettingsViewModelTests {
         changed.Should().Contain(nameof(SettingsViewModel.Theme));
     }
 
+    // ========== Hotkey capture ==========
+
+    [Fact]
+    public void Constructor_ShouldInitializeIsListeningForHotkeyFalse() {
+        var (service, recorder, modelManager, themeService) = CreateDependencies();
+
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
+
+        vm.IsListeningForHotkey.Should().BeFalse();
+    }
+
+    [Fact]
+    public void StartSetHotkeyCommand_ShouldSetIsListeningForHotkeyTrue() {
+        var (service, recorder, modelManager, themeService) = CreateDependencies();
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
+
+        vm.StartSetHotkeyCommand.Execute(null);
+
+        vm.IsListeningForHotkey.Should().BeTrue();
+    }
+
+    [Fact]
+    public void AcceptHotkeyCapture_ShouldSetHotkeyConfigAndClearListening() {
+        var (service, recorder, modelManager, themeService) = CreateDependencies();
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
+        vm.StartSetHotkeyCommand.Execute(null);
+
+        vm.AcceptHotkeyCapture("Ctrl+Alt+R");
+
+        vm.HotkeyConfig.Should().Be("Ctrl+Alt+R");
+        vm.IsListeningForHotkey.Should().BeFalse();
+    }
+
+    [Fact]
+    public void HotkeyDisplayText_WhenListening_ShouldShowPrompt() {
+        var (service, recorder, modelManager, themeService) = CreateDependencies();
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
+
+        vm.StartSetHotkeyCommand.Execute(null);
+
+        vm.HotkeyDisplayText.Should().Be("Press combination...");
+    }
+
+    [Fact]
+    public void HotkeyDisplayText_WhenHotkeyConfigEmpty_ShouldShowNotSet() {
+        var (service, recorder, modelManager, themeService) = CreateDependencies(s => s.HotkeyConfig = "");
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
+
+        vm.HotkeyDisplayText.Should().Be("Not Set");
+    }
+
+    [Fact]
+    public void HotkeyDisplayText_WhenHotkeyConfigSet_ShouldShowFormattedConfig() {
+        var (service, recorder, modelManager, themeService) = CreateDependencies(s => s.HotkeyConfig = "Ctrl+Shift+R");
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
+
+        vm.HotkeyDisplayText.Should().Be("Ctrl + Shift + R");
+    }
+
+    // ========== Model selection ==========
+
+    [Fact]
+    public void Constructor_ShouldSetInitialModelSelection() {
+        var (service, recorder, modelManager, themeService) = CreateDependencies(s => s.WhisperModelSize = "base");
+        modelManager.GetAvailableModelIds().Returns(["tiny", "base", "small"]);
+
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
+
+        vm.Models.First(m => m.ModelId == "base").IsSelected.Should().BeTrue();
+        vm.Models.First(m => m.ModelId == "tiny").IsSelected.Should().BeFalse();
+    }
+
+    [Fact]
+    public void WhisperModelSize_WhenChanged_ShouldUpdateModelSelection() {
+        var (service, recorder, modelManager, themeService) = CreateDependencies(s => s.WhisperModelSize = "tiny");
+        modelManager.GetAvailableModelIds().Returns(["tiny", "base"]);
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
+
+        vm.WhisperModelSize = "base";
+
+        vm.Models.First(m => m.ModelId == "base").IsSelected.Should().BeTrue();
+        vm.Models.First(m => m.ModelId == "tiny").IsSelected.Should().BeFalse();
+    }
+
+    // ========== Language options ==========
+
+    [Fact]
+    public void AvailableLanguageOptions_ShouldContainExpectedLanguages() {
+        SettingsViewModel.AvailableLanguageOptions.Should().Contain(o => o.Code == "auto");
+        SettingsViewModel.AvailableLanguageOptions.Should().Contain(o => o.Code == "en");
+        SettingsViewModel.AvailableLanguageOptions.Should().Contain(o => o.Code == "pt");
+    }
+
+    [Fact]
+    public void AvailableLanguageOptions_ShouldHaveDisplayNames() {
+        var autoOption = SettingsViewModel.AvailableLanguageOptions.First(o => o.Code == "auto");
+        var enOption = SettingsViewModel.AvailableLanguageOptions.First(o => o.Code == "en");
+
+        autoOption.DisplayName.Should().Be("Auto-detect");
+        enOption.DisplayName.Should().Be("English");
+    }
+
+    [Fact]
+    public void SelectedLanguageOption_ShouldReflectCurrentLanguage() {
+        var (service, recorder, modelManager, themeService) = CreateDependencies(s => s.Language = "pt");
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
+
+        vm.SelectedLanguageOption.Should().NotBeNull();
+        vm.SelectedLanguageOption!.Code.Should().Be("pt");
+        vm.SelectedLanguageOption.DisplayName.Should().Be("Portuguese");
+    }
+
+    [Fact]
+    public void SelectedLanguageOption_WhenSet_ShouldUpdateLanguage() {
+        var (service, recorder, modelManager, themeService) = CreateDependencies(s => s.Language = "en");
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
+        var frOption = SettingsViewModel.AvailableLanguageOptions.First(o => o.Code == "fr");
+
+        vm.SelectedLanguageOption = frOption;
+
+        vm.Language.Should().Be("fr");
+    }
+
+    [Fact]
+    public void Language_WhenChanged_ShouldRaisePropertyChangedForSelectedLanguageOption() {
+        var (service, recorder, modelManager, themeService) = CreateDependencies();
+        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
+
+        var changed = new List<string?>();
+        vm.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+        vm.Language = "de";
+
+        changed.Should().Contain(nameof(SettingsViewModel.SelectedLanguageOption));
+    }
+
     // ========== Helper methods ==========
 
     private static (ISettingsService service, IAudioRecorder recorder, IModelManager modelManager, IThemeService themeService) CreateDependencies(

@@ -400,6 +400,84 @@ public class ModelItemViewModelTests {
         changed.Should().Contain(nameof(ModelItemViewModel.StatusText));
     }
 
+    // ========== IsSelected / CanSelect / SelectCommand ==========
+
+    [Fact]
+    public void Constructor_ShouldInitializeIsSelectedFalse() {
+        var vm = CreateViewModel("tiny");
+
+        vm.IsSelected.Should().BeFalse();
+    }
+
+    [Fact]
+    public void CanSelect_WhenInstalledAndNotSelected_ShouldBeTrue() {
+        var vm = CreateViewModel("tiny", isInstalled: true);
+
+        vm.CanSelect.Should().BeTrue();
+    }
+
+    [Fact]
+    public void CanSelect_WhenNotInstalled_ShouldBeFalse() {
+        var vm = CreateViewModel("tiny", isInstalled: false);
+
+        vm.CanSelect.Should().BeFalse();
+    }
+
+    [Fact]
+    public void CanSelect_WhenAlreadySelected_ShouldBeFalse() {
+        var vm = CreateViewModel("tiny", isInstalled: true);
+        vm.IsSelected = true;
+
+        vm.CanSelect.Should().BeFalse();
+    }
+
+    [Fact]
+    public void SelectCommand_WhenInstalled_ShouldInvokeOnSelectCallback() {
+        var manager = Substitute.For<IModelManager>();
+        manager.IsModelDownloaded("tiny").Returns(true);
+        string? capturedId = null;
+        var vm = new ModelItemViewModel("tiny", manager, id => capturedId = id);
+
+        vm.SelectCommand.Execute(null);
+
+        capturedId.Should().Be("tiny");
+    }
+
+    [Fact]
+    public void SelectCommand_WhenNoCallbackProvided_ShouldNotThrow() {
+        var manager = Substitute.For<IModelManager>();
+        manager.IsModelDownloaded("tiny").Returns(true);
+        var vm = new ModelItemViewModel("tiny", manager);
+
+        var act = () => vm.SelectCommand.Execute(null);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void IsSelected_WhenChangedToTrue_ShouldRaisePropertyChangedForCanSelect() {
+        var vm = CreateViewModel("tiny", isInstalled: true);
+
+        var changed = new List<string?>();
+        vm.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+        vm.IsSelected = true;
+
+        changed.Should().Contain(nameof(ModelItemViewModel.CanSelect));
+    }
+
+    [Fact]
+    public void IsInstalled_WhenChanged_ShouldRaisePropertyChangedForCanSelect() {
+        var vm = CreateViewModel("tiny", isInstalled: false);
+
+        var changed = new List<string?>();
+        vm.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+        vm.IsInstalled = true;
+
+        changed.Should().Contain(nameof(ModelItemViewModel.CanSelect));
+    }
+
     // ========== Helpers ==========
 
     private static ModelItemViewModel CreateViewModel(string modelId, bool isInstalled = false) {
