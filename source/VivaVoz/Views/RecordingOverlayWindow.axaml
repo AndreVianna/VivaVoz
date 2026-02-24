@@ -1,0 +1,137 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:VivaVoz.ViewModels"
+        x:Class="VivaVoz.Views.RecordingOverlayWindow"
+        x:DataType="vm:RecordingOverlayViewModel"
+        SystemDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        Width="220"
+        Height="52"
+        WindowStartupLocation="Manual"
+        ShowActivated="False"
+        Cursor="Hand">
+  <Border Background="#CC1A1A1A"
+          CornerRadius="26"
+          Padding="14,0"
+          PointerPressed="OnBorderPointerPressed">
+    <Grid ColumnDefinitions="Auto,Auto,Auto,Auto"
+          VerticalAlignment="Center"
+          Height="52">
+
+      <!-- Red recording dot (pulsing) -->
+      <Ellipse Grid.Column="0"
+               Width="10" Height="10"
+               Fill="#FF4444"
+               VerticalAlignment="Center"
+               Margin="0,0,10,0">
+        <Ellipse.Styles>
+          <Style Selector="Ellipse">
+            <Style.Animations>
+              <Animation Duration="0:0:1" IterationCount="Infinite" PlaybackDirection="Alternate">
+                <KeyFrame Cue="0%">
+                  <Setter Property="Opacity" Value="1.0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                  <Setter Property="Opacity" Value="0.3" />
+                </KeyFrame>
+              </Animation>
+            </Style.Animations>
+          </Style>
+        </Ellipse.Styles>
+      </Ellipse>
+
+      <!-- Duration timer (MM:SS) -->
+      <TextBlock Grid.Column="1"
+                 Text="{Binding DurationText}"
+                 Foreground="White"
+                 FontSize="14"
+                 FontWeight="Medium"
+                 FontFamily="Monospace"
+                 VerticalAlignment="Center"
+                 Margin="0,0,10,0" />
+
+      <!-- Waveform bars (mock animation) -->
+      <StackPanel Grid.Column="2"
+                  Orientation="Horizontal"
+                  Spacing="2"
+                  VerticalAlignment="Center"
+                  Margin="0,0,10,0">
+        <Rectangle Width="3" Fill="White" Opacity="0.7" RadiusX="1.5" RadiusY="1.5">
+          <Rectangle.Styles>
+            <Style Selector="Rectangle">
+              <Style.Animations>
+                <Animation Duration="0:0:0.5" IterationCount="Infinite" PlaybackDirection="Alternate" Delay="0:0:0.0">
+                  <KeyFrame Cue="0%"><Setter Property="Height" Value="6" /></KeyFrame>
+                  <KeyFrame Cue="100%"><Setter Property="Height" Value="22" /></KeyFrame>
+                </Animation>
+              </Style.Animations>
+            </Style>
+          </Rectangle.Styles>
+        </Rectangle>
+        <Rectangle Width="3" Fill="White" Opacity="0.7" RadiusX="1.5" RadiusY="1.5">
+          <Rectangle.Styles>
+            <Style Selector="Rectangle">
+              <Style.Animations>
+                <Animation Duration="0:0:0.5" IterationCount="Infinite" PlaybackDirection="Alternate" Delay="0:0:0.1">
+                  <KeyFrame Cue="0%"><Setter Property="Height" Value="6" /></KeyFrame>
+                  <KeyFrame Cue="100%"><Setter Property="Height" Value="22" /></KeyFrame>
+                </Animation>
+              </Style.Animations>
+            </Style>
+          </Rectangle.Styles>
+        </Rectangle>
+        <Rectangle Width="3" Fill="White" Opacity="0.7" RadiusX="1.5" RadiusY="1.5">
+          <Rectangle.Styles>
+            <Style Selector="Rectangle">
+              <Style.Animations>
+                <Animation Duration="0:0:0.5" IterationCount="Infinite" PlaybackDirection="Alternate" Delay="0:0:0.2">
+                  <KeyFrame Cue="0%"><Setter Property="Height" Value="6" /></KeyFrame>
+                  <KeyFrame Cue="100%"><Setter Property="Height" Value="22" /></KeyFrame>
+                </Animation>
+              </Style.Animations>
+            </Style>
+          </Rectangle.Styles>
+        </Rectangle>
+        <Rectangle Width="3" Fill="White" Opacity="0.7" RadiusX="1.5" RadiusY="1.5">
+          <Rectangle.Styles>
+            <Style Selector="Rectangle">
+              <Style.Animations>
+                <Animation Duration="0:0:0.5" IterationCount="Infinite" PlaybackDirection="Alternate" Delay="0:0:0.3">
+                  <KeyFrame Cue="0%"><Setter Property="Height" Value="6" /></KeyFrame>
+                  <KeyFrame Cue="100%"><Setter Property="Height" Value="22" /></KeyFrame>
+                </Animation>
+              </Style.Animations>
+            </Style>
+          </Rectangle.Styles>
+        </Rectangle>
+        <Rectangle Width="3" Fill="White" Opacity="0.7" RadiusX="1.5" RadiusY="1.5">
+          <Rectangle.Styles>
+            <Style Selector="Rectangle">
+              <Style.Animations>
+                <Animation Duration="0:0:0.5" IterationCount="Infinite" PlaybackDirection="Alternate" Delay="0:0:0.4">
+                  <KeyFrame Cue="0%"><Setter Property="Height" Value="6" /></KeyFrame>
+                  <KeyFrame Cue="100%"><Setter Property="Height" Value="22" /></KeyFrame>
+                </Animation>
+              </Style.Animations>
+            </Style>
+          </Rectangle.Styles>
+        </Rectangle>
+      </StackPanel>
+
+      <!-- Stop button -->
+      <Button Grid.Column="3"
+              Content="■ Stop"
+              Command="{Binding StopRecordingCommand}"
+              Padding="8,4"
+              VerticalAlignment="Center"
+              Foreground="White"
+              Background="#4D4D4D"
+              CornerRadius="12"
+              Cursor="Arrow" />
+
+    </Grid>
+  </Border>
+</Window>

@@ -2,8 +2,6 @@
 
 #nullable disable
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace VivaVoz.Migrations;
 
 /// <inheritdoc />

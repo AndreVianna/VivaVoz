@@ -1,5 +1,13 @@
+using Avalonia.Controls.ApplicationLifetimes;
+
 using AwesomeAssertions;
+
+using NSubstitute;
+
 using VivaVoz.Services;
+using VivaVoz.Services.Audio;
+using VivaVoz.Services.Transcription;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Services;
@@ -30,7 +38,7 @@ public class TrayServiceTests {
 
     [Fact]
     public void FormatTooltipText_WithLongTranscript_ShouldTruncateTo30Chars() {
-        var transcript = "This is a very long transcript that should be truncated";
+        const string transcript = "This is a very long transcript that should be truncated";
 
         var result = TrayService.FormatTooltipText(transcript);
 
@@ -88,10 +96,230 @@ public class TrayServiceTests {
 
     [Fact]
     public void GetTooltipForState_WithInvalidEnumValue_ShouldReturnDefault() {
-        var invalidState = (TrayIconState)999;
+        const TrayIconState invalidState = (TrayIconState)999;
 
         var result = TrayService.GetTooltipForState(invalidState);
 
         result.Should().Be("VivaVoz");
+    }
+
+    // ========== Construction ==========
+
+    [Fact]
+    public void Constructor_WithNullDesktop_ShouldThrowArgumentNullException() {
+        var recorder = Substitute.For<IAudioRecorder>();
+        var transcriptionManager = Substitute.For<ITranscriptionManager>();
+
+        var act = () => new TrayService(null!, recorder, transcriptionManager);
+
+        act.Should().Throw<ArgumentNullException>().WithParameterName("desktop");
+    }
+
+    [Fact]
+    public void Constructor_WithNullRecorder_ShouldThrowArgumentNullException() {
+        var desktop = Substitute.For<IClassicDesktopStyleApplicationLifetime>();
+        var transcriptionManager = Substitute.For<ITranscriptionManager>();
+
+        var act = () => new TrayService(desktop, null!, transcriptionManager);
+
+        act.Should().Throw<ArgumentNullException>().WithParameterName("recorder");
+    }
+
+    [Fact]
+    public void Constructor_WithNullTranscriptionManager_ShouldThrowArgumentNullException() {
+        var desktop = Substitute.For<IClassicDesktopStyleApplicationLifetime>();
+        var recorder = Substitute.For<IAudioRecorder>();
+
+        var act = () => new TrayService(desktop, recorder, null!);
+
+        act.Should().Throw<ArgumentNullException>().WithParameterName("transcriptionManager");
+    }
+
+    [Fact]
+    public void Constructor_WithValidArgs_ShouldNotThrow() {
+        var act = () => CreateTrayService();
+
+        act.Should().NotThrow();
+    }
+
+    // ========== Initial state ==========
+
+    [Fact]
+    public void CurrentState_WhenNew_ShouldBeIdle() {
+        var service = CreateTrayService();
+
+        service.CurrentState.Should().Be(TrayIconState.Idle);
+    }
+
+    [Fact]
+    public void ActiveTranscriptions_WhenNew_ShouldBeZero() {
+        var service = CreateTrayService();
+
+        service.ActiveTranscriptions.Should().Be(0);
+    }
+
+    // ========== HandleRecordingStarted ==========
+
+    [Fact]
+    public void HandleRecordingStarted_ShouldSetStateToRecording() {
+        var service = CreateTrayService();
+
+        service.HandleRecordingStarted();
+
+        service.CurrentState.Should().Be(TrayIconState.Recording);
+    }
+
+    [Fact]
+    public void HandleRecordingStarted_ShouldNotThrow() {
+        var service = CreateTrayService();
+
+        var act = service.HandleRecordingStarted;
+
+        act.Should().NotThrow();
+    }
+
+    // ========== HandleRecordingStopped ==========
+
+    [Fact]
+    public void HandleRecordingStopped_ShouldSetStateToTranscribing() {
+        var service = CreateTrayService();
+
+        service.HandleRecordingStopped();
+
+        service.CurrentState.Should().Be(TrayIconState.Transcribing);
+    }
+
+    [Fact]
+    public void HandleRecordingStopped_ShouldIncrementActiveTranscriptions() {
+        var service = CreateTrayService();
+
+        service.HandleRecordingStopped();
+
+        service.ActiveTranscriptions.Should().Be(1);
+    }
+
+    [Fact]
+    public void HandleRecordingStopped_CalledTwice_ShouldCountTwoActiveTranscriptions() {
+        var service = CreateTrayService();
+
+        service.HandleRecordingStopped();
+        service.HandleRecordingStopped();
+
+        service.ActiveTranscriptions.Should().Be(2);
+    }
+
+    // ========== HandleTranscriptionCompleted ==========
+
+    [Fact]
+    public void HandleTranscriptionCompleted_WhenLastTranscription_ShouldSetStateToIdle() {
+        var service = CreateTrayService();
+        service.HandleRecordingStopped(); // active = 1
+
+        service.HandleTranscriptionCompleted(false, null); // remaining = 0
+
+        service.CurrentState.Should().Be(TrayIconState.Idle);
+    }
+
+    [Fact]
+    public void HandleTranscriptionCompleted_WhenLastTranscription_ShouldResetActiveTranscriptionsToZero() {
+        var service = CreateTrayService();
+        service.HandleRecordingStopped(); // active = 1
+
+        service.HandleTranscriptionCompleted(false, null); // remaining = 0
+
+        service.ActiveTranscriptions.Should().Be(0);
+    }
+
+    [Fact]
+    public void HandleTranscriptionCompleted_WhenMoreTranscriptionsActive_ShouldRemainTranscribing() {
+        var service = CreateTrayService();
+        service.HandleRecordingStopped(); // active = 1
+        service.HandleRecordingStopped(); // active = 2
+
+        service.HandleTranscriptionCompleted(false, null); // remaining = 1
+
+        service.CurrentState.Should().Be(TrayIconState.Transcribing);
+    }
+
+    [Fact]
+    public void HandleTranscriptionCompleted_WhenMoreTranscriptionsActive_ShouldDecrementActiveTranscriptions() {
+        var service = CreateTrayService();
+        service.HandleRecordingStopped(); // active = 1
+        service.HandleRecordingStopped(); // active = 2
+
+        service.HandleTranscriptionCompleted(false, null); // remaining = 1
+
+        service.ActiveTranscriptions.Should().Be(1);
+    }
+
+    [Fact]
+    public void HandleTranscriptionCompleted_WithSuccess_ShouldNotThrow() {
+        var service = CreateTrayService();
+        service.HandleRecordingStopped(); // active = 1
+
+        var act = () => service.HandleTranscriptionCompleted(true, "Hello world");
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void HandleTranscriptionCompleted_WithFailure_ShouldNotThrow() {
+        var service = CreateTrayService();
+        service.HandleRecordingStopped(); // active = 1
+
+        var act = () => service.HandleTranscriptionCompleted(false, null);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void HandleTranscriptionCompleted_SequenceOfRecordingsAndTranscriptions_ShouldReturnToIdle() {
+        var service = CreateTrayService();
+        service.HandleRecordingStopped(); // active = 1
+        service.HandleRecordingStopped(); // active = 2
+        service.HandleTranscriptionCompleted(true, "first"); // remaining = 1
+        service.HandleTranscriptionCompleted(true, "second"); // remaining = 0
+
+        service.CurrentState.Should().Be(TrayIconState.Idle);
+        service.ActiveTranscriptions.Should().Be(0);
+    }
+
+    // ========== ShouldShowTranscriptionNotification ==========
+
+    [Fact]
+    public void ShouldShowTranscriptionNotification_WithNullWindow_ShouldReturnFalse() {
+        var result = TrayService.ShouldShowTranscriptionNotification(null);
+
+        result.Should().BeFalse();
+    }
+
+    // ========== Dispose ==========
+
+    [Fact]
+    public void Dispose_ShouldNotThrow() {
+        var service = CreateTrayService();
+
+        var act = service.Dispose;
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void Dispose_CalledTwice_ShouldNotThrow() {
+        var service = CreateTrayService();
+        service.Dispose();
+
+        var act = service.Dispose;
+
+        act.Should().NotThrow();
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
+    private static TrayService CreateTrayService() {
+        var desktop = Substitute.For<IClassicDesktopStyleApplicationLifetime>();
+        var recorder = Substitute.For<IAudioRecorder>();
+        var transcriptionManager = Substitute.For<ITranscriptionManager>();
+        return new TrayService(desktop, recorder, transcriptionManager);
     }
 }

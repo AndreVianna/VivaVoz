@@ -43,6 +43,12 @@ namespace VivaVoz.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValue("auto");
 
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("unknown");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -101,6 +107,23 @@ namespace VivaVoz.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(true);
+
+                    b.Property<int?>("OverlayX")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("OverlayY")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RecordingMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Toggle");
+
+                    b.Property<bool>("RunAtStartup")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("StartMinimized")
                         .ValueGeneratedOnAdd()

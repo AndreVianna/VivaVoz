@@ -9,6 +9,8 @@ public sealed class AudioRecorderService : IAudioRecorder {
     private string? _currentFilePath;
     private long _bytesWritten;
 
+    public event EventHandler? RecordingStarted;
+
     public event EventHandler<AudioRecordingStoppedEventArgs>? RecordingStopped;
 
     public bool IsRecording { get; private set; }
@@ -46,7 +48,17 @@ public sealed class AudioRecorderService : IAudioRecorder {
             IsRecording = true;
 
             Log.Information("[AudioRecorderService] Recording started: {FilePath}", _currentFilePath);
+            RecordingStarted?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    public IReadOnlyList<string> GetAvailableDevices() {
+        var devices = new List<string>();
+        for (var i = 0; i < WaveInEvent.DeviceCount; i++) {
+            devices.Add(WaveInEvent.GetCapabilities(i).ProductName);
+        }
+
+        return devices.AsReadOnly();
     }
 
     public void StopRecording() {

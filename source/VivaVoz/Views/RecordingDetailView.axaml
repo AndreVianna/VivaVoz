@@ -11,9 +11,21 @@
 
     <ScrollViewer IsVisible="{Binding HasSelection}">
       <StackPanel Spacing="16">
-        <TextBlock Text="{Binding SelectedRecording.Title, TargetNullValue='Untitled recording'}"
-                   FontSize="20"
-                   FontWeight="SemiBold" />
+
+        <!-- Title row with Delete button -->
+        <Grid ColumnDefinitions="*, Auto">
+          <TextBlock Grid.Column="0"
+                     Text="{Binding SelectedRecording.Title, TargetNullValue='Untitled recording'}"
+                     FontSize="20"
+                     FontWeight="SemiBold"
+                     VerticalAlignment="Center" />
+          <Button Grid.Column="1"
+                  Command="{Binding Detail.DeleteCommand}"
+                  Content="Delete"
+                  IsVisible="{Binding Detail.IsNotEditing}"
+                  FontSize="12"
+                  Padding="8,2" />
+        </Grid>
 
         <StackPanel Orientation="Horizontal" Spacing="24">
           <StackPanel>
@@ -27,6 +39,10 @@
           <StackPanel>
             <TextBlock Text="Status" FontSize="12" Opacity="0.7" />
             <TextBlock Text="{Binding SelectedRecording.Status}" />
+          </StackPanel>
+          <StackPanel>
+            <TextBlock Text="Language" FontSize="12" Opacity="0.7" />
+            <TextBlock Text="{Binding SelectedRecording.LanguageCode}" />
           </StackPanel>
         </StackPanel>
 
@@ -80,29 +96,71 @@
                     FontSize="12"
                     Padding="8,2"
                     VerticalAlignment="Center" />
+            <!-- Edit button (visible when not editing) -->
+            <Button Command="{Binding Detail.EditCommand}"
+                    Content="Edit"
+                    IsVisible="{Binding Detail.IsNotEditing}"
+                    FontSize="12"
+                    Padding="8,2"
+                    VerticalAlignment="Center" />
+            <!-- Save button (visible when editing) -->
+            <Button Command="{Binding Detail.SaveCommand}"
+                    Content="Save"
+                    IsVisible="{Binding Detail.IsEditing}"
+                    FontSize="12"
+                    Padding="8,2"
+                    VerticalAlignment="Center" />
+            <!-- Cancel button (visible when editing) -->
+            <Button Command="{Binding Detail.CancelCommand}"
+                    Content="Cancel"
+                    IsVisible="{Binding Detail.IsEditing}"
+                    FontSize="12"
+                    Padding="8,2"
+                    VerticalAlignment="Center" />
           </StackPanel>
           <Border Padding="12"
                   BorderThickness="1"
                   BorderBrush="#1FFFFFFF"
                   CornerRadius="6"
                   MinHeight="100">
-            <!-- Read-only TextBox allows text selection for manual copy -->
-            <TextBox Text="{Binding TranscriptDisplay, Mode=OneWay}"
-                     IsReadOnly="True"
-                     AcceptsReturn="True"
-                     TextWrapping="Wrap"
-                     BorderThickness="0"
-                     Background="Transparent"
-                     Padding="0">
-              <TextBox.Styles>
-                <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-                  <Setter Property="Background" Value="Transparent" />
-                </Style>
-                <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
-                  <Setter Property="Background" Value="Transparent" />
-                </Style>
-              </TextBox.Styles>
-            </TextBox>
+            <Panel>
+              <!-- Read-only view: shown when not editing -->
+              <TextBox Text="{Binding TranscriptDisplay, Mode=OneWay}"
+                       IsReadOnly="True"
+                       IsVisible="{Binding Detail.IsNotEditing}"
+                       AcceptsReturn="True"
+                       TextWrapping="Wrap"
+                       BorderThickness="0"
+                       Background="Transparent"
+                       Padding="0">
+                <TextBox.Styles>
+                  <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+                    <Setter Property="Background" Value="Transparent" />
+                  </Style>
+                  <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+                    <Setter Property="Background" Value="Transparent" />
+                  </Style>
+                </TextBox.Styles>
+              </TextBox>
+              <!-- Editable view: shown when editing -->
+              <TextBox Text="{Binding Detail.EditText}"
+                       IsReadOnly="False"
+                       IsVisible="{Binding Detail.IsEditing}"
+                       AcceptsReturn="True"
+                       TextWrapping="Wrap"
+                       BorderThickness="0"
+                       Background="Transparent"
+                       Padding="0">
+                <TextBox.Styles>
+                  <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+                    <Setter Property="Background" Value="Transparent" />
+                  </Style>
+                  <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+                    <Setter Property="Background" Value="Transparent" />
+                  </Style>
+                </TextBox.Styles>
+              </TextBox>
+            </Panel>
           </Border>
         </StackPanel>
       </StackPanel>

@@ -64,7 +64,8 @@ public sealed class TranscriptionManager : ITranscriptionManager, IDisposable {
                 .FindAsync([recordingId], cancellationToken)
                 .ConfigureAwait(false);
 
-            if (recording is null) return;
+            if (recording is null)
+                return;
 
             recording.Status = RecordingStatus.Transcribing;
             recording.UpdatedAt = DateTime.UtcNow;
@@ -93,6 +94,7 @@ public sealed class TranscriptionManager : ITranscriptionManager, IDisposable {
         recording.Transcript = result.Text;
         recording.Status = RecordingStatus.Complete;
         recording.Language = result.DetectedLanguage;
+        recording.LanguageCode = result.DetectedLanguage;
         recording.WhisperModel = result.ModelUsed;
         recording.UpdatedAt = DateTime.UtcNow;
 
@@ -126,7 +128,8 @@ public sealed class TranscriptionManager : ITranscriptionManager, IDisposable {
     }
 
     public void Dispose() {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true;
         _cts.Cancel();
         _cts.Dispose();

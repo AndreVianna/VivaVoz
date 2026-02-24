@@ -1,5 +1,7 @@
 using AwesomeAssertions;
+
 using VivaVoz.Models;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Models;
@@ -52,5 +54,19 @@ public class SettingsTests {
         var settings = new Settings();
 
         settings.StartMinimized.Should().BeFalse();
+    }
+
+    [Fact]
+    public void NewSettings_ShouldDefaultRunAtStartupToFalse() {
+        var settings = new Settings();
+
+        settings.RunAtStartup.Should().BeFalse();
+    }
+
+    [Fact]
+    public void NewSettings_ShouldDefaultRecordingModeToToggle() {
+        var settings = new Settings();
+
+        settings.RecordingMode.Should().Be("Toggle");
     }
 }

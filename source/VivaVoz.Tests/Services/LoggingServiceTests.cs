@@ -1,6 +1,9 @@
 using AwesomeAssertions;
+
 using Serilog;
+
 using VivaVoz.Services;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Services;

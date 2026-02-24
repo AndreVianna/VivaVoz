@@ -12,6 +12,10 @@ public class Settings {
     public bool AutoUpdate { get; set; }
     public bool MinimizeToTray { get; set; } = true;
     public bool StartMinimized { get; set; } = false;
+    public bool RunAtStartup { get; set; } = false;
+    public string RecordingMode { get; set; } = "Toggle";
+    public int? OverlayX { get; set; }
+    public int? OverlayY { get; set; }
 
     private static string GetDefaultStoragePath() {
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);

@@ -1,18 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Markup.Xaml;
-using Microsoft.EntityFrameworkCore;
-using Serilog;
-using VivaVoz.Data;
-using VivaVoz.Models;
-using VivaVoz.Services;
-using VivaVoz.Services.Audio;
-using VivaVoz.Services.Transcription;
-using VivaVoz.ViewModels;
-using VivaVoz.Views;
-
 namespace VivaVoz;
 
 [ExcludeFromCodeCoverage]
@@ -25,16 +10,33 @@ public partial class App : Application {
         await RecoverOrphanedTranscriptionsAsync(dbContext);
         var settingsService = new SettingsService(() => new AppDbContext());
         await settingsService.LoadSettingsAsync();
+        var themeService = new ThemeService();
+        themeService.ApplyTheme(settingsService.Current?.Theme ?? "System");
         var recorderService = new AudioRecorderService();
         var audioPlayerService = new AudioPlayerService();
         var modelManager = new WhisperModelManager();
+        var modelService = new WhisperModelService(modelManager, new System.Net.Http.HttpClient());
         var whisperEngine = new WhisperTranscriptionEngine(modelManager);
         var transcriptionManager = new TranscriptionManager(whisperEngine, () => new AppDbContext());
         var clipboardService = new ClipboardService();
+        var recordingService = new RecordingService(() => new AppDbContext());
+        var dialogService = new DialogService();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
             var mainWindow = new MainWindow(settingsService) {
-                DataContext = new MainViewModel(recorderService, audioPlayerService, dbContext, transcriptionManager, clipboardService, settingsService)
+                DataContext = new MainViewModel(recorderService, audioPlayerService, dbContext, transcriptionManager, clipboardService, settingsService, modelService, recordingService, dialogService)
+            };
+
+            var overlayViewModel = new RecordingOverlayViewModel(recorderService);
+            var overlayWindow = new RecordingOverlayWindow(settingsService) { DataContext = overlayViewModel };
+
+            overlayViewModel.PropertyChanged += (_, e) => {
+                if (e.PropertyName != nameof(RecordingOverlayViewModel.IsRecording))
+                    return;
+                if (overlayViewModel.IsRecording)
+                    overlayWindow.ShowOverlay();
+                else
+                    overlayWindow.Hide();
             };
 
             var trayService = new TrayService(desktop, recorderService, transcriptionManager);
@@ -68,7 +70,8 @@ public partial class App : Application {
             .Where(r => r.Status == RecordingStatus.Transcribing)
             .ToListAsync();
 
-        if (orphaned.Count == 0) return;
+        if (orphaned.Count == 0)
+            return;
 
         foreach (var recording in orphaned) {
             recording.Status = RecordingStatus.PendingTranscription;

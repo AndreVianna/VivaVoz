@@ -62,7 +62,9 @@ public class SettingsService(Func<AppDbContext> contextFactory) : ISettingsServi
         AudioInputDevice = null,
         AutoUpdate = false,
         MinimizeToTray = true,
-        StartMinimized = false
+        StartMinimized = false,
+        RunAtStartup = false,
+        RecordingMode = "Toggle"
     };
 
     private static string GetDefaultStoragePath() {

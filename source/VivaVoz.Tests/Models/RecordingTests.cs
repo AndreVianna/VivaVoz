@@ -1,5 +1,7 @@
 using AwesomeAssertions;
+
 using VivaVoz.Models;
+
 using Xunit;
 
 namespace VivaVoz.Tests.Models;
@@ -20,6 +22,13 @@ public class RecordingTests {
     }
 
     [Fact]
+    public void NewRecording_ShouldDefaultLanguageCodeToUnknown() {
+        var recording = new Recording();
+
+        recording.LanguageCode.Should().Be("unknown");
+    }
+
+    [Fact]
     public void Recording_WhenAllPropertiesAreSet_ShouldRetainValues() {
         var now = DateTime.UtcNow;
         var duration = TimeSpan.FromSeconds(42);
@@ -32,6 +41,7 @@ public class RecordingTests {
             Transcript = "Transcript",
             Status = RecordingStatus.Complete,
             Language = "en",
+            LanguageCode = "en",
             Duration = duration,
             CreatedAt = now,
             UpdatedAt = now.AddMinutes(1),
@@ -45,6 +55,7 @@ public class RecordingTests {
         recording.Transcript.Should().Be("Transcript");
         recording.Status.Should().Be(RecordingStatus.Complete);
         recording.Language.Should().Be("en");
+        recording.LanguageCode.Should().Be("en");
         recording.Duration.Should().Be(duration);
         recording.CreatedAt.Should().Be(now);
         recording.UpdatedAt.Should().Be(now.AddMinutes(1));

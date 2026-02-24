@@ -1,12 +1,8 @@
-using Avalonia.Controls;
-using System.Diagnostics.CodeAnalysis;
-using VivaVoz.Services;
-
 namespace VivaVoz.Views;
 
 [ExcludeFromCodeCoverage]
 public partial class MainWindow : Window {
-    private ISettingsService? _settingsService;
+    private readonly ISettingsService? _settingsService;
 
     public MainWindow() {
         InitializeComponent();

@@ -6,7 +6,9 @@ public partial class MainViewModel : ObservableObject {
     private readonly ITranscriptionManager _transcriptionManager;
     private readonly IClipboardService _clipboardService;
     private readonly ISettingsService _settingsService;
+    private readonly IModelManager _modelManager;
     public AudioPlayerViewModel AudioPlayer { get; }
+    public RecordingDetailViewModel Detail { get; }
 
     [ObservableProperty]
     public partial ObservableCollection<Recording> Recordings { get; set; } = [];
@@ -19,6 +21,12 @@ public partial class MainViewModel : ObservableObject {
 
     [ObservableProperty]
     public partial string DetailBody { get; set; } = "Select a recording from the list to view details.";
+
+    [ObservableProperty]
+    public partial ObservableCollection<Recording> FilteredRecordings { get; set; } = [];
+
+    [ObservableProperty]
+    public partial string SearchText { get; set; } = string.Empty;
 
     [ObservableProperty]
     public partial bool IsRecording { get; set; }
@@ -90,19 +98,28 @@ public partial class MainViewModel : ObservableObject {
         AppDbContext dbContext,
         ITranscriptionManager transcriptionManager,
         IClipboardService clipboardService,
-        ISettingsService? settingsService = null) {
+        ISettingsService? settingsService = null,
+        IModelManager? modelManager = null,
+        IRecordingService? recordingService = null,
+        IDialogService? dialogService = null) {
         _recorder = recorder ?? throw new ArgumentNullException(nameof(recorder));
         _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         _transcriptionManager = transcriptionManager ?? throw new ArgumentNullException(nameof(transcriptionManager));
         _clipboardService = clipboardService ?? throw new ArgumentNullException(nameof(clipboardService));
         _settingsService = settingsService ?? new SettingsService(() => new AppDbContext());
+        _modelManager = modelManager ?? new WhisperModelService(new WhisperModelManager(), new System.Net.Http.HttpClient());
         AudioPlayer = new AudioPlayerViewModel(audioPlayer ?? throw new ArgumentNullException(nameof(audioPlayer)));
+        Detail = new RecordingDetailViewModel(
+            recordingService ?? new RecordingService(() => new AppDbContext()),
+            dialogService ?? new DialogService());
+        Detail.RecordingDeleted += OnRecordingDeleted;
 
 #pragma warning disable IDE0305, IDE0028 // Simplify collection initialization
         Recordings = new ObservableCollection<Recording>(
             _dbContext.Recordings.OrderByDescending(recording => recording.CreatedAt).ToList());
 #pragma warning restore IDE0028, IDE0305 // Simplify collection initialization
 
+        ApplyFilter();
         IsRecording = _recorder.IsRecording;
         _recorder.RecordingStopped += OnRecordingStopped;
         _transcriptionManager.TranscriptionCompleted += OnTranscriptionCompleted;
@@ -111,9 +128,33 @@ public partial class MainViewModel : ObservableObject {
     public bool HasSelection => SelectedRecording is not null;
     public bool NoSelection => SelectedRecording is null;
     public bool IsNotRecording => !IsRecording;
+    public bool HasSearchText => !string.IsNullOrEmpty(SearchText);
+    public bool NoRecordingsFound => HasSearchText && FilteredRecordings.Count == 0;
 
     partial void OnIsRecordingChanged(bool value) {
         OnPropertyChanged(nameof(IsNotRecording));
+    }
+
+    partial void OnSearchTextChanged(string value) {
+        OnPropertyChanged(nameof(HasSearchText));
+        ApplyFilter();
+    }
+
+    partial void OnFilteredRecordingsChanged(ObservableCollection<Recording> value) {
+        OnPropertyChanged(nameof(NoRecordingsFound));
+    }
+
+    [RelayCommand]
+    private void ClearSearch() => SearchText = string.Empty;
+
+    internal void ApplyFilter() {
+        var term = SearchText.Trim();
+        var filtered = string.IsNullOrEmpty(term)
+            ? Recordings
+            : Recordings.Where(r =>
+                (r.Transcript?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                r.Title.Contains(term, StringComparison.OrdinalIgnoreCase));
+        FilteredRecordings = [.. filtered];
     }
 
     [RelayCommand]
@@ -154,13 +195,15 @@ public partial class MainViewModel : ObservableObject {
 
     [RelayCommand]
     private void Retranscribe() {
-        if (SelectedRecording is null) return;
+        if (SelectedRecording is null)
+            return;
         var audioPath = Path.Combine(FilePaths.AudioDirectory, SelectedRecording.AudioFileName);
         if (!File.Exists(audioPath)) {
             SelectedRecording.Status = RecordingStatus.Failed;
             NotifyTranscriptProperties();
             return;
         }
+
         SelectedRecording.Status = RecordingStatus.Transcribing;
         NotifyTranscriptProperties();
         _transcriptionManager.EnqueueTranscription(SelectedRecording.Id, audioPath);
@@ -171,6 +214,7 @@ public partial class MainViewModel : ObservableObject {
         OnPropertyChanged(nameof(NoSelection));
         NotifyTranscriptProperties();
         AudioPlayer.LoadRecording(value);
+        Detail.LoadRecording(value);
 
         if (value is null) {
             DetailHeader = "No recording selected";
@@ -181,6 +225,15 @@ public partial class MainViewModel : ObservableObject {
         var title = string.IsNullOrWhiteSpace(value.Title) ? "Recording selected" : value.Title;
         DetailHeader = title;
         DetailBody = "Detail view placeholder.";
+    }
+
+    internal void OnRecordingDeleted(object? sender, Guid id) {
+        var recording = Recordings.FirstOrDefault(r => r.Id == id);
+        if (recording is null)
+            return;
+        Recordings.Remove(recording);
+        ApplyFilter();
+        SelectedRecording = null;
     }
 
     private void NotifyTranscriptProperties() {
@@ -225,6 +278,7 @@ public partial class MainViewModel : ObservableObject {
         recording.Status = RecordingStatus.Transcribing;
 
         Recordings.Insert(0, recording);
+        ApplyFilter();
 
         _transcriptionManager.EnqueueTranscription(recording.Id, e.FilePath);
     });
@@ -240,6 +294,7 @@ public partial class MainViewModel : ObservableObject {
                 recording.Transcript = e.Transcript;
                 recording.Status = RecordingStatus.Complete;
                 recording.Language = e.DetectedLanguage ?? recording.Language;
+                recording.LanguageCode = e.DetectedLanguage ?? "unknown";
                 recording.WhisperModel = e.ModelUsed ?? recording.WhisperModel;
             }
             else {
@@ -253,6 +308,7 @@ public partial class MainViewModel : ObservableObject {
             if (SelectedRecording?.Id == e.RecordingId) {
                 OnPropertyChanged(nameof(SelectedRecording));
                 NotifyTranscriptProperties();
+                Detail.LoadRecording(SelectedRecording);
             }
         });
 
@@ -275,6 +331,22 @@ public partial class MainViewModel : ObservableObject {
         catch {
             return 0;
         }
+    }
+
+    [RelayCommand]
+    [ExcludeFromCodeCoverage]
+    private void OpenSettings() {
+        var settingsWindow = new SettingsWindow {
+            DataContext = new SettingsViewModel(_settingsService, _recorder, _modelManager, new Services.ThemeService())
+        };
+
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            && desktop.MainWindow is not null) {
+            settingsWindow.ShowDialog(desktop.MainWindow);
+            return;
+        }
+
+        settingsWindow.Show();
     }
 
     [ExcludeFromCodeCoverage]
