@@ -17,16 +17,17 @@ public partial class App : Application {
         var modelManager = new WhisperModelManager();
         var modelService = new WhisperModelService(modelManager, new System.Net.Http.HttpClient());
         var whisperEngine = new WhisperTranscriptionEngine(modelManager);
-        var transcriptionManager = new TranscriptionManager(whisperEngine, () => new AppDbContext());
+        var transcriptionManager = new TranscriptionManager(whisperEngine, () => new AppDbContext(), modelService, settingsService);
         var clipboardService = new ClipboardService();
         var recordingService = new RecordingService(() => new AppDbContext());
         var dialogService = new DialogService();
         var exportService = new ExportService();
         var crashRecoveryService = new CrashRecoveryService();
+        var notificationService = new NotificationService();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
             var mainWindow = new MainWindow(settingsService) {
-                DataContext = new MainViewModel(recorderService, audioPlayerService, dbContext, transcriptionManager, clipboardService, settingsService, modelService, recordingService, dialogService, exportService, crashRecoveryService)
+                DataContext = new MainViewModel(recorderService, audioPlayerService, dbContext, transcriptionManager, clipboardService, settingsService, modelService, recordingService, dialogService, exportService, crashRecoveryService, notificationService)
             };
 
             var overlayViewModel = new RecordingOverlayViewModel(recorderService);

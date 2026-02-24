@@ -9,6 +9,7 @@ public partial class MainViewModel : ObservableObject {
     private readonly IModelManager _modelManager;
     private readonly IDialogService _dialogService;
     private readonly IExportService _exportService;
+    private readonly INotificationService _notificationService;
     private readonly ICrashRecoveryService? _crashRecoveryService;
     public AudioPlayerViewModel AudioPlayer { get; }
     public RecordingDetailViewModel Detail { get; }
@@ -109,7 +110,8 @@ public partial class MainViewModel : ObservableObject {
         IRecordingService? recordingService = null,
         IDialogService? dialogService = null,
         IExportService? exportService = null,
-        ICrashRecoveryService? crashRecoveryService = null) {
+        ICrashRecoveryService? crashRecoveryService = null,
+        INotificationService? notificationService = null) {
         _recorder = recorder ?? throw new ArgumentNullException(nameof(recorder));
         _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         _transcriptionManager = transcriptionManager ?? throw new ArgumentNullException(nameof(transcriptionManager));
@@ -118,6 +120,7 @@ public partial class MainViewModel : ObservableObject {
         _modelManager = modelManager ?? new WhisperModelService(new WhisperModelManager(), new System.Net.Http.HttpClient());
         _dialogService = dialogService ?? new DialogService();
         _exportService = exportService ?? new ExportService();
+        _notificationService = notificationService ?? new NotificationService();
         _crashRecoveryService = crashRecoveryService;
         AudioPlayer = new AudioPlayerViewModel(audioPlayer ?? throw new ArgumentNullException(nameof(audioPlayer)));
         Detail = new RecordingDetailViewModel(
@@ -181,7 +184,7 @@ public partial class MainViewModel : ObservableObject {
             IsRecording = _recorder.IsRecording;
         }
         catch (MicrophoneNotFoundException ex) {
-            ShowMicrophoneNotFoundDialog(ex.Message);
+            _ = _notificationService.ShowWarningAsync(ex.Message);
         }
     }
 
@@ -228,6 +231,14 @@ public partial class MainViewModel : ObservableObject {
         }
         catch (Exception ex) {
             Log.Error(ex, "[MainViewModel] Failed to export transcript to {Path}.", path);
+            var copyToClipboard = await _notificationService.ShowRecoverableErrorAsync(
+                "Export Failed",
+                "Could not save the transcript to the file. Copy to clipboard instead?",
+                "Copy to Clipboard",
+                "Cancel");
+            if (copyToClipboard) {
+                await _clipboardService.SetTextAsync(SelectedRecording.Transcript!);
+            }
         }
     }
 
@@ -253,6 +264,7 @@ public partial class MainViewModel : ObservableObject {
         }
         catch (Exception ex) {
             Log.Error(ex, "[MainViewModel] Failed to export audio to {Path}.", path);
+            await _notificationService.ShowWarningAsync("Could not save the audio file. Please check disk space and permissions.");
         }
     }
 
@@ -423,6 +435,8 @@ public partial class MainViewModel : ObservableObject {
             }
             else {
                 recording.Status = RecordingStatus.Failed;
+                _ = _notificationService.ShowWarningAsync(
+                    $"Transcription failed: {e.ErrorMessage ?? "Unknown error."}");
             }
 
             recording.UpdatedAt = DateTime.UtcNow;
@@ -471,32 +485,5 @@ public partial class MainViewModel : ObservableObject {
         }
 
         settingsWindow.Show();
-    }
-
-    [ExcludeFromCodeCoverage]
-    private static void ShowMicrophoneNotFoundDialog(string message) {
-        var text = string.IsNullOrWhiteSpace(message)
-            ? "No microphone device detected."
-            : message;
-
-        var window = new Window {
-            Title = "Microphone not found",
-            SizeToContent = SizeToContent.WidthAndHeight,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            Content = new TextBlock {
-                Text = text,
-                Margin = new Thickness(24),
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap
-            }
-        };
-
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-            && desktop.MainWindow is not null) {
-            window.ShowDialog(desktop.MainWindow);
-            return;
-        }
-
-        window.Show();
     }
 }
