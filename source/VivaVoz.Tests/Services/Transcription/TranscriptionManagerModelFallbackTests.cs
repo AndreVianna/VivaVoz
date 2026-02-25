@@ -216,13 +216,43 @@ public class TranscriptionManagerModelFallbackTests : IDisposable {
     }
 
     [Fact]
-    public async Task EnqueueTranscription_WhenNoSettingsService_ShouldDefaultToTiny() {
+    public async Task EnqueueTranscription_WhenModelOverrideProvided_ShouldUseOverrideInsteadOfSettings() {
         var recordingId = SeedRecording();
         const string audioPath = "/tmp/test-audio.wav";
 
         var engine = Substitute.For<ITranscriptionEngine>();
         engine.TranscribeAsync(Arg.Any<string>(), Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
-            .Returns(new TranscriptionResult("Hi", "en", TimeSpan.FromSeconds(1), "tiny"));
+            .Returns(new TranscriptionResult("Hello", "en", TimeSpan.FromSeconds(1), "small"));
+
+        var settingsService = Substitute.For<ISettingsService>();
+        settingsService.Current.Returns(new Settings { WhisperModelSize = "base", Language = "en" });
+
+        var modelManager = Substitute.For<IModelManager>();
+        modelManager.IsModelDownloaded("small").Returns(true);
+
+        using var manager = new TranscriptionManager(engine, CreateContext,
+            modelManager: modelManager, settingsService: settingsService);
+
+        var tcs = new TaskCompletionSource<TranscriptionCompletedEventArgs>();
+        manager.TranscriptionCompleted += (_, e) => tcs.TrySetResult(e);
+
+        manager.EnqueueTranscription(recordingId, audioPath, modelOverride: "small");
+        await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        await engine.Received(1).TranscribeAsync(
+            audioPath,
+            Arg.Is<TranscriptionOptions>(o => o.ModelId == "small"),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task EnqueueTranscription_WhenNoSettingsService_ShouldDefaultToBase() {
+        var recordingId = SeedRecording();
+        const string audioPath = "/tmp/test-audio.wav";
+
+        var engine = Substitute.For<ITranscriptionEngine>();
+        engine.TranscribeAsync(Arg.Any<string>(), Arg.Any<TranscriptionOptions>(), Arg.Any<CancellationToken>())
+            .Returns(new TranscriptionResult("Hi", "en", TimeSpan.FromSeconds(1), "base"));
 
         using var manager = new TranscriptionManager(engine, CreateContext); // no settings, no modelManager
 
@@ -234,7 +264,7 @@ public class TranscriptionManagerModelFallbackTests : IDisposable {
 
         await engine.Received(1).TranscribeAsync(
             audioPath,
-            Arg.Is<TranscriptionOptions>(o => o.ModelId == "tiny"),
+            Arg.Is<TranscriptionOptions>(o => o.ModelId == "base"),
             Arg.Any<CancellationToken>());
     }
 

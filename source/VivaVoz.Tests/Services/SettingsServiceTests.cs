@@ -41,7 +41,7 @@ public class SettingsServiceTests {
         var settings = await service.LoadSettingsAsync();
 
         settings.Should().NotBeNull();
-        settings.WhisperModelSize.Should().Be("tiny");
+        settings.WhisperModelSize.Should().Be("base");
         settings.Theme.Should().Be("System");
         settings.Language.Should().Be("auto");
         settings.HotkeyConfig.Should().Be(string.Empty);
@@ -62,7 +62,7 @@ public class SettingsServiceTests {
         await using var verifyContext = CreateContext(connection);
         var persisted = await verifyContext.Settings.FirstOrDefaultAsync();
         persisted.Should().NotBeNull();
-        persisted!.WhisperModelSize.Should().Be("tiny");
+        persisted!.WhisperModelSize.Should().Be("base");
         persisted.Language.Should().Be("auto");
     }
 
@@ -135,8 +135,8 @@ public class SettingsServiceTests {
         var second = await service.LoadSettingsAsync();
 
         // Both should have defaults since first call created them
-        first.WhisperModelSize.Should().Be("tiny");
-        second.WhisperModelSize.Should().Be("tiny");
+        first.WhisperModelSize.Should().Be("base");
+        second.WhisperModelSize.Should().Be("base");
     }
 
     // ========== SaveSettingsAsync tests ==========

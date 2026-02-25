@@ -25,9 +25,9 @@ public sealed class TranscriptionManager : ITranscriptionManager, IDisposable {
         _settingsService = settingsService;
     }
 
-    public void EnqueueTranscription(Guid recordingId, string audioFilePath) {
+    public void EnqueueTranscription(Guid recordingId, string audioFilePath, string? modelOverride = null) {
         ArgumentException.ThrowIfNullOrWhiteSpace(audioFilePath);
-        _ = Task.Run(async () => await ProcessTranscriptionAsync(recordingId, audioFilePath, _cts.Token));
+        _ = Task.Run(async () => await ProcessTranscriptionAsync(recordingId, audioFilePath, _cts.Token, modelOverride));
     }
 
     /// <summary>
@@ -63,13 +63,13 @@ public sealed class TranscriptionManager : ITranscriptionManager, IDisposable {
     }
 
     private async Task ProcessTranscriptionAsync(
-        Guid recordingId, string audioFilePath, CancellationToken cancellationToken) {
+        Guid recordingId, string audioFilePath, CancellationToken cancellationToken, string? modelOverride = null) {
         Log.Information("[TranscriptionManager] Starting transcription for recording {RecordingId}.", recordingId);
 
         await SetTranscribingStatusAsync(recordingId, cancellationToken).ConfigureAwait(false);
 
         try {
-            var preferredModelId = _settingsService?.Current?.WhisperModelSize ?? "tiny";
+            var preferredModelId = modelOverride ?? _settingsService?.Current?.WhisperModelSize ?? "base";
             var modelId = SelectModelWithFallback(preferredModelId);
             var language = _settingsService?.Current?.Language;
             var options = new TranscriptionOptions(Language: language, ModelId: modelId);

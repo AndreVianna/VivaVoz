@@ -53,7 +53,7 @@ public class SettingsService(Func<AppDbContext> contextFactory) : ISettingsServi
     }
 
     private static Settings CreateDefaults() => new() {
-        WhisperModelSize = "tiny",
+        WhisperModelSize = "base",
         StoragePath = GetDefaultStoragePath(),
         Theme = "System",
         Language = "auto",

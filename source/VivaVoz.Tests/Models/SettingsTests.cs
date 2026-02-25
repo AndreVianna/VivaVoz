@@ -8,10 +8,10 @@ namespace VivaVoz.Tests.Models;
 
 public class SettingsTests {
     [Fact]
-    public void NewSettings_ShouldDefaultWhisperModelSizeToTiny() {
+    public void NewSettings_ShouldDefaultWhisperModelSizeToBase() {
         var settings = new Settings();
 
-        settings.WhisperModelSize.Should().Be("tiny");
+        settings.WhisperModelSize.Should().Be("base");
     }
 
     [Fact]

@@ -1169,7 +1169,7 @@ public class MainViewModelTests {
 
             viewModel.RetranscribeCommand.Execute(null);
 
-            transcriptionManager.Received(1).EnqueueTranscription(recording.Id, Arg.Any<string>());
+            transcriptionManager.Received(1).EnqueueTranscription(recording.Id, Arg.Any<string>(), Arg.Any<string?>());
         }
         finally {
             File.Delete(tempFile);
@@ -1211,7 +1211,7 @@ public class MainViewModelTests {
 
         viewModel.RetranscribeCommand.Execute(null);
 
-        transcriptionManager.DidNotReceive().EnqueueTranscription(Arg.Any<Guid>(), Arg.Any<string>());
+        transcriptionManager.DidNotReceive().EnqueueTranscription(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string?>());
     }
 
     [Fact]
@@ -1230,7 +1230,7 @@ public class MainViewModelTests {
         viewModel.RetranscribeCommand.Execute(null);
 
         recording.Status.Should().Be(RecordingStatus.Failed);
-        transcriptionManager.DidNotReceive().EnqueueTranscription(Arg.Any<Guid>(), Arg.Any<string>());
+        transcriptionManager.DidNotReceive().EnqueueTranscription(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string?>());
     }
 
     [Fact]
@@ -1541,6 +1541,192 @@ public class MainViewModelTests {
         viewModel.ClearSearchCommand.Execute(null);
 
         changed.Should().Contain(nameof(MainViewModel.NoRecordingsFound));
+    }
+
+    // ========== Re-Transcribe Model Dropdown (TASK-2d.2) ==========
+
+    [Fact]
+    public void InstalledModelIds_WhenModelManagerHasInstalledModels_ShouldOnlyShowInstalled() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var recorder = Substitute.For<IAudioRecorder>();
+        var player = Substitute.For<IAudioPlayer>();
+        var modelManager = Substitute.For<IModelManager>();
+        modelManager.GetAvailableModelIds().Returns(["tiny", "base", "small"]);
+        modelManager.IsModelDownloaded("tiny").Returns(false);
+        modelManager.IsModelDownloaded("base").Returns(true);
+        modelManager.IsModelDownloaded("small").Returns(true);
+
+        var vm = new MainViewModel(recorder, player, context,
+            Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>(),
+            modelManager: modelManager);
+
+        vm.InstalledModelIds.Should().BeEquivalentTo(["base", "small"]);
+    }
+
+    [Fact]
+    public void InstalledModelIds_WhenNoModelsInstalled_ShouldBeEmpty() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var recorder = Substitute.For<IAudioRecorder>();
+        var player = Substitute.For<IAudioPlayer>();
+        var modelManager = Substitute.For<IModelManager>();
+        modelManager.GetAvailableModelIds().Returns(["tiny", "base"]);
+        modelManager.IsModelDownloaded(Arg.Any<string>()).Returns(false);
+
+        var vm = new MainViewModel(recorder, player, context,
+            Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>(),
+            modelManager: modelManager);
+
+        vm.InstalledModelIds.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void SelectedRetranscribeModel_WhenSettingsProvided_ShouldDefaultToConfiguredModel() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var recorder = Substitute.For<IAudioRecorder>();
+        var player = Substitute.For<IAudioPlayer>();
+        var settingsService = Substitute.For<ISettingsService>();
+        settingsService.Current.Returns(new Settings { WhisperModelSize = "small" });
+
+        var vm = new MainViewModel(recorder, player, context,
+            Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>(),
+            settingsService: settingsService);
+
+        vm.SelectedRetranscribeModel.Should().Be("small");
+    }
+
+    [Fact]
+    public void SelectedRetranscribeModel_WhenNoSettingsService_ShouldDefaultToBase() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var vm = CreateViewModel(context);
+
+        vm.SelectedRetranscribeModel.Should().Be("base");
+    }
+
+    [Fact]
+    public void SelectedRetranscribeModel_WhenSelectionChanges_ShouldResetToSettingsModel() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var recorder = Substitute.For<IAudioRecorder>();
+        var player = Substitute.For<IAudioPlayer>();
+        var settingsService = Substitute.For<ISettingsService>();
+        settingsService.Current.Returns(new Settings { WhisperModelSize = "medium" });
+        var vm = new MainViewModel(recorder, player, context,
+            Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>(),
+            settingsService: settingsService);
+
+        // User changes model in dropdown
+        vm.SelectedRetranscribeModel = "large-v3";
+        // Then selects a different recording
+        var recording = CreateRecording(DateTime.UtcNow);
+        vm.SelectedRecording = recording;
+
+        // Should reset to settings model
+        vm.SelectedRetranscribeModel.Should().Be("medium");
+    }
+
+    [Fact]
+    public void RetranscribeCommand_WhenExecuted_ShouldUseSelectedRetranscribeModel() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var transcriptionManager = Substitute.For<ITranscriptionManager>();
+        var recorder = Substitute.For<IAudioRecorder>();
+        var player = Substitute.For<IAudioPlayer>();
+        var viewModel = new MainViewModel(recorder, player, context, transcriptionManager,
+            Substitute.For<IClipboardService>());
+        var tempFile = Path.GetTempFileName();
+        try {
+            var recording = CreateRecording(DateTime.UtcNow);
+            recording.AudioFileName = tempFile;
+            recording.Status = RecordingStatus.PendingTranscription;
+            viewModel.SelectedRecording = recording;
+
+            viewModel.SelectedRetranscribeModel = "small";
+            viewModel.RetranscribeCommand.Execute(null);
+
+            transcriptionManager.Received(1).EnqueueTranscription(
+                recording.Id, Arg.Any<string>(), "small");
+        }
+        finally {
+            File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public void TranscribedWithInfo_WhenRecordingIsCompleteWithModel_ShouldReturnFormattedString() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var vm = CreateViewModel(context);
+        var recording = CreateRecording(DateTime.UtcNow);
+        recording.WhisperModel = "base";
+        recording.Status = RecordingStatus.Complete;
+
+        vm.SelectedRecording = recording;
+
+        vm.TranscribedWithInfo.Should().Be("Transcribed with: base");
+    }
+
+    [Fact]
+    public void TranscribedWithInfo_WhenRecordingIsNotComplete_ShouldBeEmpty() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var vm = CreateViewModel(context);
+        var recording = CreateRecording(DateTime.UtcNow);
+        recording.WhisperModel = "base";
+        recording.Status = RecordingStatus.Transcribing;
+
+        vm.SelectedRecording = recording;
+
+        vm.TranscribedWithInfo.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void TranscribedWithInfo_WhenNoRecordingSelected_ShouldBeEmpty() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var vm = CreateViewModel(context);
+
+        vm.TranscribedWithInfo.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void TranscribedWithInfo_WhenRecordingHasEmptyModel_ShouldBeEmpty() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var vm = CreateViewModel(context);
+        var recording = CreateRecording(DateTime.UtcNow);
+        recording.WhisperModel = string.Empty;
+        recording.Status = RecordingStatus.Complete;
+
+        vm.SelectedRecording = recording;
+
+        vm.TranscribedWithInfo.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RefreshInstalledModels_ShouldUpdateInstalledModelIds() {
+        using var connection = CreateConnection();
+        using var context = CreateContext(connection);
+        var recorder = Substitute.For<IAudioRecorder>();
+        var player = Substitute.For<IAudioPlayer>();
+        var modelManager = Substitute.For<IModelManager>();
+        modelManager.GetAvailableModelIds().Returns(["tiny", "base"]);
+        modelManager.IsModelDownloaded("tiny").Returns(false);
+        modelManager.IsModelDownloaded("base").Returns(false);
+
+        var vm = new MainViewModel(recorder, player, context,
+            Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>(),
+            modelManager: modelManager);
+        vm.InstalledModelIds.Should().BeEmpty();
+
+        // Now base gets installed
+        modelManager.IsModelDownloaded("base").Returns(true);
+        vm.RefreshInstalledModels();
+
+        vm.InstalledModelIds.Should().BeEquivalentTo(["base"]);
     }
 
     // ========== Helper methods ==========

@@ -145,7 +145,7 @@ public class SettingsViewModelTests {
 
         var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
 
-        vm.WhisperModelSize.Should().Be("tiny");
+        vm.WhisperModelSize.Should().Be("base");
         vm.Theme.Should().Be("System");
         vm.Language.Should().Be("auto");
     }

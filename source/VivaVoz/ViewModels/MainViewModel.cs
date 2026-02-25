@@ -44,6 +44,18 @@ public partial class MainViewModel : ObservableObject {
     public partial bool HasOrphanedRecording { get; set; }
 
     /// <summary>
+    /// The list of currently installed Whisper models, for the Re-Transcribe model picker.
+    /// </summary>
+    [ObservableProperty]
+    public partial IReadOnlyList<string> InstalledModelIds { get; set; } = [];
+
+    /// <summary>
+    /// The model selected in the Re-Transcribe dropdown. Defaults to the active model from Settings.
+    /// </summary>
+    [ObservableProperty]
+    public partial string SelectedRetranscribeModel { get; set; } = "base";
+
+    /// <summary>
     /// Computed transcript text for display. Reflects the current recording state:
     /// - Transcribing → "Transcribing..."
     /// - PendingTranscription → "Waiting to transcribe..."
@@ -101,6 +113,16 @@ public partial class MainViewModel : ObservableObject {
         ? "Re-transcribe"
         : "Transcribe";
 
+    /// <summary>
+    /// Shows which model was used to produce the current transcript, e.g. "Transcribed with: base".
+    /// Empty when no model info is recorded or no recording is selected.
+    /// </summary>
+    public string TranscribedWithInfo =>
+        SelectedRecording is { Status: RecordingStatus.Complete } &&
+        !string.IsNullOrEmpty(SelectedRecording.WhisperModel)
+            ? $"Transcribed with: {SelectedRecording.WhisperModel}"
+            : string.Empty;
+
     public MainViewModel(
         IAudioRecorder recorder,
         IAudioPlayer audioPlayer,
@@ -143,6 +165,10 @@ public partial class MainViewModel : ObservableObject {
         _recorder.RecordingStopped += OnRecordingStopped;
         _transcriptionManager.TranscriptionCompleted += OnTranscriptionCompleted;
         HasOrphanedRecording = _crashRecoveryService?.HasOrphan() ?? false;
+
+        // Populate installed models for the Re-Transcribe dropdown
+        RefreshInstalledModels();
+        SelectedRetranscribeModel = _settingsService.Current?.WhisperModelSize ?? "base";
 
         _hotkeyService = hotkeyService;
         if (_hotkeyService is not null) {
@@ -312,7 +338,7 @@ public partial class MainViewModel : ObservableObject {
             Duration = duration,
             CreatedAt = now,
             UpdatedAt = now,
-            WhisperModel = _settingsService.Current?.WhisperModelSize ?? "tiny",
+            WhisperModel = _settingsService.Current?.WhisperModelSize ?? "base",
             FileSize = fileSize
         };
 
@@ -354,12 +380,23 @@ public partial class MainViewModel : ObservableObject {
 
         SelectedRecording.Status = RecordingStatus.Transcribing;
         NotifyTranscriptProperties();
-        _transcriptionManager.EnqueueTranscription(SelectedRecording.Id, audioPath);
+        _transcriptionManager.EnqueueTranscription(SelectedRecording.Id, audioPath, SelectedRetranscribeModel);
+    }
+
+    /// <summary>
+    /// Refreshes <see cref="InstalledModelIds"/> from the model manager.
+    /// Falls back to an empty list when no model manager is configured.
+    /// </summary>
+    internal void RefreshInstalledModels() {
+        var available = _modelManager.GetAvailableModelIds();
+        InstalledModelIds = available.Where(_modelManager.IsModelDownloaded).ToList();
     }
 
     partial void OnSelectedRecordingChanged(Recording? value) {
         OnPropertyChanged(nameof(HasSelection));
         OnPropertyChanged(nameof(NoSelection));
+        // Reset re-transcribe model to global default when selection changes
+        SelectedRetranscribeModel = _settingsService.Current?.WhisperModelSize ?? "base";
         NotifyTranscriptProperties();
         AudioPlayer.LoadRecording(value);
         Detail.LoadRecording(value);
@@ -392,6 +429,7 @@ public partial class MainViewModel : ObservableObject {
         OnPropertyChanged(nameof(CanCopyTranscript));
         OnPropertyChanged(nameof(CanRetranscribe));
         OnPropertyChanged(nameof(RetranscribeButtonLabel));
+        OnPropertyChanged(nameof(TranscribedWithInfo));
         OnPropertyChanged(nameof(CanExportText));
         OnPropertyChanged(nameof(CanExportAudio));
         CopyButtonLabel = "Copy";

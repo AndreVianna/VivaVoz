@@ -142,7 +142,7 @@ namespace VivaVoz.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
-                        .HasDefaultValue("tiny");
+                        .HasDefaultValue("base");
 
                     b.HasKey("Id");
 
