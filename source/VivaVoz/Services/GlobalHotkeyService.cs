@@ -198,11 +198,11 @@ public sealed partial class GlobalHotkeyService : IHotkeyService {
         [return: MarshalAs(UnmanagedType.Bool)]
         public static partial bool UnregisterHotKey(nint hWnd, int id);
 
-        [LibraryImport("user32.dll")]
+        [LibraryImport("user32.dll", EntryPoint = "GetMessageW", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static partial bool GetMessage(out MSG lpMsg, nint hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
 
-        [LibraryImport("user32.dll")]
+        [LibraryImport("user32.dll", EntryPoint = "DispatchMessageW", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static partial bool DispatchMessage(ref MSG lpmsg);
 
