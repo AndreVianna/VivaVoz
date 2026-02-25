@@ -31,8 +31,6 @@ public partial class SettingsViewModel : ObservableObject {
 
     public ObservableCollection<ModelItemViewModel> Models { get; }
 
-    public IReadOnlyList<string> InstalledModels => [.. Models.Where(m => m.IsInstalled).Select(m => m.ModelId)];
-
     [ObservableProperty]
     public partial string WhisperModelSize { get; set; }
 
@@ -69,10 +67,7 @@ public partial class SettingsViewModel : ObservableObject {
 
     public LanguageOption? SelectedLanguageOption {
         get => AvailableLanguageOptions.FirstOrDefault(o => o.Code == Language);
-        set {
-            if (value is not null)
-                Language = value.Code;
-        }
+        set { if (value is not null) Language = value.Code; }
     }
 
     public SettingsViewModel(ISettingsService settingsService, IAudioRecorder recorder, IModelManager modelManager, IThemeService themeService) {
@@ -97,13 +92,6 @@ public partial class SettingsViewModel : ObservableObject {
 
         Models = [.. modelManager.GetAvailableModelIds().Select(id => new ModelItemViewModel(id, modelManager, SelectModel))];
 
-        foreach (var model in Models) {
-            model.PropertyChanged += (_, args) => {
-                if (args.PropertyName == nameof(ModelItemViewModel.IsInstalled))
-                    OnPropertyChanged(nameof(InstalledModels));
-            };
-        }
-
         UpdateModelSelection(WhisperModelSize);
 
         _isInitializing = false;
@@ -116,8 +104,7 @@ public partial class SettingsViewModel : ObservableObject {
     partial void OnAudioInputDeviceChanged(string? value) => SaveSetting(s => s.AudioInputDevice = value);
     partial void OnThemeChanged(string value) {
         SaveSetting(s => s.Theme = value);
-        if (!_isInitializing)
-            _themeService.ApplyTheme(value);
+        if (!_isInitializing) _themeService.ApplyTheme(value);
     }
     partial void OnLanguageChanged(string value) {
         SaveSetting(s => s.Language = value);
@@ -144,8 +131,7 @@ public partial class SettingsViewModel : ObservableObject {
     private void SelectModel(string modelId) => WhisperModelSize = modelId;
 
     private void UpdateModelSelection(string selectedId) {
-        if (Models is null)
-            return;
+        if (Models is null) return;
         foreach (var m in Models)
             m.IsSelected = m.ModelId == selectedId;
     }

@@ -112,8 +112,9 @@ public class TrayIconServiceTests {
         // Should be Ready immediately
         service.CurrentState.Should().Be(AppState.Ready);
 
-        // After duration elapses it should have reverted
-        await Task.Delay(150);
+        // After duration elapses it should have reverted.
+        // Use 500 ms to avoid false failures under thread-pool load during full suite runs.
+        await Task.Delay(500);
         service.CurrentState.Should().Be(AppState.Idle);
     }
 

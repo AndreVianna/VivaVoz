@@ -25,9 +25,13 @@ public partial class App : Application {
         var crashRecoveryService = new CrashRecoveryService();
         var notificationService = new NotificationService();
 
+        var hotkeyService = new GlobalHotkeyService();
+        var parsedHotkey = HotkeyConfig.Parse(settingsService.Current?.HotkeyConfig);
+        hotkeyService.TryRegister(parsedHotkey ?? HotkeyConfig.Default, settingsService.Current?.RecordingMode ?? "Toggle");
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
             var mainWindow = new MainWindow(settingsService) {
-                DataContext = new MainViewModel(recorderService, audioPlayerService, dbContext, transcriptionManager, clipboardService, settingsService, modelService, recordingService, dialogService, exportService, crashRecoveryService, notificationService)
+                DataContext = new MainViewModel(recorderService, audioPlayerService, dbContext, transcriptionManager, clipboardService, settingsService, modelService, recordingService, dialogService, exportService, crashRecoveryService, notificationService, hotkeyService: hotkeyService)
             };
 
             var overlayViewModel = new RecordingOverlayViewModel(recorderService);
@@ -51,7 +55,10 @@ public partial class App : Application {
                 mainWindow.ShowInTaskbar = false;
             }
 
-            desktop.ShutdownRequested += (_, _) => trayService.Dispose();
+            desktop.ShutdownRequested += (_, _) => {
+                trayService.Dispose();
+                hotkeyService.Dispose();
+            };
         }
 
         base.OnFrameworkInitializationCompleted();

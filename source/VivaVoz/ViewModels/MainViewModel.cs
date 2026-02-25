@@ -12,6 +12,7 @@ public partial class MainViewModel : ObservableObject {
     private readonly INotificationService _notificationService;
     private readonly ICrashRecoveryService? _crashRecoveryService;
     private readonly ITrayIconService? _trayIconService;
+    private readonly IHotkeyService? _hotkeyService;
     public AudioPlayerViewModel AudioPlayer { get; }
     public RecordingDetailViewModel Detail { get; }
 
@@ -113,7 +114,8 @@ public partial class MainViewModel : ObservableObject {
         IExportService? exportService = null,
         ICrashRecoveryService? crashRecoveryService = null,
         INotificationService? notificationService = null,
-        ITrayIconService? trayIconService = null) {
+        ITrayIconService? trayIconService = null,
+        IHotkeyService? hotkeyService = null) {
         _recorder = recorder ?? throw new ArgumentNullException(nameof(recorder));
         _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         _transcriptionManager = transcriptionManager ?? throw new ArgumentNullException(nameof(transcriptionManager));
@@ -141,6 +143,12 @@ public partial class MainViewModel : ObservableObject {
         _recorder.RecordingStopped += OnRecordingStopped;
         _transcriptionManager.TranscriptionCompleted += OnTranscriptionCompleted;
         HasOrphanedRecording = _crashRecoveryService?.HasOrphan() ?? false;
+
+        _hotkeyService = hotkeyService;
+        if (_hotkeyService is not null) {
+            _hotkeyService.RecordingStartRequested += (_, _) => Dispatcher.UIThread.Post(StartRecording);
+            _hotkeyService.RecordingStopRequested += (_, _) => Dispatcher.UIThread.Post(StopRecording);
+        }
     }
 
     public bool HasSelection => SelectedRecording is not null;

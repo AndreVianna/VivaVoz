@@ -94,14 +94,6 @@
         <TextBlock Text="Download and manage Whisper models. Select an installed model to use for transcription."
                    FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
 
-        <Grid ColumnDefinitions="*,Auto">
-          <TextBlock Text="Active Model" VerticalAlignment="Center" />
-          <ComboBox Grid.Column="1"
-                    ItemsSource="{Binding InstalledModels}"
-                    SelectedItem="{Binding WhisperModelSize}"
-                    MinWidth="120" />
-        </Grid>
-
         <ItemsControl ItemsSource="{Binding Models}">
           <ItemsControl.ItemTemplate>
             <DataTemplate DataType="{x:Type vm:ModelItemViewModel}">
