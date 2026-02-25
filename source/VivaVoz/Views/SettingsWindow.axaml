@@ -35,6 +35,28 @@
         </Grid>
       </StackPanel>
 
+      <!-- Updates -->
+      <StackPanel Spacing="12">
+        <TextBlock Text="Updates" FontSize="16" FontWeight="SemiBold" />
+
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Text="Check for updates on startup" VerticalAlignment="Center" />
+          <CheckBox Grid.Column="1" IsChecked="{Binding CheckForUpdatesOnStartup}" />
+        </Grid>
+
+        <Grid ColumnDefinitions="*,Auto,Auto">
+          <TextBlock Text="{Binding UpdateStatusMessage}"
+                     VerticalAlignment="Center"
+                     Opacity="0.7"
+                     FontSize="12"
+                     TextWrapping="Wrap" />
+          <Button Grid.Column="2"
+                  Content="Check for Updates"
+                  Command="{Binding CheckForUpdatesCommand}"
+                  Padding="8,4" />
+        </Grid>
+      </StackPanel>
+
       <!-- Recording -->
       <StackPanel Spacing="12">
         <TextBlock Text="Recording" FontSize="16" FontWeight="SemiBold" />

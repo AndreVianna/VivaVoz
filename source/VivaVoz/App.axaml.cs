@@ -29,6 +29,8 @@ public partial class App : Application {
         var parsedHotkey = HotkeyConfig.Parse(settingsService.Current?.HotkeyConfig);
         hotkeyService.TryRegister(parsedHotkey ?? HotkeyConfig.Default, settingsService.Current?.RecordingMode ?? "Toggle");
 
+        var updateChecker = new GitHubUpdateChecker(new System.Net.Http.HttpClient());
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
             // Create TrayIconService with a deferred callback to TrayService (assigned below).
             // The callback maps AppState → TrayIconState so MainViewModel state transitions
@@ -45,7 +47,7 @@ public partial class App : Application {
             });
 
             var mainWindow = new MainWindow(settingsService) {
-                DataContext = new MainViewModel(recorderService, audioPlayerService, dbContext, transcriptionManager, clipboardService, settingsService, modelService, recordingService, dialogService, exportService, crashRecoveryService, notificationService, trayIconService: trayIconService, hotkeyService: hotkeyService)
+                DataContext = new MainViewModel(recorderService, audioPlayerService, dbContext, transcriptionManager, clipboardService, settingsService, modelService, recordingService, dialogService, exportService, crashRecoveryService, notificationService, trayIconService: trayIconService, hotkeyService: hotkeyService, updateChecker: updateChecker)
             };
 
             // Show the onboarding wizard on first launch
@@ -62,6 +64,20 @@ public partial class App : Application {
                     hotkeyService.TryRegister(
                         updatedHotkey ?? HotkeyConfig.Default,
                         settingsService.Current?.RecordingMode ?? "Toggle");
+                };
+            }
+
+            // Check for updates on startup (non-blocking)
+            if (settingsService.Current?.CheckForUpdatesOnStartup == true) {
+                mainWindow.Opened += async (_, _) => {
+                    try {
+                        var info = await updateChecker.CheckForUpdateAsync();
+                        if (info is not null)
+                            ShowUpdateAvailableDialog(mainWindow, info);
+                    }
+                    catch {
+                        // Silently ignore update check errors
+                    }
                 };
             }
 
@@ -120,5 +136,45 @@ public partial class App : Application {
 
         await dbContext.SaveChangesAsync();
         Log.Information("[App] Reset {Count} orphaned Transcribing recording(s) to PendingTranscription.", orphaned.Count);
+    }
+
+    private static void ShowUpdateAvailableDialog(Window owner, UpdateInfo info) {
+        var downloadButton = new Button { Content = "Download", Margin = new Avalonia.Thickness(0, 0, 8, 0) };
+        var dismissButton = new Button { Content = "Dismiss" };
+
+        var window = new Window {
+            Title = "Update Available",
+            SizeToContent = SizeToContent.WidthAndHeight,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false,
+            MinWidth = 340,
+            Content = new StackPanel {
+                Spacing = 16,
+                Margin = new Avalonia.Thickness(24),
+                Children = {
+                    new TextBlock {
+                        Text = $"VivaVoz v{info.Version} is available!",
+                        FontWeight = Avalonia.Media.FontWeight.SemiBold,
+                        FontSize = 16
+                    },
+                    new StackPanel {
+                        Orientation = Avalonia.Layout.Orientation.Horizontal,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                        Children = { downloadButton, dismissButton }
+                    }
+                }
+            }
+        };
+
+        downloadButton.Click += (_, _) => {
+            try {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(info.DownloadUrl) { UseShellExecute = true });
+            }
+            catch { /* best-effort */ }
+            window.Close();
+        };
+        dismissButton.Click += (_, _) => window.Close();
+
+        window.Show(owner);
     }
 }

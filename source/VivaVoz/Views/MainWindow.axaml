@@ -27,6 +27,27 @@
       </Grid>
     </Border>
 
+    <!-- Top bar — spans full width -->
+    <Border DockPanel.Dock="Top" Padding="16,12,16,8">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto" ColumnSpacing="8">
+        <TextBlock Text="Recordings" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
+        <Button Grid.Column="1"
+                Content="Record"
+                Command="{Binding StartRecordingCommand}"
+                IsVisible="{Binding IsNotRecording}" />
+        <Button Grid.Column="2"
+                Content="Stop"
+                Command="{Binding StopRecordingCommand}"
+                IsVisible="{Binding IsRecording}" />
+        <Button Grid.Column="4"
+                Content="Settings"
+                Command="{Binding OpenSettingsCommand}" />
+        <Button Grid.Column="5"
+                Content="About"
+                Command="{Binding OpenAboutCommand}" />
+      </Grid>
+    </Border>
+
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="300" MinWidth="300" />
@@ -34,7 +55,7 @@
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
 
-      <Border Grid.Column="0" Padding="16" BorderThickness="0,0,1,0" BorderBrush="#1FFFFFFF">
+      <Border Grid.Column="0" Padding="16,0,16,16" BorderThickness="0,0,1,0" BorderBrush="#1FFFFFFF">
         <views:RecordingsListView />
       </Border>
 

@@ -1,0 +1,73 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:VivaVoz.ViewModels"
+        x:Class="VivaVoz.Views.AboutWindow"
+        x:DataType="vm:AboutViewModel"
+        Title="About VivaVoz"
+        Width="380"
+        SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Icon="avares://VivaVoz/Assets/vivavoz.ico">
+
+  <StackPanel Spacing="16" Margin="32,28,32,32" HorizontalAlignment="Stretch">
+
+    <!-- App Icon -->
+    <Image Source="avares://VivaVoz/Assets/vivavoz-256x256.png"
+           Width="80" Height="80"
+           HorizontalAlignment="Center" />
+
+    <!-- App Name + Version -->
+    <StackPanel HorizontalAlignment="Center" Spacing="4">
+      <TextBlock Text="{Binding AppName}"
+                 FontSize="24" FontWeight="Bold"
+                 HorizontalAlignment="Center" />
+      <TextBlock Text="{Binding AppVersion, StringFormat='Version {0}'}"
+                 FontSize="12" Opacity="0.65"
+                 HorizontalAlignment="Center" />
+    </StackPanel>
+
+    <!-- Tagline -->
+    <TextBlock Text="{Binding Tagline}"
+               FontSize="13" FontStyle="Italic"
+               Opacity="0.8"
+               HorizontalAlignment="Center" />
+
+    <!-- Credits -->
+    <TextBlock Text="{Binding Credits}"
+               HorizontalAlignment="Center"
+               Opacity="0.65" />
+
+    <!-- Hotkey reference -->
+    <Border Background="#18808080" CornerRadius="8" Padding="16,10">
+      <StackPanel Spacing="3" HorizontalAlignment="Center">
+        <TextBlock Text="Recording Hotkey"
+                   FontWeight="SemiBold" FontSize="12"
+                   HorizontalAlignment="Center" />
+        <TextBlock Text="{Binding HotkeyDisplay}"
+                   HorizontalAlignment="Center"
+                   FontFamily="Monospace" FontSize="13" />
+      </StackPanel>
+    </Border>
+
+    <!-- Links -->
+    <StackPanel Orientation="Horizontal"
+                HorizontalAlignment="Center"
+                Spacing="12">
+      <Button Content="GitHub Repo"
+              Command="{Binding OpenGitHubCommand}"
+              Padding="12,6" />
+      <Button Content="Report an Issue"
+              Command="{Binding OpenIssuesCommand}"
+              Padding="12,6" />
+    </StackPanel>
+
+    <!-- OK -->
+    <Button Content="OK"
+            HorizontalAlignment="Center"
+            MinWidth="90"
+            Padding="12,6"
+            Click="OnOkClicked" />
+
+  </StackPanel>
+</Window>

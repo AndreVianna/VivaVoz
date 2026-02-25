@@ -13,6 +13,7 @@ public partial class MainViewModel : ObservableObject {
     private readonly ICrashRecoveryService? _crashRecoveryService;
     private readonly ITrayIconService? _trayIconService;
     private readonly IHotkeyService? _hotkeyService;
+    private readonly IUpdateChecker? _updateChecker;
     public AudioPlayerViewModel AudioPlayer { get; }
     public RecordingDetailViewModel Detail { get; }
 
@@ -120,7 +121,7 @@ public partial class MainViewModel : ObservableObject {
     public string TranscribedWithInfo =>
         SelectedRecording is { Status: RecordingStatus.Complete } &&
         !string.IsNullOrEmpty(SelectedRecording.WhisperModel)
-            ? $"Transcribed with {System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(SelectedRecording.WhisperModel)}"
+            ? $"Transcribed with: {SelectedRecording.WhisperModel}"
             : string.Empty;
 
     public MainViewModel(
@@ -137,7 +138,8 @@ public partial class MainViewModel : ObservableObject {
         ICrashRecoveryService? crashRecoveryService = null,
         INotificationService? notificationService = null,
         ITrayIconService? trayIconService = null,
-        IHotkeyService? hotkeyService = null) {
+        IHotkeyService? hotkeyService = null,
+        IUpdateChecker? updateChecker = null) {
         _recorder = recorder ?? throw new ArgumentNullException(nameof(recorder));
         _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         _transcriptionManager = transcriptionManager ?? throw new ArgumentNullException(nameof(transcriptionManager));
@@ -171,6 +173,7 @@ public partial class MainViewModel : ObservableObject {
         SelectedRetranscribeModel = _settingsService.Current?.WhisperModelSize ?? "base";
 
         _hotkeyService = hotkeyService;
+        _updateChecker = updateChecker;
         if (_hotkeyService is not null) {
             _hotkeyService.RecordingStartRequested += (_, _) => Dispatcher.UIThread.Post(StartRecording);
             _hotkeyService.RecordingStopRequested += (_, _) => Dispatcher.UIThread.Post(StopRecording);
@@ -562,7 +565,7 @@ public partial class MainViewModel : ObservableObject {
     [ExcludeFromCodeCoverage]
     private void OpenSettings() {
         var settingsWindow = new SettingsWindow {
-            DataContext = new SettingsViewModel(_settingsService, _recorder, _modelManager, new Services.ThemeService())
+            DataContext = new SettingsViewModel(_settingsService, _recorder, _modelManager, new Services.ThemeService(), _updateChecker)
         };
 
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
@@ -572,5 +575,20 @@ public partial class MainViewModel : ObservableObject {
         }
 
         settingsWindow.Show();
+    }
+
+    [RelayCommand]
+    private void OpenAbout() {
+        var aboutWindow = new AboutWindow {
+            DataContext = new AboutViewModel(_settingsService)
+        };
+
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            && desktop.MainWindow is not null) {
+            aboutWindow.ShowDialog(desktop.MainWindow);
+            return;
+        }
+
+        aboutWindow.Show();
     }
 }

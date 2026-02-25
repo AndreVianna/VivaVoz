@@ -98,5 +98,8 @@ public sealed class AppDbContext : DbContext {
         settings.Property(s => s.HasCompletedOnboarding)
             .IsRequired()
             .HasDefaultValue(false);
+        settings.Property(s => s.CheckForUpdatesOnStartup)
+            .IsRequired()
+            .HasDefaultValue(true);
     }
 }

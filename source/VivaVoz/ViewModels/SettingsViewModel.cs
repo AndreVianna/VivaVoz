@@ -8,6 +8,7 @@ public partial class SettingsViewModel : ObservableObject {
     private readonly ISettingsService _settingsService;
     private readonly IModelManager _modelManager;
     private readonly IThemeService _themeService;
+    private readonly IUpdateChecker? _updateChecker;
     private readonly Settings _settings;
     private readonly bool _isInitializing = true;
 
@@ -59,6 +60,12 @@ public partial class SettingsViewModel : ObservableObject {
     public partial bool AutoCopyToClipboard { get; set; }
 
     [ObservableProperty]
+    public partial bool CheckForUpdatesOnStartup { get; set; }
+
+    [ObservableProperty]
+    public partial string UpdateStatusMessage { get; set; } = string.Empty;
+
+    [ObservableProperty]
     public partial bool IsListeningForHotkey { get; set; }
 
     public string HotkeyDisplayText => IsListeningForHotkey
@@ -70,11 +77,12 @@ public partial class SettingsViewModel : ObservableObject {
         set { if (value is not null) Language = value.Code; }
     }
 
-    public SettingsViewModel(ISettingsService settingsService, IAudioRecorder recorder, IModelManager modelManager, IThemeService themeService) {
+    public SettingsViewModel(ISettingsService settingsService, IAudioRecorder recorder, IModelManager modelManager, IThemeService themeService, IUpdateChecker? updateChecker = null) {
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         ArgumentNullException.ThrowIfNull(recorder);
         _modelManager = modelManager ?? throw new ArgumentNullException(nameof(modelManager));
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
+        _updateChecker = updateChecker;
 
         _settings = settingsService.Current ?? new Settings();
 
@@ -87,6 +95,7 @@ public partial class SettingsViewModel : ObservableObject {
         HotkeyConfig = _settings.HotkeyConfig;
         RecordingMode = _settings.RecordingMode;
         AutoCopyToClipboard = _settings.AutoCopyToClipboard;
+        CheckForUpdatesOnStartup = _settings.CheckForUpdatesOnStartup;
 
         AvailableDevices = recorder.GetAvailableDevices();
 
@@ -118,10 +127,25 @@ public partial class SettingsViewModel : ObservableObject {
     }
     partial void OnRecordingModeChanged(string value) => SaveSetting(s => s.RecordingMode = value);
     partial void OnAutoCopyToClipboardChanged(bool value) => SaveSetting(s => s.AutoCopyToClipboard = value);
+    partial void OnCheckForUpdatesOnStartupChanged(bool value) => SaveSetting(s => s.CheckForUpdatesOnStartup = value);
     partial void OnIsListeningForHotkeyChanged(bool value) => OnPropertyChanged(nameof(HotkeyDisplayText));
 
     [RelayCommand]
     private void StartSetHotkey() => IsListeningForHotkey = true;
+
+    [RelayCommand]
+    private async Task CheckForUpdatesAsync() {
+        if (_updateChecker is null) {
+            UpdateStatusMessage = "Update checker is not available.";
+            return;
+        }
+
+        UpdateStatusMessage = "Checking for updates...";
+        var info = await _updateChecker.CheckForUpdateAsync();
+        UpdateStatusMessage = info is not null
+            ? $"Update available: v{info.Version}"
+            : "You are running the latest version.";
+    }
 
     internal void AcceptHotkeyCapture(string config) {
         HotkeyConfig = config;
