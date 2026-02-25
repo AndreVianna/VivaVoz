@@ -15,6 +15,7 @@ public class Settings {
     public string RecordingMode { get; set; } = "Toggle";
     public int? OverlayX { get; set; }
     public int? OverlayY { get; set; }
+    public bool AutoCopyToClipboard { get; set; } = true;
 
     private static string GetDefaultStoragePath() {
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);

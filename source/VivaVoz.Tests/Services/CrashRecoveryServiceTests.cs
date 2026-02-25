@@ -1,6 +1,6 @@
-using AwesomeAssertions;
-
 using System.Text.Json;
+
+using AwesomeAssertions;
 
 using VivaVoz.Services;
 
@@ -19,8 +19,11 @@ public class CrashRecoveryServiceTests : IDisposable {
     }
 
     public void Dispose() {
-        try { Directory.Delete(_tempDir, recursive: true); }
+        try {
+            Directory.Delete(_tempDir, recursive: true);
+        }
         catch { /* best effort */ }
+
         GC.SuppressFinalize(this);
     }
 
@@ -89,7 +92,7 @@ public class CrashRecoveryServiceTests : IDisposable {
 
     [Fact]
     public void GetOrphanPath_WhenValidMarker_ShouldReturnFilePath() {
-        var audioPath = "/some/audio/path.wav";
+        const string audioPath = "/some/audio/path.wav";
         WriteMarker(audioPath);
         var service = new CrashRecoveryService(_markerPath);
 
@@ -128,7 +131,7 @@ public class CrashRecoveryServiceTests : IDisposable {
     public void Dismiss_WhenNoMarkerExists_ShouldNotThrow() {
         var service = new CrashRecoveryService(_markerPath);
 
-        var act = () => service.Dismiss();
+        var act = service.Dismiss;
 
         act.Should().NotThrow();
     }

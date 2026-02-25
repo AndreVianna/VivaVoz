@@ -18,6 +18,10 @@
     <AvaloniaResource Include="Assets\vivavoz-1024x1024.png" />
     <AvaloniaResource Include="Assets\vivavoz-mono-16x16.png" />
     <AvaloniaResource Include="Assets\vivavoz-mono-32x32.png" />
+    <AvaloniaResource Include="Assets\TrayIcons\tray-idle.ico" />
+    <AvaloniaResource Include="Assets\TrayIcons\tray-recording.ico" />
+    <AvaloniaResource Include="Assets\TrayIcons\tray-transcribing.ico" />
+    <AvaloniaResource Include="Assets\TrayIcons\tray-ready.ico" />
   </ItemGroup>
 
   <ItemGroup>

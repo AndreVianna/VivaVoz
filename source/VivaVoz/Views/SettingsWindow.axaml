@@ -81,6 +81,11 @@
                     SelectedItem="{Binding SelectedLanguageOption}"
                     MinWidth="120" />
         </Grid>
+
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Text="Auto-copy to clipboard" VerticalAlignment="Center" />
+          <CheckBox Grid.Column="1" IsChecked="{Binding AutoCopyToClipboard}" />
+        </Grid>
       </StackPanel>
 
       <!-- Models -->
@@ -88,14 +93,6 @@
         <TextBlock Text="Models" FontSize="16" FontWeight="SemiBold" />
         <TextBlock Text="Download and manage Whisper models. Select an installed model to use for transcription."
                    FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
-
-        <Grid ColumnDefinitions="*,Auto">
-          <TextBlock Text="Active Model" VerticalAlignment="Center" />
-          <ComboBox Grid.Column="1"
-                    ItemsSource="{Binding InstalledModels}"
-                    SelectedItem="{Binding WhisperModelSize}"
-                    MinWidth="120" />
-        </Grid>
 
         <ItemsControl ItemsSource="{Binding Models}">
           <ItemsControl.ItemTemplate>

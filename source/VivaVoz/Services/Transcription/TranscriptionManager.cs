@@ -50,6 +50,7 @@ public sealed class TranscriptionManager : ITranscriptionManager, IDisposable {
                         "[TranscriptionManager] Preferred model '{Preferred}' not available. Falling back to '{Fallback}'.",
                         preferredModelId, _fallbackOrder[i]);
                 }
+
                 return _fallbackOrder[i];
             }
         }
@@ -71,7 +72,7 @@ public sealed class TranscriptionManager : ITranscriptionManager, IDisposable {
             var preferredModelId = _settingsService?.Current?.WhisperModelSize ?? "tiny";
             var modelId = SelectModelWithFallback(preferredModelId);
             var language = _settingsService?.Current?.Language;
-            var options = new TranscriptionOptions(ModelId: modelId, Language: language);
+            var options = new TranscriptionOptions(Language: language, ModelId: modelId);
             var result = await _engine.TranscribeAsync(audioFilePath, options, cancellationToken)
                 .ConfigureAwait(false);
 

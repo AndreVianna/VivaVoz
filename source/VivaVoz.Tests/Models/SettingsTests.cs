@@ -62,4 +62,11 @@ public class SettingsTests {
 
         settings.RecordingMode.Should().Be("Toggle");
     }
+
+    [Fact]
+    public void NewSettings_ShouldDefaultAutoCopyToClipboardToTrue() {
+        var settings = new Settings();
+
+        settings.AutoCopyToClipboard.Should().BeTrue();
+    }
 }

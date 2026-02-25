@@ -64,7 +64,7 @@ public class MainViewModelNotificationTests : IDisposable {
 
     [Fact]
     public async Task ExportTextCommand_WhenExportFails_ShouldShowRecoverableErrorNotification() {
-        using var context = CreateContext(_connection);
+        await using var context = CreateContext(_connection);
         var exportService = Substitute.For<IExportService>();
         exportService.ExportTextAsync(Arg.Any<string>(), Arg.Any<string>())
             .ThrowsAsync(new UnauthorizedAccessException("Access denied"));
@@ -75,7 +75,7 @@ public class MainViewModelNotificationTests : IDisposable {
         notificationService.ShowRecoverableErrorAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
             .Returns(Task.FromResult(false));
 
-        var vm = CreateViewModel(context, exportService: exportService, dialogService: dialogService, notificationService: notificationService);
+        var vm = CreateViewModel(context, dialogService: dialogService, exportService: exportService, notificationService: notificationService);
         vm.SelectedRecording = CreateCompleteRecording(transcript: "Hello");
 
         await vm.ExportTextCommand.ExecuteAsync(null);
@@ -89,7 +89,7 @@ public class MainViewModelNotificationTests : IDisposable {
 
     [Fact]
     public async Task ExportTextCommand_WhenExportFailsAndUserChoosesClipboard_ShouldCopyToClipboard() {
-        using var context = CreateContext(_connection);
+        await using var context = CreateContext(_connection);
         var exportService = Substitute.For<IExportService>();
         exportService.ExportTextAsync(Arg.Any<string>(), Arg.Any<string>())
             .ThrowsAsync(new IOException("Disk full"));
@@ -102,7 +102,7 @@ public class MainViewModelNotificationTests : IDisposable {
         var clipboardService = Substitute.For<IClipboardService>();
         clipboardService.SetTextAsync(Arg.Any<string>()).Returns(Task.CompletedTask);
 
-        var vm = CreateViewModel(context, exportService: exportService, dialogService: dialogService,
+        var vm = CreateViewModel(context, dialogService: dialogService, exportService: exportService,
             notificationService: notificationService, clipboardService: clipboardService);
         vm.SelectedRecording = CreateCompleteRecording(transcript: "Hello world");
 
@@ -113,7 +113,7 @@ public class MainViewModelNotificationTests : IDisposable {
 
     [Fact]
     public async Task ExportTextCommand_WhenExportFailsAndUserChoosesCancel_ShouldNotCopyToClipboard() {
-        using var context = CreateContext(_connection);
+        await using var context = CreateContext(_connection);
         var exportService = Substitute.For<IExportService>();
         exportService.ExportTextAsync(Arg.Any<string>(), Arg.Any<string>())
             .ThrowsAsync(new IOException("Disk full"));
@@ -125,7 +125,7 @@ public class MainViewModelNotificationTests : IDisposable {
             .Returns(Task.FromResult(false)); // user clicks "Cancel"
         var clipboardService = Substitute.For<IClipboardService>();
 
-        var vm = CreateViewModel(context, exportService: exportService, dialogService: dialogService,
+        var vm = CreateViewModel(context, dialogService: dialogService, exportService: exportService,
             notificationService: notificationService, clipboardService: clipboardService);
         vm.SelectedRecording = CreateCompleteRecording(transcript: "Hello world");
 
@@ -136,7 +136,7 @@ public class MainViewModelNotificationTests : IDisposable {
 
     [Fact]
     public async Task ExportTextCommand_WhenExportSucceeds_ShouldNotShowNotification() {
-        using var context = CreateContext(_connection);
+        await using var context = CreateContext(_connection);
         var exportService = Substitute.For<IExportService>();
         exportService.ExportTextAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(Task.CompletedTask);
         var dialogService = Substitute.For<IDialogService>();
@@ -144,7 +144,7 @@ public class MainViewModelNotificationTests : IDisposable {
             .Returns(Task.FromResult<string?>("/tmp/out.txt"));
         var notificationService = Substitute.For<INotificationService>();
 
-        var vm = CreateViewModel(context, exportService: exportService, dialogService: dialogService, notificationService: notificationService);
+        var vm = CreateViewModel(context, dialogService: dialogService, exportService: exportService, notificationService: notificationService);
         vm.SelectedRecording = CreateCompleteRecording(transcript: "Hello");
 
         await vm.ExportTextCommand.ExecuteAsync(null);
@@ -156,7 +156,7 @@ public class MainViewModelNotificationTests : IDisposable {
 
     [Fact]
     public async Task ExportAudioCommand_WhenExportFails_ShouldShowWarningNotification() {
-        using var context = CreateContext(_connection);
+        await using var context = CreateContext(_connection);
         var exportService = Substitute.For<IExportService>();
         exportService.ExportAudioAsync(Arg.Any<string>(), Arg.Any<string>())
             .ThrowsAsync(new IOException("Disk full"));
@@ -166,7 +166,7 @@ public class MainViewModelNotificationTests : IDisposable {
         var notificationService = Substitute.For<INotificationService>();
         notificationService.ShowWarningAsync(Arg.Any<string>()).Returns(Task.CompletedTask);
 
-        var vm = CreateViewModel(context, exportService: exportService, dialogService: dialogService, notificationService: notificationService);
+        var vm = CreateViewModel(context, dialogService: dialogService, exportService: exportService, notificationService: notificationService);
         vm.SelectedRecording = CreateCompleteRecording();
 
         await vm.ExportAudioCommand.ExecuteAsync(null);
@@ -176,7 +176,7 @@ public class MainViewModelNotificationTests : IDisposable {
 
     [Fact]
     public async Task ExportAudioCommand_WhenExportSucceeds_ShouldNotShowNotification() {
-        using var context = CreateContext(_connection);
+        await using var context = CreateContext(_connection);
         var exportService = Substitute.For<IExportService>();
         exportService.ExportAudioAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(Task.CompletedTask);
         var dialogService = Substitute.For<IDialogService>();
@@ -184,7 +184,7 @@ public class MainViewModelNotificationTests : IDisposable {
             .Returns(Task.FromResult<string?>("/tmp/out.wav"));
         var notificationService = Substitute.For<INotificationService>();
 
-        var vm = CreateViewModel(context, exportService: exportService, dialogService: dialogService, notificationService: notificationService);
+        var vm = CreateViewModel(context, dialogService: dialogService, exportService: exportService, notificationService: notificationService);
         vm.SelectedRecording = CreateCompleteRecording();
 
         await vm.ExportAudioCommand.ExecuteAsync(null);
@@ -194,7 +194,7 @@ public class MainViewModelNotificationTests : IDisposable {
 
     // ========== Helper methods ==========
 
-    private MainViewModel CreateViewModel(
+    private static MainViewModel CreateViewModel(
         AppDbContext context,
         IDialogService? dialogService = null,
         IExportService? exportService = null,

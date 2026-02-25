@@ -7,9 +7,7 @@ public partial class RecordingOverlayWindow : Window {
     private readonly ISettingsService? _settingsService;
     private bool _positionInitialized;
 
-    public RecordingOverlayWindow() {
-        InitializeComponent();
-    }
+    public RecordingOverlayWindow() => InitializeComponent();
 
     public RecordingOverlayWindow(ISettingsService settingsService) : this() {
         _settingsService = settingsService;

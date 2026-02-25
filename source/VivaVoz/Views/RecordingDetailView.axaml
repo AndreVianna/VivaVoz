@@ -99,7 +99,7 @@
             <!-- Export audio button -->
             <Button Command="{Binding ExportAudioCommand}"
                     Content="Export Audio"
-                    IsVisible="{Binding HasSelection}"
+                    IsVisible="{Binding CanExportAudio}"
                     FontSize="12"
                     Padding="8,2"
                     VerticalAlignment="Center" />

@@ -31,8 +31,6 @@ public partial class SettingsViewModel : ObservableObject {
 
     public ObservableCollection<ModelItemViewModel> Models { get; }
 
-    public IReadOnlyList<string> InstalledModels => [.. Models.Where(m => m.IsInstalled).Select(m => m.ModelId)];
-
     [ObservableProperty]
     public partial string WhisperModelSize { get; set; }
 
@@ -56,6 +54,9 @@ public partial class SettingsViewModel : ObservableObject {
 
     [ObservableProperty]
     public partial string RecordingMode { get; set; }
+
+    [ObservableProperty]
+    public partial bool AutoCopyToClipboard { get; set; }
 
     [ObservableProperty]
     public partial bool IsListeningForHotkey { get; set; }
@@ -85,16 +86,11 @@ public partial class SettingsViewModel : ObservableObject {
         MinimizeToTray = _settings.MinimizeToTray;
         HotkeyConfig = _settings.HotkeyConfig;
         RecordingMode = _settings.RecordingMode;
+        AutoCopyToClipboard = _settings.AutoCopyToClipboard;
 
         AvailableDevices = recorder.GetAvailableDevices();
 
         Models = [.. modelManager.GetAvailableModelIds().Select(id => new ModelItemViewModel(id, modelManager, SelectModel))];
-
-        foreach (var model in Models)
-            model.PropertyChanged += (_, args) => {
-                if (args.PropertyName == nameof(ModelItemViewModel.IsInstalled))
-                    OnPropertyChanged(nameof(InstalledModels));
-            };
 
         UpdateModelSelection(WhisperModelSize);
 
@@ -121,6 +117,7 @@ public partial class SettingsViewModel : ObservableObject {
         OnPropertyChanged(nameof(HotkeyDisplayText));
     }
     partial void OnRecordingModeChanged(string value) => SaveSetting(s => s.RecordingMode = value);
+    partial void OnAutoCopyToClipboardChanged(bool value) => SaveSetting(s => s.AutoCopyToClipboard = value);
     partial void OnIsListeningForHotkeyChanged(bool value) => OnPropertyChanged(nameof(HotkeyDisplayText));
 
     [RelayCommand]

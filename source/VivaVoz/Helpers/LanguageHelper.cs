@@ -6,9 +6,12 @@ public static class LanguageHelper {
             return "Unknown";
         if (isoCode == "auto")
             return "Auto-detected";
+        if (string.Equals(isoCode, "unknown", StringComparison.OrdinalIgnoreCase))
+            return "Unknown";
         try {
             return CultureInfo.GetCultureInfo(isoCode).EnglishName;
-        } catch {
+        }
+        catch {
             return isoCode;
         }
     }

@@ -273,15 +273,81 @@ public class TrayServiceTests {
     }
 
     [Fact]
-    public void HandleTranscriptionCompleted_SequenceOfRecordingsAndTranscriptions_ShouldReturnToIdle() {
+    public void HandleTranscriptionCompleted_SequenceOfRecordingsAndTranscriptions_WithSuccess_ShouldSetStateToReady() {
         var service = CreateTrayService();
         service.HandleRecordingStopped(); // active = 1
         service.HandleRecordingStopped(); // active = 2
-        service.HandleTranscriptionCompleted(true, "first"); // remaining = 1
-        service.HandleTranscriptionCompleted(true, "second"); // remaining = 0
+        service.HandleTranscriptionCompleted(true, "first"); // remaining = 1 — stays Transcribing
+        service.HandleTranscriptionCompleted(true, "second"); // remaining = 0 — goes to Ready (then reverts after 3s)
+
+        // Immediately after completion, state should be Ready (timer will revert to Idle in 3 seconds)
+        service.CurrentState.Should().Be(TrayIconState.Ready);
+        service.ActiveTranscriptions.Should().Be(0);
+    }
+
+    [Fact]
+    public void HandleTranscriptionCompleted_SequenceWithFailure_ShouldReturnToIdle() {
+        var service = CreateTrayService();
+        service.HandleRecordingStopped(); // active = 1
+        service.HandleTranscriptionCompleted(false, null); // remaining = 0, failure → Idle
 
         service.CurrentState.Should().Be(TrayIconState.Idle);
         service.ActiveTranscriptions.Should().Be(0);
+    }
+
+    // ========== HandleTranscriptionCompleted — Ready state ==========
+
+    [Fact]
+    public void HandleTranscriptionCompleted_WhenSuccessAndLastTranscription_ShouldSetStateToReady() {
+        var service = CreateTrayService();
+        service.HandleRecordingStopped(); // active = 1
+
+        service.HandleTranscriptionCompleted(true, "hello"); // success, remaining = 0
+
+        service.CurrentState.Should().Be(TrayIconState.Ready);
+    }
+
+    // ========== SetState — Ready ==========
+
+    [Fact]
+    public void SetState_WithReady_ShouldSetReadyState() {
+        var service = CreateTrayService();
+
+        service.SetState(TrayIconState.Ready);
+
+        service.CurrentState.Should().Be(TrayIconState.Ready);
+    }
+
+    // ========== SetStateTemporary ==========
+
+    [Fact]
+    public void SetStateTemporary_ShouldImmediatelySetState() {
+        var service = CreateTrayService();
+
+        service.SetStateTemporary(TrayIconState.Ready, TimeSpan.FromSeconds(60));
+
+        service.CurrentState.Should().Be(TrayIconState.Ready);
+    }
+
+    [Fact]
+    public async Task SetStateTemporary_ShouldRevertToIdleAfterDuration() {
+        var service = CreateTrayService();
+
+        service.SetStateTemporary(TrayIconState.Ready, TimeSpan.FromMilliseconds(30));
+        service.CurrentState.Should().Be(TrayIconState.Ready);
+
+        await Task.Delay(150);
+
+        service.CurrentState.Should().Be(TrayIconState.Idle);
+    }
+
+    // ========== GetTooltipForState — Ready ==========
+
+    [Fact]
+    public void GetTooltipForState_WhenReady_ShouldReturnReadyText() {
+        var result = TrayService.GetTooltipForState(TrayIconState.Ready);
+
+        result.Should().Be("VivaVoz — Transcript ready!");
     }
 
     // ========== ShouldShowTranscriptionNotification ==========

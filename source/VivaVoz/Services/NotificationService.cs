@@ -35,7 +35,10 @@ public class NotificationService : INotificationService {
             }
         };
 
-        dismissButton.Click += (_, _) => { tcs.TrySetResult(); window.Close(); };
+        dismissButton.Click += (_, _) => {
+            tcs.TrySetResult();
+            window.Close();
+        };
         window.Closed += (_, _) => tcs.TrySetResult();
 
         ShowWindow(window);
@@ -86,8 +89,14 @@ public class NotificationService : INotificationService {
             }
         };
 
-        primaryButton.Click += (_, _) => { tcs.TrySetResult(true); window.Close(); };
-        cancelButton.Click += (_, _) => { tcs.TrySetResult(false); window.Close(); };
+        primaryButton.Click += (_, _) => {
+            tcs.TrySetResult(true);
+            window.Close();
+        };
+        cancelButton.Click += (_, _) => {
+            tcs.TrySetResult(false);
+            window.Close();
+        };
         window.Closed += (_, _) => tcs.TrySetResult(false);
 
         ShowModalWindow(window);
@@ -136,7 +145,10 @@ public class NotificationService : INotificationService {
             window.Close();
             Environment.Exit(1);
         };
-        dismissButton.Click += (_, _) => { tcs.TrySetResult(); window.Close(); };
+        dismissButton.Click += (_, _) => {
+            tcs.TrySetResult();
+            window.Close();
+        };
         window.Closed += (_, _) => tcs.TrySetResult();
 
         ShowModalWindow(window);

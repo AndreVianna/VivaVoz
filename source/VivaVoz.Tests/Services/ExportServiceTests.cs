@@ -17,6 +17,7 @@ public class ExportServiceTests : IDisposable {
     public void Dispose() {
         try { Directory.Delete(_tempDir, recursive: true); }
         catch { /* best effort */ }
+
         GC.SuppressFinalize(this);
     }
 

@@ -92,5 +92,8 @@ public sealed class AppDbContext : DbContext {
         settings.Property(s => s.RecordingMode)
             .IsRequired()
             .HasDefaultValue("Toggle");
+        settings.Property(s => s.AutoCopyToClipboard)
+            .IsRequired()
+            .HasDefaultValue(true);
     }
 }

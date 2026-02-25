@@ -1,4 +1,3 @@
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
 namespace VivaVoz.Services;
@@ -14,10 +13,15 @@ public class TrayService(
     private NativeMenuItem? _toggleRecordingItem;
     private int _activeTranscriptions;
     private WindowIcon? _idleIcon;
-    private WindowIcon? _activeIcon;
+    private WindowIcon? _recordingIcon;
+    private WindowIcon? _transcribingIcon;
+    private WindowIcon? _readyIcon;
+    private CancellationTokenSource? _revertCts;
 
-    private const string IdleIconUri = "avares://VivaVoz/Assets/vivavoz-16x16.png";
-    private const string ActiveIconUri = "avares://VivaVoz/Assets/vivavoz-mono-16x16.png";
+    private const string IdleIconUri = "avares://VivaVoz/Assets/TrayIcons/tray-idle.ico";
+    private const string RecordingIconUri = "avares://VivaVoz/Assets/TrayIcons/tray-recording.ico";
+    private const string TranscribingIconUri = "avares://VivaVoz/Assets/TrayIcons/tray-transcribing.ico";
+    private const string ReadyIconUri = "avares://VivaVoz/Assets/TrayIcons/tray-ready.ico";
 
     /// <summary>
     /// The current tray icon state. Exposed as <c>internal</c> for unit testing.
@@ -32,7 +36,9 @@ public class TrayService(
     [ExcludeFromCodeCoverage(Justification = "Requires Avalonia platform and AssetLoader at runtime.")]
     public void Initialize() {
         _idleIcon = LoadIcon(IdleIconUri);
-        _activeIcon = LoadIcon(ActiveIconUri);
+        _recordingIcon = LoadIcon(RecordingIconUri);
+        _transcribingIcon = LoadIcon(TranscribingIconUri);
+        _readyIcon = LoadIcon(ReadyIconUri);
 
         _toggleRecordingItem = new NativeMenuItem { Header = "Start Recording" };
         _toggleRecordingItem.Click += OnToggleRecordingClicked;
@@ -69,18 +75,18 @@ public class TrayService(
     }
 
     public void SetState(TrayIconState state) {
-        CurrentState = state;
-        if (_trayIcon is null)
-            return;
+        CancelPendingRevert();
+        ApplyState(state);
+    }
 
-        _trayIcon.Icon = state == TrayIconState.Idle ? _idleIcon : _activeIcon;
-        _trayIcon.ToolTipText = GetTooltipForState(state);
+    public void SetStateTemporary(TrayIconState state, TimeSpan duration) {
+        CancelPendingRevert();
+        ApplyState(state);
 
-        _toggleRecordingItem?.Header = state == TrayIconState.Recording
-                ? "Stop Recording"
-                : "Start Recording";
+        var cts = new CancellationTokenSource();
+        _revertCts = cts;
 
-        Log.Debug("[TrayService] State changed to {State}.", state);
+        _ = RevertToIdleAsync(duration, cts.Token);
     }
 
     public void ShowTranscriptionComplete(string? transcript) {
@@ -97,10 +103,13 @@ public class TrayService(
         _recorder.RecordingStarted -= OnRecordingStarted;
         _recorder.RecordingStopped -= OnRecordingStopped;
         _transcriptionManager.TranscriptionCompleted -= OnTranscriptionCompleted;
+        CancelPendingRevert();
         _trayIcon?.Dispose();
         _trayIcon = null;
         _idleIcon = null;
-        _activeIcon = null;
+        _recordingIcon = null;
+        _transcribingIcon = null;
+        _readyIcon = null;
         GC.SuppressFinalize(this);
     }
 
@@ -123,8 +132,10 @@ public class TrayService(
     }
 
     /// <summary>
-    /// Handles transcription completion: decrements in-flight counter and returns to
-    /// <see cref="TrayIconState.Idle"/> when no more active transcriptions remain.
+    /// Handles transcription completion: decrements in-flight counter.
+    /// On success with no remaining transcriptions, temporarily shows
+    /// <see cref="TrayIconState.Ready"/> before reverting to
+    /// <see cref="TrayIconState.Idle"/> after 3 seconds.
     /// Exposed as <c>internal</c> for unit testing via <c>InternalsVisibleTo</c>.
     /// </summary>
     internal void HandleTranscriptionCompleted(bool success, string? transcript) {
@@ -132,7 +143,12 @@ public class TrayService(
 
         if (remaining <= 0) {
             _activeTranscriptions = 0;
-            SetState(TrayIconState.Idle);
+            if (success) {
+                SetStateTemporary(TrayIconState.Ready, TimeSpan.FromSeconds(3));
+            }
+            else {
+                SetState(TrayIconState.Idle);
+            }
         }
 
         if (success) {
@@ -206,7 +222,61 @@ public class TrayService(
     private static WindowIcon LoadIcon(string avaloniaUri) {
         var uri = new Uri(avaloniaUri);
         using var stream = AssetLoader.Open(uri);
-        return new WindowIcon(new Bitmap(stream));
+        return new WindowIcon(stream);
+    }
+
+    // ── Private helpers ────────────────────────────────────────────────────────
+
+    private void ApplyState(TrayIconState state) {
+        CurrentState = state;
+        if (_trayIcon is null)
+            return;
+
+        // Avalonia UI mutations must happen on the UI thread.
+        // Post is safe to call from any thread; if we're already on the UI thread this is a no-op queue.
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => ApplyTrayIconUI(state));
+    }
+
+    [ExcludeFromCodeCoverage(Justification = "Requires live Avalonia TrayIcon and NativeMenu at runtime.")]
+    private void ApplyTrayIconUI(TrayIconState state) {
+        _trayIcon!.Icon = state switch {
+            TrayIconState.Recording => _recordingIcon,
+            TrayIconState.Transcribing => _transcribingIcon,
+            TrayIconState.Ready => _readyIcon,
+            _ => _idleIcon,
+        };
+        _trayIcon.ToolTipText = GetTooltipForState(state);
+
+        _toggleRecordingItem?.Header = state == TrayIconState.Recording
+                ? "Stop Recording"
+                : "Start Recording";
+
+        Log.Debug("[TrayService] State changed to {State}.", state);
+    }
+
+    private void CancelPendingRevert() {
+        var cts = _revertCts;
+        _revertCts = null;
+        cts?.Cancel();
+        cts?.Dispose();
+    }
+
+    private async Task RevertToIdleAsync(TimeSpan duration, CancellationToken token) {
+        try {
+            await Task.Delay(duration, token);
+            // Dispose the CTS only if it hasn't been replaced by a newer call.
+            if (_revertCts?.Token == token) {
+                var cts = _revertCts;
+                _revertCts = null;
+                cts?.Dispose();
+            }
+            // ApplyState updates CurrentState on this thread-pool thread, then
+            // dispatches Avalonia UI mutations to the UI thread internally.
+            ApplyState(TrayIconState.Idle);
+        }
+        catch (OperationCanceledException) {
+            // Cancelled by a subsequent state change — intentional.
+        }
     }
 
     // ── Testable static helpers ────────────────────────────────────────────────
@@ -218,6 +288,7 @@ public class TrayService(
     public static string GetTooltipForState(TrayIconState state) => state switch {
         TrayIconState.Recording => "VivaVoz — Recording...",
         TrayIconState.Transcribing => "VivaVoz — Transcribing...",
+        TrayIconState.Ready => "VivaVoz — Transcript ready!",
         _ => "VivaVoz"
     };
 }

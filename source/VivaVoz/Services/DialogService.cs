@@ -85,9 +85,5 @@ public class DialogService : IDialogService {
         return tcs.Task;
     }
 
-    private static Window? GetMainWindow() {
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            return desktop.MainWindow;
-        return null;
-    }
+    private static Window? GetMainWindow() => Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop ? desktop.MainWindow : null;
 }

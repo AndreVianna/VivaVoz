@@ -28,8 +28,11 @@ public class MainViewModelExportTests : IDisposable {
 
     public void Dispose() {
         _connection.Dispose();
-        try { Directory.Delete(_tempDir, recursive: true); }
+        try {
+            Directory.Delete(_tempDir, recursive: true);
+        }
         catch { /* best effort */ }
+
         GC.SuppressFinalize(this);
     }
 
@@ -106,7 +109,7 @@ public class MainViewModelExportTests : IDisposable {
 
     [Fact]
     public async Task ExportTextCommand_WhenCompleteWithTranscript_ShouldCallExportService() {
-        using var context = CreateContext(_connection);
+        await using var context = CreateContext(_connection);
         var exportService = Substitute.For<IExportService>();
         exportService.ExportTextAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(Task.CompletedTask);
         var dialogService = Substitute.For<IDialogService>();
@@ -124,7 +127,7 @@ public class MainViewModelExportTests : IDisposable {
 
     [Fact]
     public async Task ExportTextCommand_WhenDialogCancelled_ShouldNotCallExportService() {
-        using var context = CreateContext(_connection);
+        await using var context = CreateContext(_connection);
         var exportService = Substitute.For<IExportService>();
         var dialogService = Substitute.For<IDialogService>();
         dialogService.ShowSaveFileDialogAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string[]>())
@@ -140,7 +143,7 @@ public class MainViewModelExportTests : IDisposable {
 
     [Fact]
     public async Task ExportTextCommand_WhenNoTranscript_ShouldNotShowDialog() {
-        using var context = CreateContext(_connection);
+        await using var context = CreateContext(_connection);
         var dialogService = Substitute.For<IDialogService>();
         var vm = CreateViewModel(context, dialogService: dialogService);
         var rec = CreateCompleteRecording(transcript: "");
@@ -154,7 +157,7 @@ public class MainViewModelExportTests : IDisposable {
 
     [Fact]
     public async Task ExportTextCommand_WhenNoSelection_ShouldNotShowDialog() {
-        using var context = CreateContext(_connection);
+        await using var context = CreateContext(_connection);
         var dialogService = Substitute.For<IDialogService>();
         var vm = CreateViewModel(context, dialogService: dialogService);
 
@@ -168,7 +171,7 @@ public class MainViewModelExportTests : IDisposable {
 
     [Fact]
     public async Task ExportAudioCommand_WhenRecordingSelected_ShouldCallExportService() {
-        using var context = CreateContext(_connection);
+        await using var context = CreateContext(_connection);
         var exportService = Substitute.For<IExportService>();
         exportService.ExportAudioAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(Task.CompletedTask);
         var dialogService = Substitute.For<IDialogService>();
@@ -186,7 +189,7 @@ public class MainViewModelExportTests : IDisposable {
 
     [Fact]
     public async Task ExportAudioCommand_WhenDialogCancelled_ShouldNotCallExportService() {
-        using var context = CreateContext(_connection);
+        await using var context = CreateContext(_connection);
         var exportService = Substitute.For<IExportService>();
         var dialogService = Substitute.For<IDialogService>();
         dialogService.ShowSaveFileDialogAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string[]>())
@@ -202,7 +205,7 @@ public class MainViewModelExportTests : IDisposable {
 
     [Fact]
     public async Task ExportAudioCommand_WhenNoSelection_ShouldNotShowDialog() {
-        using var context = CreateContext(_connection);
+        await using var context = CreateContext(_connection);
         var dialogService = Substitute.For<IDialogService>();
         var vm = CreateViewModel(context, dialogService: dialogService);
 
@@ -359,7 +362,7 @@ public class MainViewModelExportTests : IDisposable {
 
     // ========== Helper methods ==========
 
-    private MainViewModel CreateViewModel(
+    private static MainViewModel CreateViewModel(
         AppDbContext context,
         IDialogService? dialogService = null,
         IExportService? exportService = null,
