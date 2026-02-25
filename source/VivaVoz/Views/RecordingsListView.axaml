@@ -3,6 +3,9 @@
              x:Class="VivaVoz.Views.RecordingsListView">
   <Grid RowDefinitions="Auto,*" RowSpacing="8">
     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="4">
+      <Button Grid.Column="4"
+              Content="About"
+              Command="{Binding OpenAboutCommand}" />
       <TextBox Text="{Binding SearchText, Delay=300}"
                Watermark="Search recordings..." />
       <Button Grid.Column="1"

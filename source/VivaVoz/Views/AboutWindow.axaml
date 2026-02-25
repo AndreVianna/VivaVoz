@@ -10,7 +10,7 @@
         WindowStartupLocation="CenterOwner"
         Icon="avares://VivaVoz/Assets/vivavoz.ico">
 
-  <StackPanel Spacing="16" Margin="32,28,32,32" HorizontalAlignment="Stretch">
+  <StackPanel Spacing="16" Margin="32,28,32,32">
 
     <!-- App Icon -->
     <Image Source="avares://VivaVoz/Assets/vivavoz-256x256.png"
