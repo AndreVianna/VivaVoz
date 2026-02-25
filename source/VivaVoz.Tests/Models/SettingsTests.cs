@@ -15,13 +15,6 @@ public class SettingsTests {
     }
 
     [Fact]
-    public void NewSettings_ShouldDefaultExportFormatToMp3() {
-        var settings = new Settings();
-
-        settings.ExportFormat.Should().Be("MP3");
-    }
-
-    [Fact]
     public void NewSettings_ShouldDefaultThemeToSystem() {
         var settings = new Settings();
 

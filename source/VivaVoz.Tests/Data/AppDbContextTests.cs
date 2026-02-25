@@ -65,7 +65,6 @@ public class AppDbContextTests {
             WhisperModelSize = "tiny",
             AudioInputDevice = null,
             StoragePath = "C:\\Temp\\VivaVoz",
-            ExportFormat = "MP3",
             Theme = "System",
             Language = "auto",
             AutoUpdate = false
@@ -76,7 +75,6 @@ public class AppDbContextTests {
 
         fetched.Id.Should().Be(1);
         fetched.HotkeyConfig.Should().Be("Ctrl+Shift+R");
-        fetched.ExportFormat.Should().Be("MP3");
     }
 
     private static SqliteConnection CreateConnection() {

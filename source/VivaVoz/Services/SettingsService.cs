@@ -57,7 +57,6 @@ public class SettingsService(Func<AppDbContext> contextFactory) : ISettingsServi
         StoragePath = GetDefaultStoragePath(),
         Theme = "System",
         Language = "auto",
-        ExportFormat = "MP3",
         HotkeyConfig = string.Empty,
         AudioInputDevice = null,
         AutoUpdate = false,

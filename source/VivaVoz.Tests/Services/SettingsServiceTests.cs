@@ -44,7 +44,6 @@ public class SettingsServiceTests {
         settings.WhisperModelSize.Should().Be("tiny");
         settings.Theme.Should().Be("System");
         settings.Language.Should().Be("auto");
-        settings.ExportFormat.Should().Be("MP3");
         settings.HotkeyConfig.Should().Be(string.Empty);
         settings.AudioInputDevice.Should().BeNull();
         settings.AutoUpdate.Should().BeFalse();
@@ -91,7 +90,6 @@ public class SettingsServiceTests {
                 Language = "en",
                 Theme = "Dark",
                 StoragePath = "/custom/path",
-                ExportFormat = "WAV",
                 HotkeyConfig = "Ctrl+Shift+R",
                 AutoUpdate = true
             });
@@ -105,7 +103,6 @@ public class SettingsServiceTests {
         settings.Language.Should().Be("en");
         settings.Theme.Should().Be("Dark");
         settings.StoragePath.Should().Be("/custom/path");
-        settings.ExportFormat.Should().Be("WAV");
         settings.HotkeyConfig.Should().Be("Ctrl+Shift+R");
         settings.AutoUpdate.Should().BeTrue();
     }
@@ -203,7 +200,6 @@ public class SettingsServiceTests {
             Language = "pt",
             Theme = "Light",
             StoragePath = "/my/path",
-            ExportFormat = "OGG",
             HotkeyConfig = "Alt+R",
             AutoUpdate = true
         };
@@ -250,6 +246,23 @@ public class SettingsServiceTests {
         var expectedBase = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         settings.StoragePath.Should().StartWith(expectedBase);
         settings.StoragePath.Should().EndWith("VivaVoz");
+    }
+
+    [Fact]
+    public async Task SaveSettings_WithCustomStoragePath_ShouldPersist() {
+        await using var connection = CreateConnection();
+        EnsureDatabase(connection);
+
+        var service = new SettingsService(() => CreateContext(connection));
+        var settings = await service.LoadSettingsAsync();
+
+        settings.StoragePath = "/custom/storage/path";
+        await service.SaveSettingsAsync(settings);
+
+        await using var verifyContext = CreateContext(connection);
+        var persisted = await verifyContext.Settings.FirstOrDefaultAsync();
+        persisted.Should().NotBeNull();
+        persisted!.StoragePath.Should().Be("/custom/storage/path");
     }
 
     // ========== Helper methods ==========

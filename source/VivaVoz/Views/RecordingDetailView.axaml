@@ -42,7 +42,7 @@
           </StackPanel>
           <StackPanel>
             <TextBlock Text="Language" FontSize="12" Opacity="0.7" />
-            <TextBlock Text="{Binding SelectedRecording.LanguageCode}" />
+            <TextBlock Text="{Binding SelectedRecording.LanguageCode, Converter={StaticResource LanguageCodeToName}}" />
           </StackPanel>
         </StackPanel>
 

@@ -13,7 +13,6 @@ public partial class SettingsViewModel : ObservableObject {
 
     public static IReadOnlyList<string> AvailableThemes { get; } = ["System", "Light", "Dark"];
     public static IReadOnlyList<string> AvailableModels { get; } = ["tiny", "base", "small", "medium", "large-v3"];
-    public static IReadOnlyList<string> AvailableExportFormats { get; } = ["MP3", "WAV", "OGG", "TXT", "MD"];
     public static IReadOnlyList<string> AvailableRecordingModes { get; } = ["Toggle", "Push-to-Talk"];
     public static IReadOnlyList<string> AvailableLanguages { get; } = ["auto", "en", "fr", "de", "es", "pt", "it", "ja", "zh"];
     public static IReadOnlyList<LanguageOption> AvailableLanguageOptions { get; } = [
@@ -39,12 +38,6 @@ public partial class SettingsViewModel : ObservableObject {
 
     [ObservableProperty]
     public partial string? AudioInputDevice { get; set; }
-
-    [ObservableProperty]
-    public partial string StoragePath { get; set; }
-
-    [ObservableProperty]
-    public partial string ExportFormat { get; set; }
 
     [ObservableProperty]
     public partial string Theme { get; set; }
@@ -86,8 +79,6 @@ public partial class SettingsViewModel : ObservableObject {
 
         WhisperModelSize = _settings.WhisperModelSize;
         AudioInputDevice = _settings.AudioInputDevice;
-        StoragePath = _settings.StoragePath;
-        ExportFormat = _settings.ExportFormat;
         Theme = _settings.Theme;
         Language = _settings.Language;
         RunAtStartup = _settings.RunAtStartup;
@@ -115,8 +106,6 @@ public partial class SettingsViewModel : ObservableObject {
         UpdateModelSelection(value);
     }
     partial void OnAudioInputDeviceChanged(string? value) => SaveSetting(s => s.AudioInputDevice = value);
-    partial void OnStoragePathChanged(string value) => SaveSetting(s => s.StoragePath = value);
-    partial void OnExportFormatChanged(string value) => SaveSetting(s => s.ExportFormat = value);
     partial void OnThemeChanged(string value) {
         SaveSetting(s => s.Theme = value);
         if (!_isInitializing) _themeService.ApplyTheme(value);

@@ -6,7 +6,6 @@ public class Settings {
     public string WhisperModelSize { get; set; } = "tiny";
     public string? AudioInputDevice { get; set; }
     public string StoragePath { get; set; } = GetDefaultStoragePath();
-    public string ExportFormat { get; set; } = "MP3";
     public string Theme { get; set; } = "System";
     public string Language { get; set; } = "auto";
     public bool AutoUpdate { get; set; }

@@ -71,9 +71,6 @@ public sealed class AppDbContext : DbContext {
         settings.Property(s => s.AudioInputDevice);
         settings.Property(s => s.StoragePath)
             .IsRequired();
-        settings.Property(s => s.ExportFormat)
-            .IsRequired()
-            .HasDefaultValue("MP3");
         settings.Property(s => s.Theme)
             .IsRequired()
             .HasDefaultValue("System");

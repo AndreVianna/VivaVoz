@@ -80,24 +80,6 @@ public class SettingsViewModelTests {
     }
 
     [Fact]
-    public void Constructor_ShouldInitializeStoragePathFromSettings() {
-        var (service, recorder, modelManager, themeService) = CreateDependencies(s => s.StoragePath = "/custom/path");
-
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
-
-        vm.StoragePath.Should().Be("/custom/path");
-    }
-
-    [Fact]
-    public void Constructor_ShouldInitializeExportFormatFromSettings() {
-        var (service, recorder, modelManager, themeService) = CreateDependencies(s => s.ExportFormat = "WAV");
-
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService);
-
-        vm.ExportFormat.Should().Be("WAV");
-    }
-
-    [Fact]
     public void Constructor_ShouldInitializeThemeFromSettings() {
         var (service, recorder, modelManager, themeService) = CreateDependencies(s => s.Theme = "Dark");
 
@@ -313,13 +295,6 @@ public class SettingsViewModelTests {
     }
 
     [Fact]
-    public void AvailableExportFormats_ShouldContainExpectedFormats() {
-        SettingsViewModel.AvailableExportFormats.Should().Contain("MP3");
-        SettingsViewModel.AvailableExportFormats.Should().Contain("WAV");
-        SettingsViewModel.AvailableExportFormats.Should().Contain("OGG");
-    }
-
-    [Fact]
     public void AvailableRecordingModes_ShouldContainToggleAndPushToTalk() {
         SettingsViewModel.AvailableRecordingModes.Should().Contain("Toggle");
         SettingsViewModel.AvailableRecordingModes.Should().Contain("Push-to-Talk");
@@ -351,26 +326,6 @@ public class SettingsViewModelTests {
         };
 
         service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.AudioInputDevice == "USB Mic"));
-    }
-
-    [Fact]
-    public void StoragePath_WhenChanged_ShouldCallSaveSettings() {
-        var (service, recorder, modelManager, themeService) = CreateDependencies();
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService) {
-            StoragePath = "/new/path"
-        };
-
-        service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.StoragePath == "/new/path"));
-    }
-
-    [Fact]
-    public void ExportFormat_WhenChanged_ShouldCallSaveSettings() {
-        var (service, recorder, modelManager, themeService) = CreateDependencies();
-        var vm = new SettingsViewModel(service, recorder, modelManager, themeService) {
-            ExportFormat = "OGG"
-        };
-
-        service.Received(1).SaveSettingsAsync(Arg.Is<Settings>(s => s.ExportFormat == "OGG"));
     }
 
     [Fact]

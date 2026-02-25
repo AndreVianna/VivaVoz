@@ -40,7 +40,7 @@
                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                   <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:MMM dd, yyyy HH:mm}'}" />
                   <TextBlock Grid.Column="1"
-                             Text="{Binding LanguageCode}"
+                             Text="{Binding LanguageCode, Converter={StaticResource LanguageCodeToName}}"
                              Opacity="0.7" />
                   <TextBlock Grid.Column="2"
                              Text="{Binding Duration, StringFormat='{}{0:hh\\:mm\\:ss}'}"
