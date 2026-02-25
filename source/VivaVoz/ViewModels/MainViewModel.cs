@@ -120,7 +120,7 @@ public partial class MainViewModel : ObservableObject {
     public string TranscribedWithInfo =>
         SelectedRecording is { Status: RecordingStatus.Complete } &&
         !string.IsNullOrEmpty(SelectedRecording.WhisperModel)
-            ? $"Transcribed with: {SelectedRecording.WhisperModel}"
+            ? $"Transcribed with {System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(SelectedRecording.WhisperModel)}"
             : string.Empty;
 
     public MainViewModel(
