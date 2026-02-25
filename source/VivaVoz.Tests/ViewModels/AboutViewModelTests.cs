@@ -15,7 +15,7 @@ public class AboutViewModelTests {
 
     [Fact]
     public void Constructor_WithNullSettingsService_ShouldThrow() {
-        var act = () => new AboutViewModel(null!);
+        var act = () => new AboutViewModel((ISettingsService)null!);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("settingsService");
     }
@@ -35,36 +35,36 @@ public class AboutViewModelTests {
     public void AppName_ShouldBeVivaVoz() {
         var vm = CreateViewModel();
 
-        AboutViewModel.AppName.Should().Be("VivaVoz");
+        vm.AppName.Should().Be("VivaVoz");
     }
 
     [Fact]
     public void Tagline_ShouldBeCorrect() {
         var vm = CreateViewModel();
 
-        AboutViewModel.Tagline.Should().Be("Your voice, alive.");
+        vm.Tagline.Should().Be("Your voice, alive.");
     }
 
     [Fact]
     public void Credits_ShouldMentionAndreVianna() {
         var vm = CreateViewModel();
 
-        AboutViewModel.Credits.Should().Contain("Andre Vianna");
+        vm.Credits.Should().Contain("Andre Vianna");
     }
 
     [Fact]
     public void GitHubUrl_ShouldPointToRepo() {
         var vm = CreateViewModel();
 
-        AboutViewModel.GitHubUrl.Should().StartWith("https://github.com/AndreVianna/VivaVoz");
+        vm.GitHubUrl.Should().StartWith("https://github.com/AndreVianna/VivaVoz");
     }
 
     [Fact]
     public void IssuesUrl_ShouldPointToIssues() {
         var vm = CreateViewModel();
 
-        AboutViewModel.IssuesUrl.Should().Contain("issues");
-        AboutViewModel.IssuesUrl.Should().StartWith("https://github.com");
+        vm.IssuesUrl.Should().Contain("issues");
+        vm.IssuesUrl.Should().StartWith("https://github.com");
     }
 
     // ========== Version display tests ==========

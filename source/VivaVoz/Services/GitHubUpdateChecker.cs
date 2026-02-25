@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Text.Json;
 
 namespace VivaVoz.Services;
@@ -13,7 +14,7 @@ public sealed class GitHubUpdateChecker : IUpdateChecker {
     public GitHubUpdateChecker(HttpClient httpClient) {
         ArgumentNullException.ThrowIfNull(httpClient);
         _httpClient = httpClient;
-        if (_httpClient.DefaultRequestHeaders.UserAgent.Count == 0)
+        if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
             _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("VivaVoz");
     }
 
@@ -42,9 +43,13 @@ public sealed class GitHubUpdateChecker : IUpdateChecker {
                 return null;
 
             var currentVersionStr = GetCurrentVersion();
-            return !Version.TryParse(currentVersionStr, out var currentVersion)
-                ? null
-                : releaseVersion <= currentVersion ? null : new UpdateInfo(releaseVersionStr, htmlUrl ?? string.Empty, body);
+            if (!Version.TryParse(currentVersionStr, out var currentVersion))
+                return null;
+
+            if (releaseVersion <= currentVersion)
+                return null;
+
+            return new UpdateInfo(releaseVersionStr, htmlUrl ?? string.Empty, body);
         }
         catch {
             // Silently ignore all errors (no internet, API rate limit, parse errors, etc.)

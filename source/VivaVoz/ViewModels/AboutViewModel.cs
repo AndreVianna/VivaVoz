@@ -1,13 +1,14 @@
+using System.Net;
 using System.Reflection;
 
 namespace VivaVoz.ViewModels;
 
 public partial class AboutViewModel : ObservableObject {
-    public static string AppName => "VivaVoz";
-    public static string Tagline => "Your voice, alive.";
-    public static string Credits => "Created by Andre Vianna";
-    public static string GitHubUrl => "https://github.com/AndreVianna/VivaVoz";
-    public static string IssuesUrl => "https://github.com/AndreVianna/VivaVoz/issues";
+    public string AppName => "VivaVoz";
+    public string Tagline => "Your voice, alive.";
+    public string Credits => "Created by Andre Vianna";
+    public string GitHubUrl => "https://github.com/AndreVianna/VivaVoz";
+    public string IssuesUrl => "https://github.com/AndreVianna/VivaVoz/issues";
 
     public string AppVersion { get; }
     public string HotkeyDisplay { get; }
@@ -27,10 +28,10 @@ public partial class AboutViewModel : ObservableObject {
     }
 
     [RelayCommand]
-    private static void OpenGitHub() => OpenUrl(GitHubUrl);
+    private void OpenGitHub() => OpenUrl(GitHubUrl);
 
     [RelayCommand]
-    private static void OpenIssues() => OpenUrl(IssuesUrl);
+    private void OpenIssues() => OpenUrl(IssuesUrl);
 
     private static void OpenUrl(string url) {
         try {
@@ -46,8 +47,8 @@ public partial class AboutViewModel : ObservableObject {
         return assembly.GetName().Version?.ToString(3) ?? "0.0.0";
     }
 
-    private static string BuildHotkeyDisplay(string? hotkeyConfig)
-        => string.IsNullOrWhiteSpace(hotkeyConfig)
+    private static string BuildHotkeyDisplay(string? hotkeyConfig) =>
+        string.IsNullOrWhiteSpace(hotkeyConfig)
             ? HotkeyConfig.Default.ToString().Replace("+", " + ")
             : hotkeyConfig.Replace("+", " + ");
 }
