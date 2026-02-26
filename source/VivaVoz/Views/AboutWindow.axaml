@@ -64,10 +64,11 @@
 
     <!-- OK -->
     <Button Content="OK"
-            HorizontalAlignment="Center"
-            MinWidth="90"
-            Padding="12,6"
-            Click="OnOkClicked" />
+        HorizontalContentAlignment="Center"
+        HorizontalAlignment="Center"
+        MinWidth="90"
+        Padding="12,6"
+        Click="OnOkClicked" />
 
   </StackPanel>
 </Window>
