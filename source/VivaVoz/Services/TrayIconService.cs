@@ -65,6 +65,7 @@ public sealed class TrayIconService(Action<AppState>? onStateChanged = null) : I
                 _revertCts = null;
                 cts?.Dispose();
             }
+
             ApplyState(AppState.Idle);
         }
         catch (OperationCanceledException) {

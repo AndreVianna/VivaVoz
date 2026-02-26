@@ -118,8 +118,8 @@ public partial class MainViewModel : ObservableObject {
     /// Shows which model was used to produce the current transcript, e.g. "Transcribed with: base".
     /// Empty when no model info is recorded or no recording is selected.
     /// </summary>
-    public string TranscribedWithInfo =>
-        SelectedRecording is { Status: RecordingStatus.Complete } &&
+    public string TranscribedWithInfo
+        => SelectedRecording is { Status: RecordingStatus.Complete } &&
         !string.IsNullOrEmpty(SelectedRecording.WhisperModel)
             ? $"Transcribed with: {SelectedRecording.WhisperModel}"
             : string.Empty;
@@ -392,7 +392,7 @@ public partial class MainViewModel : ObservableObject {
     /// </summary>
     internal void RefreshInstalledModels() {
         var available = _modelManager.GetAvailableModelIds();
-        InstalledModelIds = available.Where(_modelManager.IsModelDownloaded).ToList();
+        InstalledModelIds = [.. available.Where(_modelManager.IsModelDownloaded)];
     }
 
     partial void OnSelectedRecordingChanged(Recording? value) {

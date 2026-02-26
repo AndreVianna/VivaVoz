@@ -1616,10 +1616,10 @@ public class MainViewModelTests {
         settingsService.Current.Returns(new Settings { WhisperModelSize = "medium" });
         var vm = new MainViewModel(recorder, player, context,
             Substitute.For<ITranscriptionManager>(), Substitute.For<IClipboardService>(),
-            settingsService: settingsService);
-
-        // User changes model in dropdown
-        vm.SelectedRetranscribeModel = "large-v3";
+            settingsService: settingsService) {
+            // User changes model in dropdown
+            SelectedRetranscribeModel = "large-v3"
+        };
         // Then selects a different recording
         var recording = CreateRecording(DateTime.UtcNow);
         vm.SelectedRecording = recording;

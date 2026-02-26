@@ -29,15 +29,16 @@ public partial class App : Application {
         var parsedHotkey = HotkeyConfig.Parse(settingsService.Current?.HotkeyConfig);
         hotkeyService.TryRegister(parsedHotkey ?? HotkeyConfig.Default, settingsService.Current?.RecordingMode ?? "Toggle");
 
-        var updateChecker = new GitHubUpdateChecker(new System.Net.Http.HttpClient());
+        var updateChecker = new GitHubUpdateChecker(new HttpClient());
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
             // Create TrayIconService with a deferred callback to TrayService (assigned below).
             // The callback maps AppState → TrayIconState so MainViewModel state transitions
             // drive the actual tray icon without coupling the ViewModel to Avalonia.
-            ITrayService? trayService = null;
+            TrayService? trayService = null;
             var trayIconService = new TrayIconService(appState => {
-                if (trayService is null) return;
+                if (trayService is null)
+                    return;
                 trayService.SetState(appState switch {
                     AppState.Recording => TrayIconState.Recording,
                     AppState.Transcribing => TrayIconState.Transcribing,
@@ -171,6 +172,7 @@ public partial class App : Application {
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(info.DownloadUrl) { UseShellExecute = true });
             }
             catch { /* best-effort */ }
+
             window.Close();
         };
         dismissButton.Click += (_, _) => window.Close();

@@ -4,10 +4,8 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 
 using VivaVoz.Data;
-using VivaVoz.Models;
 using VivaVoz.Services;
 using VivaVoz.Services.Audio;
 using VivaVoz.Services.Transcription;

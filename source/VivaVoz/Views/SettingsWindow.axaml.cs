@@ -4,7 +4,9 @@ namespace VivaVoz.Views;
 
 [ExcludeFromCodeCoverage]
 public partial class SettingsWindow : Window {
-    public SettingsWindow() => InitializeComponent();
+    public SettingsWindow() {
+        InitializeComponent();
+    }
 
     protected override void OnKeyDown(KeyEventArgs e) {
         base.OnKeyDown(e);

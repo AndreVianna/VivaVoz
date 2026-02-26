@@ -1,5 +1,3 @@
-using System.Globalization;
-
 using Avalonia.Data.Converters;
 
 namespace VivaVoz.Converters;

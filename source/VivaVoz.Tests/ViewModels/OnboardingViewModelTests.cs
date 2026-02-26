@@ -360,7 +360,7 @@ public class OnboardingViewModelTests {
     public void Cleanup_ShouldNotThrow() {
         var vm = CreateVm();
 
-        var act = () => vm.Cleanup();
+        var act = vm.Cleanup;
 
         act.Should().NotThrow();
     }

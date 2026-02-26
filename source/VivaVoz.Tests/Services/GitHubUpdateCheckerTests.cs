@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http;
 
 using AwesomeAssertions;
 
@@ -31,7 +30,7 @@ public class GitHubUpdateCheckerTests {
     [Fact]
     public async Task CheckForUpdateAsync_WhenNewerVersionAvailable_ShouldReturnUpdateInfo() {
         // Arrange: patch the current version to "0.0.1" so any real release looks newer
-        var json = """{"tag_name":"v99.0.0","html_url":"https://example.com/releases/v99.0.0","body":"What's new"}""";
+        const string json = """{"tag_name":"v99.0.0","html_url":"https://example.com/releases/v99.0.0","body":"What's new"}""";
         var handler = new FakeHttpHandler(HttpStatusCode.OK, json);
         var checker = new GitHubUpdateChecker(new HttpClient(handler));
 
@@ -54,7 +53,7 @@ public class GitHubUpdateCheckerTests {
     public async Task CheckForUpdateAsync_WhenNewerVersionAvailable_ReturnsCorrectVersion() {
         // Force a scenario where we know the version is newer by using a trivially
         // low-version assembly helper.
-        var json = """{"tag_name":"v9999.0.0","html_url":"https://github.com/AndreVianna/VivaVoz/releases/v9999.0.0","body":"Release notes"}""";
+        const string json = """{"tag_name":"v9999.0.0","html_url":"https://github.com/AndreVianna/VivaVoz/releases/v9999.0.0","body":"Release notes"}""";
         var handler = new FakeHttpHandler(HttpStatusCode.OK, json);
         var checker = new GitHubUpdateChecker(new HttpClient(handler));
 
@@ -84,7 +83,7 @@ public class GitHubUpdateCheckerTests {
 
     [Fact]
     public async Task CheckForUpdateAsync_WhenOlderVersionAvailable_ShouldReturnNull() {
-        var json = """{"tag_name":"v0.0.1","html_url":"https://example.com","body":""}""";
+        const string json = """{"tag_name":"v0.0.1","html_url":"https://example.com","body":""}""";
         var handler = new FakeHttpHandler(HttpStatusCode.OK, json);
         var checker = new GitHubUpdateChecker(new HttpClient(handler));
 
@@ -184,7 +183,7 @@ public class GitHubUpdateCheckerTests {
 
     private sealed class ThrowingHttpHandler : HttpMessageHandler {
         protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, CancellationToken cancellationToken) =>
-            Task.FromException<HttpResponseMessage>(new HttpRequestException("No internet connection"));
+            HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromException<HttpResponseMessage>(new HttpRequestException("No internet connection"));
     }
 }

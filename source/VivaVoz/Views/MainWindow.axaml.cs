@@ -4,9 +4,13 @@ namespace VivaVoz.Views;
 public partial class MainWindow : Window {
     private readonly ISettingsService? _settingsService;
 
-    public MainWindow() => InitializeComponent();
+    public MainWindow() {
+        InitializeComponent();
+    }
 
-    public MainWindow(ISettingsService settingsService) : this() => _settingsService = settingsService;
+    public MainWindow(ISettingsService settingsService) : this() {
+        _settingsService = settingsService;
+    }
 
     public static bool ShouldMinimizeToTray(ISettingsService? settingsService)
         => settingsService?.Current?.MinimizeToTray == true;

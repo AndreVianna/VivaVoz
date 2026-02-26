@@ -79,9 +79,9 @@ public class SettingsTests {
 
     [Fact]
     public void Settings_HasCompletedOnboarding_CanBeSetToTrue() {
-        var settings = new Settings();
-
-        settings.HasCompletedOnboarding = true;
+        var settings = new Settings {
+            HasCompletedOnboarding = true
+        };
 
         settings.HasCompletedOnboarding.Should().BeTrue();
     }

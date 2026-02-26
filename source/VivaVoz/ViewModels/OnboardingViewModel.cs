@@ -16,11 +16,11 @@ public partial class OnboardingViewModel : ObservableObject {
     [ObservableProperty]
     public partial int CurrentStep { get; set; } = 0;
 
-    public bool IsFirstStep      => CurrentStep == 0;
-    public bool IsLastStep       => CurrentStep == 3;
-    public bool CanGoPrevious    => CurrentStep > 0;
-    public bool CanGoNext        => !IsLastStep;
-    public int  CurrentStepDisplay => CurrentStep + 1;
+    public bool IsFirstStep => CurrentStep == 0;
+    public bool IsLastStep => CurrentStep == 3;
+    public bool CanGoPrevious => CurrentStep > 0;
+    public bool CanGoNext => !IsLastStep;
+    public int CurrentStepDisplay => CurrentStep + 1;
 
     // Visibility helpers for step panels
     public bool IsStep1 => CurrentStep == 0;
@@ -47,7 +47,7 @@ public partial class OnboardingViewModel : ObservableObject {
     public partial bool HasTestRecorded { get; set; }
 
     private bool CanStartTestRecording => !IsTestRecording && !IsTestTranscribing;
-    private bool CanStopTestRecording  => IsTestRecording;
+    private bool CanStopTestRecording => IsTestRecording;
 
     // ── Hotkey-setup step (Step 4) ────────────────────────────────────────────
 
@@ -176,11 +176,11 @@ public partial class OnboardingViewModel : ObservableObject {
 
     // ── Property-change side-effects ──────────────────────────────────────────
 
-    partial void OnHotkeyConfigChanged(string value) =>
-        OnPropertyChanged(nameof(HotkeyDisplayText));
+    partial void OnHotkeyConfigChanged(string value)
+        => OnPropertyChanged(nameof(HotkeyDisplayText));
 
-    partial void OnIsListeningForHotkeyChanged(bool value) =>
-        OnPropertyChanged(nameof(HotkeyDisplayText));
+    partial void OnIsListeningForHotkeyChanged(bool value)
+        => OnPropertyChanged(nameof(HotkeyDisplayText));
 
     partial void OnIsTestRecordingChanged(bool value) {
         StartTestRecordingCommand.NotifyCanExecuteChanged();
@@ -200,7 +200,8 @@ public partial class OnboardingViewModel : ObservableObject {
     }
 
     private void UpdateModelSelection(string selectedId) {
-        if (Models is null) return;
+        if (Models is null)
+            return;
         foreach (var m in Models)
             m.IsSelected = m.ModelId == selectedId;
     }
