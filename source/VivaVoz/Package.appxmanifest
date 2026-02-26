@@ -5,8 +5,8 @@
          xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
          IgnorableNamespaces="uap mp rescap">
 
-  <Identity Name="REPLACE_WITH_PARTNER_CENTER_NAME"
-            Publisher="REPLACE_WITH_PARTNER_CENTER_PUBLISHER"
+  <Identity Name="Casulo.VivaVoz"
+            Publisher="CN=7DEC6B4A-E655-4D53-AD68-AC2EE7AFDA7F"
             Version="1.0.0.0"
             ProcessorArchitecture="x64" />
 
@@ -15,7 +15,7 @@
 
   <Properties>
     <DisplayName>VivaVoz</DisplayName>
-    <PublisherDisplayName>Casulo AI Labs</PublisherDisplayName>
+    <PublisherDisplayName>Casulo</PublisherDisplayName>
     <Logo>Assets\Store\StoreLogo.scale-100.png</Logo>
   </Properties>
 
