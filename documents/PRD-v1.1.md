@@ -15,13 +15,14 @@
 
 | Version | Date       | Author                       | Changes                                     |
 |---------|------------|------------------------------|---------------------------------------------|
-| 1.1.0   | 2026-02-27 | Andre Vianna / Lola Lovelace | Initial v1.1 PRD from PO interview — motor accessibility pivot, multi-arch, accessible hotkeys |
+| 1.1.0   | 2026-02-27 | Andre Vianna / Lola Lovelace | Initial v1.1 PRD from PO interview — motor accessibility, multi-arch, accessible hotkeys |
+| 1.1.1   | 2026-02-27 | Andre Vianna / Lola Lovelace | Added grammar correction (GECToR/ByT5), refined interview answers, closed open questions |
 
 ---
 
 ## 1. What Changed Since v1.0
 
-v1.0 shipped as a functional voice-to-text tool for Windows (x64 only). v1.1 repositions VivaVoz as an **accessibility-first** application for people with motor disabilities while expanding platform support.
+v1.0 shipped as a functional voice-to-text tool for Windows (x64 only). v1.1 repositions VivaVoz as an **accessibility-first** application for people with motor disabilities, adds automatic grammar correction, and expands platform support.
 
 ### Strategic Pivot: Accessibility for Motor Disabilities
 
@@ -36,7 +37,7 @@ v1.0 shipped as a functional voice-to-text tool for Windows (x64 only). v1.1 rep
 - Microsoft Store highlights accessibility apps with badges and featured placement
 - Assistive tech gets more organic coverage, reviews, and community support
 
-**Scope:** v1.1 focuses exclusively on **motor disabilities** (RSI, typing difficulty, limited hand coordination, tremors). Visual accessibility (screen reader, high contrast) and other disabilities are deferred to v2+.
+**Scope:** v1.1 focuses exclusively on **motor disabilities** (RSI, typing difficulty, limited hand coordination, tremors, speech impediments). Visual accessibility (screen reader, high contrast) and other disabilities are deferred to v2+.
 
 ---
 
@@ -52,20 +53,21 @@ v1.1 adds:
 - Allow binding to a single key (e.g., F9, Pause, Scroll Lock, Insert)
 - No modifier required
 - Ideal for users who can only reliably press one key at a time
-- Also enables **foot pedal support** for free — USB foot pedals register as keyboard keys
+- Enables **foot pedal support** for free — USB foot pedals register as keyboard keys
 
 **Sequential hotkeys (chord mode):**
 - Instead of holding keys simultaneously, press them in sequence
 - Example: press A, then press L within a configurable time window
 - Default window: 500ms (configurable in Settings)
-- Visual/audio feedback on first key press ("waiting for second key...")
+- Audio click feedback on first key press ("waiting for second key...")
 - If window expires without second key, first key passes through normally (no lost input)
 
 **Settings additions:**
 ```
 Settings
-├── HotkeyMode (enum: Simultaneous | Sequential)
+├── HotkeyMode (enum: Simultaneous | SingleKey | Sequential)
 ├── SequentialWindowMs (int, default: 500)
+├── SequentialFeedbackSound (bool, default: true)
 ```
 
 ### F6: Motor Accessibility UI Enhancements
@@ -89,7 +91,56 @@ Settings
 
 Both are opt-in — the default UI remains unchanged for general users.
 
-### F7: Multi-Architecture Builds
+### F7: Automatic Grammar Correction
+
+Post-transcription grammar correction using a lightweight local model. Particularly valuable for users with **speech impediments** — after Whisper transcribes with errors caused by impeded speech, the grammar model corrects the text automatically.
+
+**Pipeline:**
+```
+audio → Whisper → raw text → Grammar Model → corrected text
+```
+
+**Model: ByT5-text-correction**
+- Multilingual: supports English, Portuguese, Spanish, French, German, Italian, Dutch, and 9 more languages
+- Lightweight: ~300MB (comparable to Whisper Base model)
+- Specialized: purpose-built for text correction, not a general LLM
+- Runs via ONNX Runtime (.NET native integration)
+- Download on demand (like Whisper models)
+
+**What it corrects:**
+- Spelling errors from transcription mistakes
+- Grammar errors (tense, agreement, articles)
+- Punctuation normalization
+- Common speech-to-text artifacts
+
+**What it does NOT do (deferred to v2):**
+- Tone/style formatting (Formal, Casual, Professional)
+- Content rewriting or paraphrasing
+- Custom prompt-based processing
+
+**UX:**
+- Settings → Post-Processing → "Auto-correct transcription" (off by default)
+- When enabled, both raw and corrected text are stored
+- User sees corrected text by default, can toggle to view raw transcription
+- Visual indicator: "✨ Auto-corrected" badge on corrected transcriptions
+- Can be applied retroactively to existing transcriptions via (Re-)Transcribe
+
+**Settings additions:**
+```
+Settings
+├── AutoCorrectEnabled (bool, default: false)
+├── ShowRawTranscript (bool, default: false)
+```
+
+**Data model addition:**
+```
+Recording
+├── RawTranscript (text — original Whisper output, always preserved)
+├── Transcript (text — corrected version when auto-correct is enabled)
+├── WasCorrected (bool)
+```
+
+### F8: Multi-Architecture Builds
 
 v1.0 shipped x64 only. v1.1 adds:
 
@@ -99,45 +150,48 @@ v1.0 shipped x64 only. v1.1 adds:
 | **ARM64** | 🆕 v1.1 | Surface Pro X, Snapdragon laptops. Runtime exists in Whisper.net |
 | **x86** | 🆕 v1.1 | Legacy support. Runtime exists in Whisper.net |
 
-**Implementation:** `publish-msix.ps1` already supports `-Arch` parameter. Generate three MSIXs, submit all to Partner Center. Windows installs the correct one automatically.
+**Implementation:** `publish-msix.ps1` already supports `-Arch` parameter. Add `x86` support. Generate three MSIXs, submit all to Partner Center.
 
-### F8: Store Relisting
+### F9: Store Relisting
 
 **Categories:** Productivity AND Accessibility (dual listing)
 
 **Keywords (new):**
 - motor disability, typing difficulty, RSI, repetitive strain injury
 - assistive technology, voice typing, hands-free, speech to text
-- accessibility, adaptive input, one-handed typing
+- accessibility, adaptive input, speech impediment
+- grammar correction, auto-correct, local AI
 
 **Description lead (new):**
-"VivaVoz lets you type without touching your keyboard. Built for people with motor disabilities, RSI, or anyone who thinks better by speaking. 100% local — your voice never leaves your computer."
+"VivaVoz lets you type without touching your keyboard. Built for people with motor disabilities, RSI, speech impediments, or anyone who thinks better by speaking. Automatic grammar correction fixes transcription errors — especially useful for impeded speech. 100% local — your voice never leaves your computer."
 
-**Screenshots:** Add accessibility-focused scenarios (single-key hotkey setup, large touch targets enabled, Settings accessibility panel)
+**Screenshots:** Add accessibility-focused scenarios (single-key hotkey setup, large touch targets enabled, Settings accessibility panel, grammar correction before/after)
 
 **Accessibility declaration:** Submit in Partner Center
 
-### F9: Promotional Codes
+### F10: Promotional Codes
 
 Generate Store promotional codes for strategic distribution:
 - Accessibility organizations (Neil Squire Society, etc.)
 - Assistive technology reviewers and bloggers
 - Partnership outreach post-launch
 
-This is a **marketing activity**, not a product feature. No code changes needed — Partner Center handles promo code generation.
+Marketing activity, not code changes — Partner Center handles promo code generation.
 
 ---
 
 ## 3. Deferred to v2+
 
-| Feature | Reason |
-|---------|--------|
-| **Screen reader support** (NVDA/Narrator) | Visual accessibility — out of motor focus |
-| **High contrast mode** | Visual accessibility — out of motor focus |
-| **Reduced motion** | Vestibular — out of motor focus |
-| **Continuous dictation mode** | Queue management for slow models (medium/large) needs careful design. Andre will design solution. |
-| **Floating icon** | Redundant with accessible hotkeys (single-key/sequential). Hotkeys solve the motor problem better. |
-| **Organization partnerships** | Post-launch activity. Build first, then show. |
+| Feature | Reason | Target |
+|---------|--------|--------|
+| **Tone/style formatting** (Formal, Casual, Professional) | Requires LLM (Phi-3 Mini), 2.3GB+ download, 4GB+ RAM | v2.0 |
+| **Custom AI prompts** | Requires LLM | v2.0 |
+| **Screen reader support** (NVDA/Narrator) | Visual accessibility — out of motor focus | v2.0 |
+| **High contrast mode** | Visual accessibility — out of motor focus | v2.0 |
+| **Reduced motion** | Vestibular — out of motor focus | v2.0 |
+| **Continuous dictation mode** | Queue management for slow models needs careful design | v2.0 |
+| **Floating icon** | Redundant with accessible hotkeys | Cut |
+| **Organization partnerships** | Post-launch activity | Post v1.1 |
 
 ---
 
@@ -145,22 +199,30 @@ This is a **marketing activity**, not a product feature. No code changes needed 
 
 ### Hotkey System Refactor
 
-Current hotkey registration uses `RegisterHotKey` Win32 API with modifier flags. Changes needed:
+Current hotkey registration uses `RegisterHotKey` Win32 API with modifier flags. Changes:
 
-1. **Single-key support:** Register without modifiers. Must handle key passthrough carefully to avoid stealing keys from other apps. Use a "dead key" approach — keys that have no normal typing function (F-keys, Pause, etc.) recommended by default.
+1. **Single-key support:** Register without modifiers. Use "dead key" approach — keys with no normal typing function (F-keys, Pause, etc.) recommended by default to avoid stealing input.
 
 2. **Sequential mode:** Two-stage state machine:
-   - State 0: Idle → first key pressed → start timer, enter State 1
+   - State 0: Idle → first key pressed → play click sound, start timer, enter State 1
    - State 1: Waiting → second key pressed within window → trigger action, return to State 0
    - State 1: Waiting → timer expires → pass first key through to active app, return to State 0
-   - Visual feedback (tray icon flash or subtle sound) on entering State 1
 
-3. **Settings UI:** New "Hotkey Mode" selector in Settings with explanation text for each mode.
+3. **Settings UI:** New "Hotkey Mode" selector with explanation text for each mode.
+
+### Grammar Correction Integration
+
+- **ByT5-text-correction** model via ONNX Runtime
+- NuGet: `Microsoft.ML.OnnxRuntime` (already .NET native)
+- Model download on demand to `%LOCALAPPDATA%/VivaVoz/models/byt5-correction/`
+- Tokenizer: ByT5 uses byte-level tokenization (no separate tokenizer model needed)
+- Processing: runs after Whisper completes, before displaying result
+- Both raw and corrected text stored in DB
+- Fallback: if correction fails, raw transcript is shown (graceful degradation)
 
 ### UI Scaling for Accessibility
 
-Larger touch targets via:
-- Custom Avalonia style that overrides MinHeight/MinWidth on Button, ListBoxItem, ComboBox, etc.
+- Custom Avalonia style overriding MinHeight/MinWidth on interactive controls
 - Applied conditionally when `LargeTouchTargets = true`
 - Focus adorner style swap when `EnhancedFocusIndicators = true`
 
@@ -168,8 +230,7 @@ Larger touch targets via:
 
 Update `publish-msix.ps1`:
 - Add `x86` to `-Arch` parameter validation
-- Add `publish-all` mode that generates all three MSIXs
-- Naming: `VivaVoz-x64.msix`, `VivaVoz-arm64.msix`, `VivaVoz-x86.msix`
+- Add `-All` switch that generates all three MSIXs sequentially
 
 ---
 
@@ -181,6 +242,7 @@ Update `publish-msix.ps1`:
 4. **Outreach** — contact 3-5 accessibility organizations with promo codes
 5. **Assistive tech blogs** — pitch for review
 6. **vivavoz.app** — add "For Accessibility" page
+7. **Speech impediment communities** — key differentiator: auto-correction of impeded speech transcription
 
 ---
 
@@ -190,6 +252,7 @@ Update `publish-msix.ps1`:
 - 10 reviews mentioning accessibility within 3 months
 - Coverage in at least 1 assistive technology blog/forum
 - ARM64 + x86 builds passing Store certification
+- Grammar correction used by >30% of active users
 
 ---
 
@@ -197,31 +260,25 @@ Update `publish-msix.ps1`:
 
 1. **Motor-only focus** — v1.1 targets motor disabilities exclusively. Visual/auditory accessibility deferred to v2+.
 2. **Accessibility features are opt-in** — default UI unchanged. Users enable in Settings → Accessibility.
-3. **Floating icon cut** — accessible hotkeys (single-key/sequential) solve the problem better.
-4. **Continuous dictation deferred** — model speed disparity creates queue management problem. Needs careful design.
+3. **Floating icon cut** — accessible hotkeys solve the problem better.
+4. **Continuous dictation deferred** — model speed disparity creates queue management problem.
 5. **$1.99 for everyone** — no free tier. Promo codes for organizations as needed.
 6. **Dual Store category** — Productivity + Accessibility.
 7. **Partnerships post-launch** — build the product first, then outreach with promo codes.
 8. **Three architectures** — x64, ARM64, x86 all ship in v1.1.
+9. **GECToR/ByT5 for v1.1, Phi-3 for v2** — grammar correction now, tone/style formatting later.
+10. **Sequential hotkey feedback** — audio click sound (configurable, on by default).
+11. **Default single-key hotkey** — F9 (uncommon, easy to reach, no conflict risk).
 
 ---
 
-## 8. Open Questions
+## 8. Delivery Plan
 
-1. **Sequential hotkey audio feedback** — beep, click sound, or silent (visual only)?
-2. **Default single-key hotkey** — which key? F9? Pause? Should be uncommon but easy to reach.
-3. **Foot pedal testing** — do we need to explicitly test with a USB foot pedal, or trust that single-key support covers it?
-
----
-
-## 9. Delivery Plan
-
-*To be broken down into task specs after PRD approval.*
-
-- **Delivery 3a:** Accessible hotkey system (single-key + sequential mode)
-- **Delivery 3b:** Motor accessibility UI (large targets, focus indicators)
-- **Delivery 3c:** Multi-arch builds (ARM64, x86) + publish-msix.ps1 update
-- **Delivery 3d:** Store relisting (categories, keywords, description, screenshots)
+- **Delivery 3a:** Accessible hotkey system (single-key + sequential mode + settings UI)
+- **Delivery 3b:** Motor accessibility UI (large targets + focus indicators, opt-in)
+- **Delivery 3c:** Grammar correction (ByT5 integration, model download, UI for raw/corrected toggle)
+- **Delivery 3d:** Multi-arch builds (ARM64, x86 + publish-msix.ps1 update)
+- **Delivery 3e:** Store relisting (categories, keywords, description, screenshots, accessibility declaration)
 
 ---
 
