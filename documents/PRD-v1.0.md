@@ -1,8 +1,8 @@
-# VivaVoz — Product Requirements Document
+# VivaVoz — Product Requirements Document (v1.0) — DELIVERED
 
 **Product:** VivaVoz
 **Tagline:** Your voice, alive.
-**Version:** 1.0 (MVP)
+**Version:** 1.0 (MVP) — DELIVERED 2026-02-27
 **Date:** 2026-02-17
 **Authors:** Andre Vianna (Founder), Lola Lovelace (Product Lead)
 **Company:** Casulo AI Labs
