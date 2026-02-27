@@ -6,14 +6,8 @@
 **Date:** 2026-02-27
 **Authors:** Andre Vianna (Founder), Lola Lovelace (Product Lead)
 **Company:** Casulo AI Labs
-**Price:** $1.99 (Microsoft Store)
+**Price:** $1.99 (Microsoft Store) + promotional codes for accessibility organizations
 **Previous:** [PRD-v1.0.md](PRD-v1.0.md) — DELIVERED 2026-02-27
-
----
-
-## What Changed Since v1.0
-
-v1.0 shipped as a functional voice-to-text tool for Windows. v1.1 repositions VivaVoz as an **accessibility-first** application while adding polish features deferred from v1.0.
 
 ---
 
@@ -21,162 +15,213 @@ v1.0 shipped as a functional voice-to-text tool for Windows. v1.1 repositions Vi
 
 | Version | Date       | Author                       | Changes                                     |
 |---------|------------|------------------------------|---------------------------------------------|
-| 1.1.0   | 2026-02-27 | Andre Vianna / Lola Lovelace | Initial v1.1 PRD — accessibility pivot, deferred v1.0 features |
+| 1.1.0   | 2026-02-27 | Andre Vianna / Lola Lovelace | Initial v1.1 PRD from PO interview — motor accessibility pivot, multi-arch, accessible hotkeys |
 
 ---
 
-## 1. Strategic Pivot: Accessibility First
+## 1. What Changed Since v1.0
 
-### Why
+v1.0 shipped as a functional voice-to-text tool for Windows (x64 only). v1.1 repositions VivaVoz as an **accessibility-first** application for people with motor disabilities while expanding platform support.
 
-VivaVoz competes poorly as "generic STT" against free tools like Buzz. But as an **accessibility tool for people with motor disabilities, RSI, or typing difficulties**, the positioning changes completely:
-
-- **Different market** — assistive technology has dedicated funding, grants, and corporate programs
-- **Price justified** — $1.99 for accessibility is trivial; competitors charge hundreds per license
-- **Discovery** — accessibility keywords have less competition on the Microsoft Store
-- **Local-first is a feature** — privacy matters for health/accessibility contexts. Zero audio leaves the machine.
-- **Microsoft visibility** — the Store highlights accessibility apps with badges and featured placement
-- **Goodwill** — assistive tech gets more organic coverage, reviews, and community support
-
-### The Reframe
+### Strategic Pivot: Accessibility for Motor Disabilities
 
 **Old positioning:** "Voice-to-text for Windows power users"
-**New positioning:** "Type without touching your keyboard. Accessible voice-to-text for everyone."
+**New positioning:** "Type without touching your keyboard."
 
-This doesn't exclude the general audience — it changes the **lead** of the marketing. Accessibility-first, useful for everyone.
+**Why this works:**
+- Different market — assistive technology has dedicated funding, grants, and corporate programs
+- $1.99 is trivial for accessibility; competitors charge hundreds per license
+- Accessibility keywords have less competition on the Microsoft Store
+- Local-first = privacy for health/accessibility contexts. Zero audio leaves the machine.
+- Microsoft Store highlights accessibility apps with badges and featured placement
+- Assistive tech gets more organic coverage, reviews, and community support
 
----
-
-## 2. New Features (v1.1)
-
-### F5: Accessibility Enhancements
-- **Full keyboard navigation** — every UI element reachable without mouse
-- **Screen reader support** — NVDA and Narrator compatible (Avalonia automation peers)
-- **High contrast mode** — respects Windows high contrast settings
-- **Larger click targets** — minimum 44x44px touch/click targets throughout UI
-- **Focus indicators** — visible focus ring on all interactive elements
-- **Reduced motion option** — disable animations for vestibular sensitivity
-
-### F6: Continuous Dictation Mode
-- New mode beyond push-to-talk and toggle: **continuous dictation**
-- Microphone stays open, voice activity detection (VAD) segments speech
-- Silence pauses transcription, voice resumes it
-- Transcribed text auto-copies to clipboard (configurable)
-- Designed for users who need hands-free operation for extended periods
-- Can paste directly into active window (accessibility use case)
-
-### F7: Store Listing — Accessibility Repositioning
-- **Category:** Accessibility (not just Productivity)
-- **Keywords:** motor disability, typing difficulty, RSI, repetitive strain, assistive technology, voice typing, hands-free, speech to text accessibility
-- **Description lead:** "VivaVoz lets you type without touching your keyboard. Built for people with motor disabilities, RSI, or anyone who thinks better by speaking."
-- **Screenshots:** Include accessibility-focused scenarios (hands-free dictation, screen reader in use)
-- **Accessibility declaration** in Store listing
-
-### F8: Deferred v1.0 Features
-These were scoped for v1.0 but deferred to keep MVP tight:
-
-- **Taskbar icon** with recording state badge
-- **Floating icon** — always-on-top mini widget for one-click record/stop
-- **Hotkeys-only mode** — zero visible UI for power users
-- **Onboarding wizard** — 4-step first-run experience (from PRD v1.0 section 6)
-- **Update checker** — in-app version check on launch
-- **In-app help** — built-in FAQ page
+**Scope:** v1.1 focuses exclusively on **motor disabilities** (RSI, typing difficulty, limited hand coordination, tremors). Visual accessibility (screen reader, high contrast) and other disabilities are deferred to v2+.
 
 ---
 
-## 3. Technical Changes
+## 2. New Features
 
-### Accessibility Implementation
+### F5: Accessible Hotkey System
 
-| Feature | Implementation |
-|---------|---------------|
-| Keyboard navigation | Avalonia `KeyboardNavigation`, TabIndex on all controls |
-| Screen reader | `AutomationPeer` implementations for custom controls |
-| High contrast | Bind to `SystemParameters.HighContrast`, swap theme |
-| Focus indicators | Custom `FocusAdorner` style in theme |
+The existing hotkey system requires simultaneous key combinations (e.g., Ctrl+Shift+R). For users with motor disabilities, this can be impossible.
 
-### Continuous Dictation
+v1.1 adds:
 
-- Whisper.net supports streaming inference — use segmented processing
-- Voice Activity Detection (VAD): use WebRTC VAD or Silero VAD via ONNX
-- Segment on silence > 1.5s (configurable)
-- Each segment is a separate transcription job, results concatenated
-- Auto-clipboard: `Clipboard.SetTextAsync()` after each segment completes
+**Single-key hotkeys:**
+- Allow binding to a single key (e.g., F9, Pause, Scroll Lock, Insert)
+- No modifier required
+- Ideal for users who can only reliably press one key at a time
+- Also enables **foot pedal support** for free — USB foot pedals register as keyboard keys
 
-### Settings Additions
+**Sequential hotkeys (chord mode):**
+- Instead of holding keys simultaneously, press them in sequence
+- Example: press A, then press L within a configurable time window
+- Default window: 500ms (configurable in Settings)
+- Visual/audio feedback on first key press ("waiting for second key...")
+- If window expires without second key, first key passes through normally (no lost input)
 
+**Settings additions:**
 ```
 Settings
-├── DictationMode (enum: PushToTalk | Toggle | Continuous)
-├── ContinuousSilenceThresholdMs (int, default: 1500)
-├── AutoCopyToClipboard (bool, default: false)
-├── AutoPasteToActiveWindow (bool, default: false)
-├── ReducedMotion (bool, default: false — follows system preference)
-└── HighContrast (bool, default: false — follows system preference)
+├── HotkeyMode (enum: Simultaneous | Sequential)
+├── SequentialWindowMs (int, default: 500)
 ```
 
+### F6: Motor Accessibility UI Enhancements
+
+**Larger click targets:**
+- All interactive elements minimum 44x44px
+- Buttons, dropdowns, list items — all enlarged
+- Opt-in via Settings → Accessibility → "Large touch targets"
+
+**Focus indicators:**
+- Visible focus ring on all interactive elements
+- High-visibility ring (3px, contrasting color) for keyboard/switch navigation
+- Opt-in via Settings → Accessibility → "Enhanced focus indicators"
+
+**Settings additions:**
+```
+Settings
+├── LargeTouchTargets (bool, default: false)
+├── EnhancedFocusIndicators (bool, default: false)
+```
+
+Both are opt-in — the default UI remains unchanged for general users.
+
+### F7: Multi-Architecture Builds
+
+v1.0 shipped x64 only. v1.1 adds:
+
+| Architecture | Status | Notes |
+|-------------|--------|-------|
+| **x64** | ✅ Existing | Primary target, 95%+ of Windows desktops |
+| **ARM64** | 🆕 v1.1 | Surface Pro X, Snapdragon laptops. Runtime exists in Whisper.net |
+| **x86** | 🆕 v1.1 | Legacy support. Runtime exists in Whisper.net |
+
+**Implementation:** `publish-msix.ps1` already supports `-Arch` parameter. Generate three MSIXs, submit all to Partner Center. Windows installs the correct one automatically.
+
+### F8: Store Relisting
+
+**Categories:** Productivity AND Accessibility (dual listing)
+
+**Keywords (new):**
+- motor disability, typing difficulty, RSI, repetitive strain injury
+- assistive technology, voice typing, hands-free, speech to text
+- accessibility, adaptive input, one-handed typing
+
+**Description lead (new):**
+"VivaVoz lets you type without touching your keyboard. Built for people with motor disabilities, RSI, or anyone who thinks better by speaking. 100% local — your voice never leaves your computer."
+
+**Screenshots:** Add accessibility-focused scenarios (single-key hotkey setup, large touch targets enabled, Settings accessibility panel)
+
+**Accessibility declaration:** Submit in Partner Center
+
+### F9: Promotional Codes
+
+Generate Store promotional codes for strategic distribution:
+- Accessibility organizations (Neil Squire Society, etc.)
+- Assistive technology reviewers and bloggers
+- Partnership outreach post-launch
+
+This is a **marketing activity**, not a product feature. No code changes needed — Partner Center handles promo code generation.
+
 ---
 
-## 4. Marketing Changes
+## 3. Deferred to v2+
 
-### Store Listing
-
-**Title:** VivaVoz — Voice to Text (Accessible)
-
-**Short description:** Type without touching your keyboard. Local, private, accessible voice-to-text for Windows.
-
-**Long description:**
-VivaVoz turns your voice into text, right on your machine. No cloud. No subscription. No account. Your voice stays private.
-
-Built for:
-• People with motor disabilities or RSI who need hands-free typing
-• Knowledge workers who think better by speaking
-• Anyone who wants fast, private voice-to-text on Windows
-
-Features:
-• Local transcription — nothing leaves your computer
-• Multiple Whisper models (tiny to large) — choose speed vs accuracy
-• Continuous dictation mode — just talk, VivaVoz types
-• Full keyboard navigation and screen reader support
-• Light/dark/high-contrast themes
-• Export as text or audio
-
-$1.99. One time. No tricks.
-
-### Website (vivavoz.app)
-
-- Add accessibility section to landing page
-- Add "For Accessibility" page with detailed use cases
-- Link to Microsoft Accessibility resources
+| Feature | Reason |
+|---------|--------|
+| **Screen reader support** (NVDA/Narrator) | Visual accessibility — out of motor focus |
+| **High contrast mode** | Visual accessibility — out of motor focus |
+| **Reduced motion** | Vestibular — out of motor focus |
+| **Continuous dictation mode** | Queue management for slow models (medium/large) needs careful design. Andre will design solution. |
+| **Floating icon** | Redundant with accessible hotkeys (single-key/sequential). Hotkeys solve the motor problem better. |
+| **Organization partnerships** | Post-launch activity. Build first, then show. |
 
 ---
 
-## 5. Success Metrics (v1.1)
+## 4. Technical Changes
 
-- **Accessibility badge** on Microsoft Store listing
-- **Featured in Store accessibility collection** (apply after approval)
-- **10 reviews mentioning accessibility** within 3 months
-- **Coverage** in at least 1 assistive technology blog/forum
+### Hotkey System Refactor
+
+Current hotkey registration uses `RegisterHotKey` Win32 API with modifier flags. Changes needed:
+
+1. **Single-key support:** Register without modifiers. Must handle key passthrough carefully to avoid stealing keys from other apps. Use a "dead key" approach — keys that have no normal typing function (F-keys, Pause, etc.) recommended by default.
+
+2. **Sequential mode:** Two-stage state machine:
+   - State 0: Idle → first key pressed → start timer, enter State 1
+   - State 1: Waiting → second key pressed within window → trigger action, return to State 0
+   - State 1: Waiting → timer expires → pass first key through to active app, return to State 0
+   - Visual feedback (tray icon flash or subtle sound) on entering State 1
+
+3. **Settings UI:** New "Hotkey Mode" selector in Settings with explanation text for each mode.
+
+### UI Scaling for Accessibility
+
+Larger touch targets via:
+- Custom Avalonia style that overrides MinHeight/MinWidth on Button, ListBoxItem, ComboBox, etc.
+- Applied conditionally when `LargeTouchTargets = true`
+- Focus adorner style swap when `EnhancedFocusIndicators = true`
+
+### Multi-Arch Build Pipeline
+
+Update `publish-msix.ps1`:
+- Add `x86` to `-Arch` parameter validation
+- Add `publish-all` mode that generates all three MSIXs
+- Naming: `VivaVoz-x64.msix`, `VivaVoz-arm64.msix`, `VivaVoz-x86.msix`
 
 ---
 
-## 6. Open Questions
+## 5. Marketing Plan (Post-Launch)
 
-1. **Should we offer a free tier for verified accessibility users?** (e.g., free via accessibility organizations, paid for general public)
-2. **Windows Speech Recognition integration?** — use as fallback when Whisper models are too slow on low-end hardware
-3. **Partnerships with accessibility organizations?** (e.g., Neil Squire Society in Canada)
-4. **ARM64 build?** — Surface Pro X and Snapdragon laptops are popular in accessibility contexts
+1. **Store relisting** — update category, keywords, description, screenshots
+2. **Blog post** — "VivaVoz: Voice-to-Text Built for Accessibility" (Dev.to, Medium)
+3. **Reddit** — r/accessibility, r/RSI, r/disability, r/assistivetech
+4. **Outreach** — contact 3-5 accessibility organizations with promo codes
+5. **Assistive tech blogs** — pitch for review
+6. **vivavoz.app** — add "For Accessibility" page
 
 ---
 
-## 7. Delivery Plan
+## 6. Success Metrics
 
-*To be broken down into tasks after PO interview. Tentative structure:*
+- Accessibility badge on Microsoft Store listing
+- 10 reviews mentioning accessibility within 3 months
+- Coverage in at least 1 assistive technology blog/forum
+- ARM64 + x86 builds passing Store certification
 
-- **Delivery 2a:** F8 (deferred v1.0 features — taskbar, floating icon, hotkeys-only, onboarding, update checker, help)
-- **Delivery 2b:** F5 (accessibility enhancements)
-- **Delivery 2c:** F6 (continuous dictation mode)
-- **Delivery 2d:** F7 (Store relisting + marketing)
+---
+
+## 7. Decisions Made (v1.1)
+
+1. **Motor-only focus** — v1.1 targets motor disabilities exclusively. Visual/auditory accessibility deferred to v2+.
+2. **Accessibility features are opt-in** — default UI unchanged. Users enable in Settings → Accessibility.
+3. **Floating icon cut** — accessible hotkeys (single-key/sequential) solve the problem better.
+4. **Continuous dictation deferred** — model speed disparity creates queue management problem. Needs careful design.
+5. **$1.99 for everyone** — no free tier. Promo codes for organizations as needed.
+6. **Dual Store category** — Productivity + Accessibility.
+7. **Partnerships post-launch** — build the product first, then outreach with promo codes.
+8. **Three architectures** — x64, ARM64, x86 all ship in v1.1.
+
+---
+
+## 8. Open Questions
+
+1. **Sequential hotkey audio feedback** — beep, click sound, or silent (visual only)?
+2. **Default single-key hotkey** — which key? F9? Pause? Should be uncommon but easy to reach.
+3. **Foot pedal testing** — do we need to explicitly test with a USB foot pedal, or trust that single-key support covers it?
+
+---
+
+## 9. Delivery Plan
+
+*To be broken down into task specs after PRD approval.*
+
+- **Delivery 3a:** Accessible hotkey system (single-key + sequential mode)
+- **Delivery 3b:** Motor accessibility UI (large targets, focus indicators)
+- **Delivery 3c:** Multi-arch builds (ARM64, x86) + publish-msix.ps1 update
+- **Delivery 3d:** Store relisting (categories, keywords, description, screenshots)
 
 ---
 
