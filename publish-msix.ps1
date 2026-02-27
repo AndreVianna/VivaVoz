@@ -35,21 +35,56 @@ dotnet publish "$ProjectDir\VivaVoz.csproj" `
 # MSIX needs native DLLs in the app root, not in runtimes/ subfolder
 Write-Host "Fixing native library layout..." -ForegroundColor Yellow
 
-$nativeDir = "$AppDir\runtimes\$RuntimeId\native"
-if (Test-Path $nativeDir) {
-    Copy-Item "$nativeDir\*" $AppDir -Force
-    Write-Host "  Copied native DLLs from $nativeDir to app root" -ForegroundColor Green
-} else {
-    Write-Warning "Native directory not found: $nativeDir"
-    Write-Warning "Checking if DLLs are already in app root..."
-    $whisperDll = Get-ChildItem $AppDir -Filter "whisper.dll" -ErrorAction SilentlyContinue
-    if (-not $whisperDll) {
-        Write-Error "whisper.dll not found anywhere in output. Build will fail at runtime."
-        exit 1
+# Search for whisper native DLLs in runtimes folder tree
+$found = $false
+$searchPaths = @(
+    "$AppDir\runtimes\$RuntimeId\native",
+    "$AppDir\runtimes\$RuntimeId"
+)
+
+foreach ($searchPath in $searchPaths) {
+    if (Test-Path $searchPath) {
+        $dlls = Get-ChildItem $searchPath -Filter "*.dll" -ErrorAction SilentlyContinue
+        if ($dlls) {
+            foreach ($dll in $dlls) {
+                Copy-Item $dll.FullName $AppDir -Force
+                Write-Host "  Copied $($dll.Name) to app root" -ForegroundColor Green
+            }
+            $found = $true
+            break
+        }
     }
 }
 
-# Remove all runtimes/ folder (linux, macos, other archs — not needed)
+# Also check if they ended up directly in runtimes/ subfolders
+if (-not $found) {
+    $whisperDlls = Get-ChildItem "$AppDir\runtimes" -Filter "whisper.dll" -Recurse -ErrorAction SilentlyContinue
+    if ($whisperDlls) {
+        $nativeDir = $whisperDlls[0].DirectoryName
+        Write-Host "  Found native DLLs in: $nativeDir" -ForegroundColor Yellow
+        Get-ChildItem $nativeDir -Filter "*.dll" | ForEach-Object {
+            Copy-Item $_.FullName $AppDir -Force
+            Write-Host "  Copied $($_.Name) to app root" -ForegroundColor Green
+        }
+        $found = $true
+    }
+}
+
+if (-not $found) {
+    # Check if DLLs are already in app root (some publish modes do this)
+    $whisperDll = Get-ChildItem $AppDir -Filter "whisper.dll" -ErrorAction SilentlyContinue
+    if ($whisperDll) {
+        Write-Host "  Native DLLs already in app root." -ForegroundColor Green
+        $found = $true
+    }
+}
+
+if (-not $found) {
+    Write-Error "whisper.dll not found anywhere in output. Check Whisper.net.Runtime package."
+    exit 1
+}
+
+# Remove runtimes/ folder (linux, macos, other archs - not needed in MSIX)
 if (Test-Path "$AppDir\runtimes") {
     Remove-Item "$AppDir\runtimes" -Recurse -Force
     Write-Host "  Removed runtimes/ folder (unused platforms)" -ForegroundColor Green
@@ -78,7 +113,7 @@ Write-Host "  AppxManifest.xml copied." -ForegroundColor Green
 
 # 6. Verify native DLLs are in place
 Write-Host ""
-Write-Host "Verifying native libraries..." -ForegroundColor Yellow
+Write-Host "Verifying native libraries in app root..." -ForegroundColor Yellow
 $requiredDlls = @("whisper.dll", "ggml-base-whisper.dll", "ggml-cpu-whisper.dll", "ggml-whisper.dll")
 $allFound = $true
 foreach ($dll in $requiredDlls) {
@@ -91,7 +126,7 @@ foreach ($dll in $requiredDlls) {
 }
 
 if (-not $allFound) {
-    Write-Error "Missing native DLLs. MSIX will fail at runtime."
+    Write-Error "Missing native DLLs in app root. MSIX will fail at runtime."
     exit 1
 }
 
